@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYINFORGH — Business Dashboard</title>
+<style>
+:root {
+  --green: #1D9E75;
+  --green-light: #e8f7f2;
+  --amber: #BA7517;
+  --amber-light: #fdf4e3;
+  --red: #A32D2D;
+  --red-light: #fdf0f0;
+  --blue: #185FA5;
+  --blue-light: #e8f0fb;
+  --bg: #F7F6F3;
+  --card: #FFFFFF;
+  --border: #E5E4E0;
+  --text: #1A1916;
+  --text2: #6B6966;
+  --text3: #B4B2A9;
+  --radius: 10px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.logo { font-size: 18px; font-weight: 600; color: var(--text); }
+.logo span { color: var(--green); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.last-sync { font-size: 11px; color: var(--text3); }
+.refresh-btn { font-size: 12px; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--card); color: var(--text2); cursor: pointer; }
+.refresh-btn:hover { background: var(--bg); }
+
+/* Alerts */
+.alert { padding: 10px 14px; border-radius: var(--radius); margin-bottom: 10px; font-size: 13px; border-left: 3px solid var(--red); background: var(--red-light); color: var(--red); }
+.alert strong { font-weight: 600; }
+
+/* Sections */
+.sec-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; margin-top: 20px; }
+
+/* Grid */
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.g2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+@media(max-width:600px) { .g4{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:400px) { .g4{grid-template-columns:repeat(2,1fr)} .g2{grid-template-columns:1fr} }
+
+/* Cards */
+.card { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.card-full { background: var(--card); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 14px; }
+.metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.metric-val { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1; }
+.metric-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.metric-val.green { color: var(--green); }
+.metric-val.amber { color: var(--amber); }
+.metric-val.red { color: var(--red); }
+
+/* Progress */
+.prog-wrap { background: var(--bg); border-radius: 4px; height: 8px; overflow: hidden; margin: 8px 0 4px; }
+.prog-bar { height: 8px; border-radius: 4px; transition: width .5s; }
+.prog-green { background: var(--green); }
+.prog-amber { background: var(--amber); }
+.prog-red { background: var(--red); }
+
+/* Rows */
+.row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.row:last-child { border-bottom: none; }
+.row-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.row-val { font-size: 14px; font-weight: 500; color: var(--text); }
+.row-sub { font-size: 11px; color: var(--text3); }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* Badges */
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
+.b-green { background: var(--green-light); color: var(--green); }
+.b-amber { background: var(--amber-light); color: var(--amber); }
+.b-red { background: var(--red-light); color: var(--red); }
+.b-blue { background: var(--blue-light); color: var(--blue); }
+.b-grey { background: var(--bg); color: var(--text2); }
+
+/* Tabs */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tab { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: var(--card); color: var(--text2); }
+.tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* Daily input */
+.input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.input-row label { font-size: 12px; color: var(--text2); min-width: 140px; }
+.input-row input { width: 90px; font-size: 14px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.btn { padding: 8px 18px; border-radius: var(--radius); border: none; cursor: pointer; font-size: 13px; font-weight: 500; }
+.btn-primary { background: var(--text); color: #fff; }
+.btn-primary:hover { background: #333; }
+.action-tip { font-size: 12px; color: var(--text2); margin-top: 10px; padding: 10px 12px; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--green); }
+
+/* Proj table */
+.proj-head { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); padding: 6px 0; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.proj-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.proj-row:last-child { border-bottom: none; }
+.proj-period { font-size: 13px; color: var(--text2); }
+.proj-current { font-size: 13px; font-weight: 500; color: var(--text); min-width: 100px; text-align: right; }
+.proj-target { font-size: 12px; color: var(--green); min-width: 110px; text-align: right; }
+
+/* Loading */
+.loading { text-align: center; padding: 24px; color: var(--text3); font-size: 13px; }
+.err { color: var(--red); font-size: 12px; padding: 10px; }
+
+/* Two col layout */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px) { .two-col { grid-template-columns: 1fr; } }
+
+/* Section divider */
+.divider { height: 1px; background: var(--border); margin: 6px 0 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div>
+      <div class="logo">BY<span>INFORGH</span> Dashboard</div>
+      <div class="last-sync"><span class="status-dot" id="sync-dot"></span><span id="sync-time">Connecting to your sheets...</span></div>
+    </div>
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+
+  <!-- RENEWAL ALERTS -->
+  <div id="alerts"></div>
+
+  <!-- DAILY COMMAND -->
+  <div class="sec-label">Daily command — today</div>
+  <div class="g4" id="top-metrics">
+    <div class="card"><div class="metric-label">Monthly Revenue</div><div class="metric-val" id="m-mrr">—</div><div class="metric-sub">active MRR</div></div>
+    <div class="card"><div class="metric-label">Active Clients</div><div class="metric-val" id="m-clients">—</div><div class="metric-sub">paying now</div></div>
+    <div class="card"><div class="metric-label">Total Contacts</div><div class="metric-val" id="m-contacts">—</div><div class="metric-sub">across all sheets</div></div>
+    <div class="card"><div class="metric-label">Today's Outreach</div><div class="metric-val" id="m-today">—</div><div class="metric-sub">messages logged</div></div>
+  </div>
+
+  <!-- DAILY TARGET TRACKER -->
+  <div class="sec-label">Daily target tracker — GHS 180 minimum</div>
+  <div class="card-full">
+    <div class="input-row"><label>Cash received today (GHS)</label><input type="number" id="i-cash" placeholder="0" min="0"></div>
+    <div class="input-row"><label>Messages sent</label><input type="number" id="i-msgs" placeholder="0" min="0"></div>
+    <div class="input-row"><label>Conversations started</label><input type="number" id="i-convos" placeholder="0" min="0"></div>
+    <div class="input-row"><label>Deals closed</label><input type="number" id="i-closes" placeholder="0" min="0"></div>
+    <button class="btn btn-primary" onclick="logDaily()">Log today's numbers</button>
+    <div id="daily-result"></div>
+  </div>
+
+  <!-- TWO COL: PIPELINE + CLIENTS -->
+  <div class="two-col">
+    <div>
+      <div class="sec-label">CRM Pipeline</div>
+      <div class="card-full" id="pipeline-board"><div class="loading">Loading pipeline...</div></div>
+    </div>
+    <div>
+      <div class="sec-label">Clients & Renewals</div>
+      <div class="card-full" id="clients-board"><div class="loading">Loading clients...</div></div>
+    </div>
+  </div>
+
+  <!-- HISTORICAL DATA -->
+  <div class="sec-label">Koforidua ground contacts</div>
+  <div class="g4" id="kof-metrics">
+    <div class="card"><div class="metric-label">Total Visited</div><div class="metric-val" id="k-total">—</div><div class="metric-sub">businesses</div></div>
+    <div class="card"><div class="metric-label">Converted</div><div class="metric-val green" id="k-conv">—</div><div class="metric-sub">paid clients</div></div>
+    <div class="card"><div class="metric-label">Hot Leads</div><div class="metric-val amber" id="k-hot">—</div><div class="metric-sub">ready to close</div></div>
+    <div class="card"><div class="metric-label">To Call</div><div class="metric-val" id="k-call">—</div><div class="metric-sub">no WhatsApp</div></div>
+  </div>
+
+  <!-- ARCHIVE SUMMARY -->
+  <div class="sec-label">Historical outreach summary (Apr–May)</div>
+  <div class="g3" id="archive-metrics">
+    <div class="card"><div class="metric-label">WA Conversations</div><div class="metric-val" id="a-wa">—</div><div class="metric-sub">archive</div></div>
+    <div class="card"><div class="metric-label">WA Converted</div><div class="metric-val green" id="a-conv">—</div><div class="metric-sub">paid from WA</div></div>
+    <div class="card"><div class="metric-label">TikTok Outreach</div><div class="metric-val" id="a-tt">—</div><div class="metric-sub">archive</div></div>
+  </div>
+
+  <!-- REVENUE PROJECTIONS -->
+  <div class="sec-label">Revenue projection — from July 1st</div>
+  <div class="card-full">
+    <div class="tabs">
+      <button class="tab active" onclick="showProj('monthly',this)">Monthly</button>
+      <button class="tab" onclick="showProj('q',this)">Quarterly</button>
+      <button class="tab" onclick="showProj('6m',this)">6 Months</button>
+      <button class="tab" onclick="showProj('12m',this)">12 Months</button>
+    </div>
+    <div id="proj-table"></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px">Current = at today's rate · Doubled = 2× monthly target · Tripled = 3× monthly target</div>
+  </div>
+
+  <!-- OUTREACH LOG -->
+  <div class="sec-label">Recent outreach log</div>
+  <div class="card-full" id="outreach-log"><div class="loading">Loading outreach log...</div></div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center;padding:20px 0;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:20px">
+    BYINFORGH Master Dashboard · Both sheets connected · Koforidua, Ghana<br>
+    Committed to Yahuah · Built to win · July 2026 – June 2027
+  </div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwqbGSCqaBQAMOFs-CRtTis9yqApRkWYv30MKcOXiz7wDNhGolwyEI8HBXMktN-fG1H/exec';
+const DAILY_TARGET = 180;
+let liveData = null;
+
+function fmt(n) { return 'GHS ' + Math.round(n).toLocaleString(); }
+
+async function loadAll() {
+  document.getElementById('sync-time').textContent = 'Refreshing...';
+  document.getElementById('sync-dot').style.background = '#BA7517';
+  try {
+    const resp = await fetch(API);
+    const data = await resp.json();
+    liveData = data;
+    document.getElementById('sync-time').textContent = 'Live · ' + new Date().toLocaleTimeString();
+    document.getElementById('sync-dot').style.background = '#1D9E75';
+    renderAll(data);
+  } catch(e) {
+    document.getElementById('sync-time').textContent = 'Connection error — check Apps Script deployment';
+    document.getElementById('sync-dot').style.background = '#A32D2D';
+  }
+}
+
+function renderAll(d) {
+  renderAlerts(d);
+  renderMetrics(d);
+  renderPipeline(d);
+  renderClients(d);
+  renderKoforidua(d);
+  renderArchive(d);
+  renderLog(d);
+  showProj('monthly', document.querySelector('.tab.active'));
+}
+
+function renderAlerts(d) {
+  const el = document.getElementById('alerts');
+  if (!d.renewals) return;
+  const overdue = d.renewals.filter(r => parseInt(r['Days Until'] || '0') <= 0 && r['Business']);
+  el.innerHTML = overdue.map(r =>
+    `<div class="alert">⚠ <strong>${r['Business']}</strong> — ${r['Package']} renewal overdue. ${r['Action Needed'] || 'Action needed urgently.'}</div>`
+  ).join('');
+}
+
+function renderMetrics(d) {
+  document.getElementById('m-mrr').textContent = d.mrr !== undefined ? fmt(d.mrr) : '—';
+  document.getElementById('m-clients').textContent = d.activeClients !== undefined ? d.activeClients : '—';
+  document.getElementById('m-contacts').textContent = d.grandTotalContacts !== undefined ? d.grandTotalContacts.toLocaleString() : '—';
+  document.getElementById('m-today').textContent = d.todayOutreach !== undefined ? d.todayOutreach : '—';
+}
+
+function renderPipeline(d) {
+  const el = document.getElementById('pipeline-board');
+  if (!d.pipeline) { el.innerHTML = '<div class="err">Pipeline data unavailable</div>'; return; }
+  const order = [
+    { key: 'Interested', label: 'Interested', color: '#1D9E75', action: 'Close this week' },
+    { key: 'Conversation', label: 'In conversation', color: '#1D9E75', action: 'Push to offer' },
+    { key: 'Hot Lead', label: 'Hot lead', color: '#1D9E75', action: 'Close now' },
+    { key: 'Follow up', label: 'Follow up due', color: '#BA7517', action: 'Re-enter today' },
+    { key: 'First message sent', label: 'First msg sent', color: '#B4B2A9', action: '3-day follow up' },
+    { key: 'Contacted', label: 'Contacted', color: '#B4B2A9', action: 'Await response' },
+    { key: 'Inactive', label: 'Inactive', color: '#A32D2D', action: 'Win back' },
+    { key: 'Not Interested ', label: 'Not interested', color: '#A32D2D', action: 'Leave tips, close' },
+    { key: 'Rejected', label: 'Rejected', color: '#A32D2D', action: 'Archive' },
+  ];
+  let html = '';
+  const seen = new Set();
+  order.forEach(o => {
+    const count = d.pipeline[o.key] || 0;
+    if (!count) return;
+    seen.add(o.key);
+    html += `<div class="row">
+      <div class="row-label"><span class="dot" style="background:${o.color}"></span>${o.label}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="row-sub">${o.action}</span>
+        <span class="row-val">${count}</span>
+      </div>
+    </div>`;
+  });
+  Object.entries(d.pipeline).forEach(([k,v]) => {
+    if (!seen.has(k) && v > 0) {
+      html += `<div class="row"><div class="row-label"><span class="dot" style="background:#B4B2A9"></span>${k}</div><span class="row-val">${v}</span></div>`;
+    }
+  });
+  html += `<div class="row" style="background:var(--bg);margin:8px -18px -16px;padding:8px 18px;border-radius:0 0 10px 10px">
+    <span style="font-size:12px;color:var(--text2)">Total in June CRM</span>
+    <span style="font-weight:600;font-size:13px">${d.crmCount || 0}</span>
+  </div>`;
+  el.innerHTML = html;
+}
+
+function renderClients(d) {
+  const el = document.getElementById('clients-board');
+  if (!d.clients || !d.clients.length) { el.innerHTML = '<div class="err">No client data</div>'; return; }
+  let html = d.clients.map(c => {
+    const status = (c['Status'] || '').toLowerCase();
+    const bc = status === 'active' ? 'b-green' : status === 'churned' ? 'b-red' : 'b-amber';
+    const amt = parseFloat((c['Monthly Amount (GHS)'] || '0').replace(/[^0-9.]/g,''));
+    return `<div class="row">
+      <div>
+        <div style="font-size:13px;font-weight:500">${c['Business'] || '—'}</div>
+        <div class="row-sub">${c['Package'] || ''} · ${c['Renewal Date'] || '—'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;font-weight:500">${isNaN(amt)?'—':'GHS '+Math.round(amt)}</span>
+        <span class="badge ${bc}">${c['Status'] || '—'}</span>
+      </div>
+    </div>`;
+  }).join('');
+  html += `<div class="row" style="background:var(--bg);margin:8px -18px -16px;padding:8px 18px;border-radius:0 0 10px 10px">
+    <span style="font-size:12px;color:var(--text2)">Monthly recurring</span>
+    <span style="font-weight:600;font-size:13px;color:var(--green)">${fmt(d.mrr || 0)}</span>
+  </div>`;
+  el.innerHTML = html;
+}
+
+function renderKoforidua(d) {
+  document.getElementById('k-total').textContent = d.koforiduaCount || '—';
+  document.getElementById('k-conv').textContent = d.koforiduaConverted || '—';
+  document.getElementById('k-hot').textContent = d.koforiduaHot || '—';
+  document.getElementById('k-call').textContent = d.koforiduaToCall || '—';
+}
+
+function renderArchive(d) {
+  if (d.archiveWA) {
+    document.getElementById('a-wa').textContent = d.archiveWA.conversations || '—';
+    document.getElementById('a-conv').textContent = d.archiveWA.converted || '—';
+  }
+  document.getElementById('a-tt').textContent = d.archiveTikTokCount || '—';
+}
+
+function renderLog(d) {
+  const el = document.getElementById('outreach-log');
+  if (!d.outreachLog || !d.outreachLog.length) { el.innerHTML = '<div class="err">No outreach log data</div>'; return; }
+  const recent = [...d.outreachLog].reverse().slice(0,15);
+  el.innerHTML = recent.map(l => {
+    const outcome = (l['Outcome'] || '').toLowerCase();
+    const dot = outcome.includes('conversation') ? '#1D9E75' : outcome.includes('1 tick') ? '#BA7517' : outcome.includes('read') ? '#185FA5' : '#B4B2A9';
+    return `<div class="row">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
+        <span class="dot" style="background:${dot};flex-shrink:0"></span>
+        <div style="min-width:0">
+          <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l['Business'] || '—'}</div>
+          <div class="row-sub">${l['Date'] || ''}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);text-align:right;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;margin-left:8px">${l['Outcome'] || '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function logDaily() {
+  const cash = parseFloat(document.getElementById('i-cash').value) || 0;
+  const msgs = parseInt(document.getElementById('i-msgs').value) || 0;
+  const convos = parseInt(document.getElementById('i-convos').value) || 0;
+  const closes = parseInt(document.getElementById('i-closes').value) || 0;
+  const gap = DAILY_TARGET - cash;
+  const pct = Math.min(100, Math.round((cash / DAILY_TARGET) * 100));
+  const barClass = pct >= 100 ? 'prog-green' : pct >= 50 ? 'prog-amber' : 'prog-red';
+  let tip = '';
+  if (cash >= DAILY_TARGET) tip = 'Target reached. Tomorrow double the effort — Yahuah be praised.';
+  else if (msgs < 30 && closes === 0) tip = 'Messages are low. Send more — target is 30/day minimum. Every message is a seed.';
+  else if (msgs >= 30 && convos < 15) tip = 'Messages good but conversations low. Improve your opening line. Ask a question, not a pitch.';
+  else if (convos >= 15 && closes === 0) tip = 'Conversations happening but no closes. Push clearly to the offer. Use the script.';
+  else if (closes > 0 && cash < DAILY_TARGET) tip = 'Closes logged — collect payment on MoMo now. Confirm and update the sheet.';
+  document.getElementById('daily-result').innerHTML = `
+    <div style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span style="color:var(--text2)">GHS ${Math.round(cash)} of GHS ${DAILY_TARGET} target</span>
+        <span style="font-weight:600">${pct}%</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar ${barClass}" style="width:${pct}%"></div></div>
+      ${gap > 0 ? `<div style="font-size:12px;color:var(--text2);margin-top:5px">Gap: GHS ${Math.round(gap)} still needed today</div>` : `<div style="font-size:12px;color:var(--green);margin-top:5px;font-weight:500">Target hit ✓</div>`}
+      ${tip ? `<div class="action-tip">${tip}</div>` : ''}
+      <div style="font-size:12px;color:var(--text3);margin-top:8px">Messages: ${msgs} · Conversations: ${convos} · Closes: ${closes}</div>
+    </div>`;
+}
+
+function showProj(period, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const mrr = (liveData && liveData.mrr) || 700;
+  const dailySales = DAILY_TARGET;
+  const workDays = 22;
+  const monthlyBase = mrr + (dailySales * workDays);
+  let rows = [];
+  if (period === 'monthly') {
+    const months = ['July 2026','Aug 2026','Sep 2026','Oct 2026','Nov 2026','Dec 2026','Jan 2027','Feb 2027','Mar 2027','Apr 2027','May 2027','Jun 2027'];
+    months.forEach((m, i) => {
+      const growth = Math.pow(1.15, i);
+      rows.push({ period: m, current: Math.round(monthlyBase), doubled: Math.round(monthlyBase * 2 * growth), tripled: Math.round(monthlyBase * 3 * growth) });
+    });
+  } else if (period === 'q') {
+    [['Q3 2026 (Jul–Sep)', 3], ['Q4 2026 (Oct–Dec)', 3], ['Q1 2027 (Jan–Mar)', 3], ['Q2 2027 (Apr–Jun)', 3]].forEach(([p, m], i) => {
+      rows.push({ period: p, current: Math.round(monthlyBase * m), doubled: Math.round(monthlyBase * m * 2 * Math.pow(1.2,i)), tripled: Math.round(monthlyBase * m * 3 * Math.pow(1.3,i)) });
+    });
+  } else if (period === '6m') {
+    rows = [
+      { period: 'Jul – Dec 2026 (6 months)', current: Math.round(monthlyBase * 6), doubled: Math.round(monthlyBase * 6 * 2), tripled: Math.round(monthlyBase * 6 * 3.5) },
+      { period: 'Jan – Jun 2027 (6 months)', current: Math.round(monthlyBase * 6 * 1.2), doubled: Math.round(monthlyBase * 6 * 3), tripled: Math.round(monthlyBase * 6 * 6) }
+    ];
+  } else {
+    rows = [
+      { period: 'Full year (Jul 2026 – Jun 2027)', current: Math.round(monthlyBase * 12), doubled: Math.round(monthlyBase * 12 * 2.5), tripled: Math.round(monthlyBase * 12 * 5) },
+      { period: 'GHS 100/day × 260 working days', current: Math.round(100 * 260), doubled: Math.round(180 * 260), tripled: Math.round(300 * 260) }
+    ];
+  }
+  const el = document.getElementById('proj-table');
+  el.innerHTML = `<div class="proj-head"><span>Period</span><span>At current rate</span><span>Doubled target</span><span>Tripled target</span></div>` +
+    rows.map(r => `<div class="proj-row">
+      <span class="proj-period">${r.period}</span>
+      <span class="proj-current">${fmt(r.current)}</span>
+      <span class="proj-target">${fmt(r.doubled)}</span>
+      <span style="font-size:12px;color:#185FA5;min-width:110px;text-align:right">${fmt(r.tripled)}</span>
+    </div>`).join('');
+}
+
+// Load on start
+loadAll();
+showProj('monthly', null);
+</script>
+</body>
+</html>
