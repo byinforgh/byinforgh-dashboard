@@ -710,7 +710,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbyCeROyn06LJxVlBKFB38WHLGQrIzz9axWN_QPlr67rowrgJK7X4e6Zzqsg_UO6s8Xe/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzlo_EB1520zKF638BLcWQqhWWhxMUsS9OFSm_B0cMbs05aE_M4M5b_P_8lTKMChr69/exec';
 
 let state = { contacts:[], clients:[], renewals:[], outreach:[], koforidua:[], raw:{} };
 let currentFilter = 'all';
@@ -1202,34 +1202,44 @@ function renderPipeline() {
 }
 
 function renderKoforidua() {
-  const kof = state.contacts.filter(c=>c.Town && c.Town.toLowerCase().includes('koforidua'));
-  const phys = state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes('📍'));
-  const converted = state.clients.filter(c=>c.Notes && c.Notes.toLowerCase().includes('koforidua')).length;
+  // Use state.koforidua which comes from the Koforidua Master sheet tab
+  const kof = state.koforidua || [];
+  const total = kof.length;
+
+  // Bucket counts from Koforidua Master
+  const converted = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('conver') || c.Bucket.toLowerCase().includes('deal') || c.Bucket.toLowerCase().includes('client'))).length;
+  const hotLeads = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('hot') || c.Bucket.toLowerCase().includes('warm lead'))).length;
+  const noReply = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('no reply') || c.Bucket.toLowerCase().includes('seen, no'))).length;
+  const toCall = kof.filter(c=>c.Bucket && c.Bucket.toLowerCase().includes('call')).length;
 
   document.getElementById('kofMetrics').innerHTML = `
-    <div class="metric-card teal" style="--teal:#14b8a6">
-      <div class="metric-label">KOF CONTACTS</div>
-      <div class="metric-value" style="color:var(--teal)">${kof.length}</div>
-      <div class="metric-sub">in master CRM</div>
-    </div>
-    <div class="metric-card orange">
-      <div class="metric-label">PHYSICAL ONLY</div>
-      <div class="metric-value">${phys.length}</div>
-      <div class="metric-sub">face-to-face required</div>
+    <div class="metric-card" style="border-top:2px solid var(--teal)">
+      <div class="metric-label">TOTAL KOF BUSINESSES</div>
+      <div class="metric-value" style="color:var(--teal)">${total}</div>
+      <div class="metric-sub">in Koforidua Master sheet</div>
     </div>
     <div class="metric-card green">
-      <div class="metric-label">CONVERTED</div>
-      <div class="metric-value">3</div>
-      <div class="metric-sub">Joeans, Bigten, Reggies</div>
+      <div class="metric-label">CONVERTED / DEAL</div>
+      <div class="metric-value">${converted}</div>
+      <div class="metric-sub">active or in conversation</div>
     </div>
-    <div class="metric-card blue">
-      <div class="metric-label">HOT IN KOF</div>
-      <div class="metric-value">1</div>
-      <div class="metric-sub">Eclipse Pub Effuedase</div>
+    <div class="metric-card orange">
+      <div class="metric-label">WARM / HOT LEADS</div>
+      <div class="metric-value">${hotLeads}</div>
+      <div class="metric-sub">responded positively</div>
+    </div>
+    <div class="metric-card red">
+      <div class="metric-label">TO CALL / VISIT</div>
+      <div class="metric-value">${noReply + toCall}</div>
+      <div class="metric-sub">no reply — needs physical visit</div>
     </div>
   `;
 
-  const areas = ['ALL','Antarctic Plaza','Main Street','JK Okyere','Bus Station','Jackson Park','Behind UMB Bank'];
+  // Get unique areas from actual data
+  const areaSet = new Set(['ALL']);
+  kof.forEach(c=>{ if(c.Area && c.Area.trim()) areaSet.add(c.Area.trim()); });
+  const areas = Array.from(areaSet).slice(0, 10);
+
   document.getElementById('kofAreas').innerHTML = areas.map(a=>`
     <div class="kof-tag ${a===currentKofArea?'active':''}" onclick="setKofArea('${a}',this)">${a}</div>
   `).join('');
@@ -1244,28 +1254,48 @@ function setKofArea(area, el) {
   renderKofList();
 }
 
-function renderKofList() {
-  const kof = state.contacts.filter(c=>
-    (c.Town && c.Town.toLowerCase().includes('koforidua')) ||
-    (c.WA_Label && c.WA_Label.includes('📍'))
-  );
-  const filtered = currentKofArea==='ALL' ? kof : kof.filter(c=>c.Notes && c.Notes.toLowerCase().includes(currentKofArea.toLowerCase()));
+function getBucketBadge(bucket) {
+  if(!bucket) return 'stage-cold';
+  const b = bucket.toLowerCase();
+  if(b.includes('hot')||b.includes('deal')) return 'stage-hot';
+  if(b.includes('warm')||b.includes('conver')) return 'stage-conv';
+  if(b.includes('seen')||b.includes('follow')) return 'stage-warm';
+  if(b.includes('reject')) return 'stage-reject';
+  if(b.includes('client')) return 'stage-client';
+  return 'stage-cold';
+}
 
-  document.getElementById('kofList').innerHTML = filtered.length ? filtered.map(c=>`
+function renderKofList() {
+  const kof = state.koforidua || [];
+  const filtered = currentKofArea==='ALL'
+    ? kof
+    : kof.filter(c=>c.Area && c.Area.trim()===currentKofArea);
+
+  if(!filtered.length) {
+    document.getElementById('kofList').innerHTML = '<div class="empty">No contacts for this area</div>';
+    return;
+  }
+
+  document.getElementById('kofList').innerHTML = filtered.map(c=>`
     <div class="followup-item">
       <div class="followup-header">
         <div>
-          <div class="followup-name">${getWAEmoji(c.WA_Label)} ${c.Business}</div>
-          <div class="followup-meta">${c.Number} · ${c.Category||'—'} · ${c.Stage||'—'}</div>
-          <div class="followup-meta" style="color:var(--text-dim);margin-top:4px">${c.Notes ? c.Notes.substring(0,120) : '—'}</div>
+          <div class="followup-name" style="font-size:14px;font-weight:700">${c.Business || c.Name || '—'}</div>
+          <div class="followup-meta" style="margin-top:3px">
+            ${c.Number ? `<span style="font-family:'Space Mono',monospace;color:var(--gold)">${c.Number}</span> · ` : ''}
+            ${c.Sells||'—'} · 📍 ${c.Area||'—'}
+          </div>
+          ${c.Notes ? `<div class="followup-meta" style="color:var(--text-dim);margin-top:5px">${c.Notes.substring(0,150)}</div>` : ''}
         </div>
-        <div>
-          <span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span>
-          ${c.WA_Label && c.WA_Label.includes('📍') ? '<br><span style="font-size:10px;color:var(--teal);margin-top:4px;display:block">📍 VISIT IN PERSON</span>' : ''}
+        <div style="text-align:right;flex-shrink:0">
+          <span class="stage-badge ${getBucketBadge(c.Bucket)}">${c.Bucket||'—'}</span>
+          ${c.Bucket && (c.Bucket.toLowerCase().includes('no reply')||c.Bucket.toLowerCase().includes('call'))
+            ? '<div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:700">📞 CALL OR VISIT</div>'
+            : ''}
         </div>
       </div>
     </div>
-  `).join('') : '<div class="empty">No contacts for this area</div>';
+  `).join('');
 }
 
 function renderClients() {
