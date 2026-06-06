@@ -3,426 +3,1421 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BYINFORGH — Business Dashboard</title>
+<title>BYINFORGH — Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --green: #1D9E75;
-  --green-light: #e8f7f2;
-  --amber: #BA7517;
-  --amber-light: #fdf4e3;
-  --red: #A32D2D;
-  --red-light: #fdf0f0;
-  --blue: #185FA5;
-  --blue-light: #e8f0fb;
-  --bg: #F7F6F3;
-  --card: #FFFFFF;
-  --border: #E5E4E0;
-  --text: #1A1916;
-  --text2: #6B6966;
-  --text3: #B4B2A9;
-  --radius: 10px;
-  --shadow: 0 1px 4px rgba(0,0,0,0.07);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
-.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.logo { font-size: 18px; font-weight: 600; color: var(--text); }
-.logo span { color: var(--green); }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-.last-sync { font-size: 11px; color: var(--text3); }
-.refresh-btn { font-size: 12px; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--card); color: var(--text2); cursor: pointer; }
-.refresh-btn:hover { background: var(--bg); }
+  :root {
+    --black: #0a0a0a;
+    --surface: #111111;
+    --card: #181818;
+    --border: #2a2a2a;
+    --gold: #f5c842;
+    --gold-dim: #c8a22a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f97316;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --teal: #14b8a6;
+    --muted: #666;
+    --text: #e8e8e8;
+    --text-dim: #999;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+  }
 
-/* Alerts */
-.alert { padding: 10px 14px; border-radius: var(--radius); margin-bottom: 10px; font-size: 13px; border-left: 3px solid var(--red); background: var(--red-light); color: var(--red); }
-.alert strong { font-weight: 600; }
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+  .logo span { color: var(--text-dim); font-weight: 400; font-size: 12px; display: block; letter-spacing: 3px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+  .last-refresh { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .refresh-btn {
+    background: var(--border);
+    border: none;
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: background .2s;
+  }
+  .refresh-btn:hover { background: var(--gold); color: var(--black); }
 
-/* Sections */
-.sec-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; margin-top: 20px; }
+  /* SHABBAT BANNER */
+  .shabbat-banner {
+    background: linear-gradient(135deg, #1a1a00, #2a2000);
+    border: 1px solid var(--gold-dim);
+    margin: 16px 24px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+  }
+  .shabbat-banner.active { display: flex; }
+  .shabbat-banner .icon { font-size: 24px; }
+  .shabbat-banner .text { font-size: 14px; font-weight: 600; color: var(--gold); }
+  .shabbat-banner .sub { font-size: 12px; color: var(--gold-dim); }
 
-/* Grid */
-.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
-.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-.g2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
-@media(max-width:600px) { .g4{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(2,1fr)} }
-@media(max-width:400px) { .g4{grid-template-columns:repeat(2,1fr)} .g2{grid-template-columns:1fr} }
+  /* LAYOUT */
+  .main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
 
-/* Cards */
-.card { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-.card-full { background: var(--card); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 14px; }
-.metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
-.metric-val { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1; }
-.metric-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
-.metric-val.green { color: var(--green); }
-.metric-val.amber { color: var(--amber); }
-.metric-val.red { color: var(--red); }
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    color: var(--text-dim);
+    transition: all .2s;
+    border: none;
+    background: none;
+    font-family: 'Syne', sans-serif;
+  }
+  .tab.active { background: var(--gold); color: var(--black); }
+  .tab:hover:not(.active) { color: var(--text); background: var(--border); }
 
-/* Progress */
-.prog-wrap { background: var(--bg); border-radius: 4px; height: 8px; overflow: hidden; margin: 8px 0 4px; }
-.prog-bar { height: 8px; border-radius: 4px; transition: width .5s; }
-.prog-green { background: var(--green); }
-.prog-amber { background: var(--amber); }
-.prog-red { background: var(--red); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 
-/* Rows */
-.row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
-.row:last-child { border-bottom: none; }
-.row-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-.row-val { font-size: 14px; font-weight: 500; color: var(--text); }
-.row-sub { font-size: 11px; color: var(--text3); }
-.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  /* METRIC CARDS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .metric-card.gold::before { background: var(--gold); }
+  .metric-card.green::before { background: var(--green); }
+  .metric-card.red::before { background: var(--red); }
+  .metric-card.blue::before { background: var(--blue); }
+  .metric-card.orange::before { background: var(--orange); }
+  .metric-card.purple::before { background: var(--purple); }
+  .metric-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .metric-value { font-size: 32px; font-weight: 800; font-family: 'Space Mono', monospace; line-height: 1; }
+  .metric-sub { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+  .metric-card.gold .metric-value { color: var(--gold); }
+  .metric-card.green .metric-value { color: var(--green); }
+  .metric-card.red .metric-value { color: var(--red); }
+  .metric-card.blue .metric-value { color: var(--blue); }
+  .metric-card.orange .metric-value { color: var(--orange); }
+  .metric-card.purple .metric-value { color: var(--purple); }
 
-/* Badges */
-.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
-.b-green { background: var(--green-light); color: var(--green); }
-.b-amber { background: var(--amber-light); color: var(--amber); }
-.b-red { background: var(--red-light); color: var(--red); }
-.b-blue { background: var(--blue-light); color: var(--blue); }
-.b-grey { background: var(--bg); color: var(--text2); }
+  /* DAILY TARGET */
+  .target-bar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 24px;
+  }
+  .target-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .target-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--muted); }
+  .target-amount { font-size: 22px; font-weight: 800; font-family: 'Space Mono', monospace; color: var(--gold); }
+  .progress-track {
+    background: var(--border);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--orange));
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+  .target-stats { display: flex; gap: 20px; font-size: 11px; color: var(--text-dim); }
+  .target-stats span { color: var(--text); font-weight: 700; }
 
-/* Tabs */
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.tab { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: var(--card); color: var(--text2); }
-.tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+  /* SECTION */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
 
-/* Daily input */
-.input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.input-row label { font-size: 12px; color: var(--text2); min-width: 140px; }
-.input-row input { width: 90px; font-size: 14px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
-.btn { padding: 8px 18px; border-radius: var(--radius); border: none; cursor: pointer; font-size: 13px; font-weight: 500; }
-.btn-primary { background: var(--text); color: #fff; }
-.btn-primary:hover { background: #333; }
-.action-tip { font-size: 12px; color: var(--text2); margin-top: 10px; padding: 10px 12px; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--green); }
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media(max-width:768px) { .two-col { grid-template-columns: 1fr; } }
 
-/* Proj table */
-.proj-head { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); padding: 6px 0; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-.proj-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.proj-row:last-child { border-bottom: none; }
-.proj-period { font-size: 13px; color: var(--text2); }
-.proj-current { font-size: 13px; font-weight: 500; color: var(--text); min-width: 100px; text-align: right; }
-.proj-target { font-size: 12px; color: var(--green); min-width: 110px; text-align: right; }
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
 
-/* Loading */
-.loading { text-align: center; padding: 24px; color: var(--text3); font-size: 13px; }
-.err { color: var(--red); font-size: 12px; padding: 10px; }
+  /* WA STATUS BOARD */
+  .wa-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .wa-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wa-emoji { font-size: 20px; }
+  .wa-count { font-size: 22px; font-weight: 800; font-family: 'Space Mono', monospace; }
+  .wa-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
 
-/* Two col layout */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media(max-width:600px) { .two-col { grid-template-columns: 1fr; } }
+  /* CONTACT TABLE */
+  .contact-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .contact-table th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+  }
+  .contact-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #1a1a1a;
+    vertical-align: top;
+    line-height: 1.4;
+  }
+  .contact-table tr:hover td { background: #1c1c1c; }
+  .stage-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .stage-hot { background: #2a1500; color: #f97316; border: 1px solid #f97316; }
+  .stage-warm { background: #1a2000; color: #84cc16; border: 1px solid #84cc16; }
+  .stage-conv { background: #001a20; color: #22d3ee; border: 1px solid #22d3ee; }
+  .stage-cold { background: #1a1a1a; color: #666; border: 1px solid #333; }
+  .stage-reject { background: #1a0000; color: #666; border: 1px solid #333; }
+  .stage-client { background: #001a00; color: #22c55e; border: 1px solid #22c55e; }
 
-/* Section divider */
-.divider { height: 1px; background: var(--border); margin: 6px 0 16px; }
+  /* FOLLOW UP GENERATOR */
+  .generator-section { margin-bottom: 24px; }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-btn {
+    padding: 7px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Syne', sans-serif;
+    transition: all .2s;
+  }
+  .filter-btn.active { background: var(--gold); color: var(--black); border-color: var(--gold); }
+  .filter-btn:hover:not(.active) { border-color: var(--gold); color: var(--text); }
+
+  .msg-version-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+  .msg-version-label { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 1px; }
+  .ver-btn {
+    padding: 5px 12px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    transition: all .2s;
+  }
+  .ver-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .followup-list { display: flex; flex-direction: column; gap: 12px; }
+  .followup-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+  .followup-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .followup-name { font-size: 13px; font-weight: 700; }
+  .followup-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .message-box {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 10px;
+    font-family: 'Space Mono', monospace;
+    white-space: pre-wrap;
+  }
+  .copy-btn {
+    background: var(--border);
+    border: none;
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Syne', sans-serif;
+    transition: all .2s;
+  }
+  .copy-btn:hover { background: var(--gold); color: var(--black); }
+  .copy-btn.copied { background: var(--green); color: var(--black); }
+
+  /* CALL LIST */
+  .call-item {
+    background: var(--surface);
+    border: 1px solid #2a1500;
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .call-name { font-size: 13px; font-weight: 700; }
+  .call-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .call-number { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--gold); }
+
+  /* CLIENTS */
+  .client-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .client-item.overdue { border-color: var(--red); }
+  .client-name { font-size: 13px; font-weight: 700; }
+  .client-pkg { font-size: 11px; color: var(--text-dim); }
+  .client-amount { font-size: 18px; font-weight: 800; font-family: 'Space Mono', monospace; color: var(--gold); }
+  .client-renewal { font-size: 10px; margin-top: 2px; }
+  .overdue-tag { color: var(--red); font-weight: 700; }
+  .active-tag { color: var(--green); font-weight: 700; }
+
+  /* KOFORIDUA */
+  .kof-area { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .kof-tag {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-weight: 700;
+    transition: all .2s;
+  }
+  .kof-tag.active { background: var(--teal); color: var(--black); border-color: var(--teal); }
+
+  /* PIPELINE */
+  .pipeline-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .pipeline-stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+  }
+  .pipeline-count { font-size: 28px; font-weight: 800; font-family: 'Space Mono', monospace; color: var(--gold); }
+  .pipeline-name { font-size: 11px; color: var(--text-dim); margin-top: 4px; font-weight: 700; letter-spacing: 1px; }
+
+  /* DAILY ACTION */
+  .action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .action-item:last-child { border: none; }
+  .action-check {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-top: 1px;
+    transition: all .2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .action-check.done { background: var(--gold); border-color: var(--gold); }
+  .action-text { font-size: 13px; flex: 1; }
+  .action-text.done-text { text-decoration: line-through; color: var(--muted); }
+  .action-tag { font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
+  .tag-outreach { background: #1a2500; color: var(--green); }
+  .tag-followup { background: #1a1500; color: var(--gold); }
+  .tag-content { background: #1a0020; color: var(--purple); }
+  .tag-client { background: #001a10; color: var(--teal); }
+  .tag-visit { background: #1a0a00; color: var(--orange); }
+
+  /* REVENUE PROJECTION */
+  .proj-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+  @media(max-width:600px){ .proj-grid { grid-template-columns: 1fr 1fr; } }
+  .proj-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+  }
+  .proj-period { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
+  .proj-amount { font-size: 20px; font-weight: 800; font-family: 'Space Mono', monospace; color: var(--gold); }
+  .proj-clients { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* CHART */
+  .chart-wrap { position: relative; height: 160px; margin-top: 12px; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 100%; }
+  .chart-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+  .chart-bar { width: 100%; border-radius: 3px 3px 0 0; transition: height .8s ease; position: relative; }
+  .chart-bar.base { background: var(--border); }
+  .chart-bar.double { background: linear-gradient(0deg, var(--gold), var(--orange)); }
+  .chart-label { font-size: 9px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  /* NOTES INTELLIGENCE */
+  .notes-keywords { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .kw-tag {
+    background: #1a1500;
+    color: var(--gold-dim);
+    border: 1px solid #2a2000;
+    border-radius: 3px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .kw-tag.urgent { background: #1a0000; color: var(--red); border-color: #2a0000; }
+  .kw-tag.warm { background: #001a10; color: var(--green); border-color: #002a18; }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; font-family: 'Space Mono', monospace; }
+  .loading::after { content: '...'; animation: dots 1.5s infinite; }
+  @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+  /* ERROR */
+  .error-msg { background: #1a0000; border: 1px solid var(--red); border-radius: 6px; padding: 14px; font-size: 12px; color: var(--red); margin-bottom: 16px; }
+
+  /* STATUS VIEWER */
+  .viewer-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* SEARCH BAR */
+  .search-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Syne', sans-serif;
+    width: 100%;
+    margin-bottom: 14px;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--gold); }
+
+  /* MSG TRACKER */
+  .tracker-row { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+  .tracker-ver { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--gold); min-width: 30px; }
+  .tracker-bar { flex: 1; background: var(--border); border-radius: 3px; height: 6px; overflow: hidden; }
+  .tracker-fill { height: 100%; border-radius: 3px; background: var(--gold); }
+  .tracker-count { min-width: 30px; text-align: right; color: var(--text-dim); }
+  .tracker-rate { min-width: 40px; text-align: right; font-weight: 700; }
+
+  /* SCROLLABLE */
+  .scroll-table { overflow-x: auto; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 30px; color: var(--muted); font-size: 12px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--gold);
+    color: var(--black);
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all .3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <div>
-      <div class="logo">BY<span>INFORGH</span> Dashboard</div>
-      <div class="last-sync"><span class="status-dot" id="sync-dot"></span><span id="sync-time">Connecting to your sheets...</span></div>
-    </div>
-    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
-  </div>
-
-  <!-- RENEWAL ALERTS -->
-  <div id="alerts"></div>
-
-  <!-- DAILY COMMAND -->
-  <div class="sec-label">Daily command — today</div>
-  <div class="g4" id="top-metrics">
-    <div class="card"><div class="metric-label">Monthly Revenue</div><div class="metric-val" id="m-mrr">—</div><div class="metric-sub">active MRR</div></div>
-    <div class="card"><div class="metric-label">Active Clients</div><div class="metric-val" id="m-clients">—</div><div class="metric-sub">paying now</div></div>
-    <div class="card"><div class="metric-label">Total Contacts</div><div class="metric-val" id="m-contacts">—</div><div class="metric-sub">across all sheets</div></div>
-    <div class="card"><div class="metric-label">Today's Outreach</div><div class="metric-val" id="m-today">—</div><div class="metric-sub">messages logged</div></div>
-  </div>
-
-  <!-- DAILY TARGET TRACKER -->
-  <div class="sec-label">Daily target tracker — GHS 180 minimum</div>
-  <div class="card-full">
-    <div class="input-row"><label>Cash received today (GHS)</label><input type="number" id="i-cash" placeholder="0" min="0"></div>
-    <div class="input-row"><label>Messages sent</label><input type="number" id="i-msgs" placeholder="0" min="0"></div>
-    <div class="input-row"><label>Conversations started</label><input type="number" id="i-convos" placeholder="0" min="0"></div>
-    <div class="input-row"><label>Deals closed</label><input type="number" id="i-closes" placeholder="0" min="0"></div>
-    <button class="btn btn-primary" onclick="logDaily()">Log today's numbers</button>
-    <div id="daily-result"></div>
-  </div>
-
-  <!-- TWO COL: PIPELINE + CLIENTS -->
-  <div class="two-col">
-    <div>
-      <div class="sec-label">CRM Pipeline</div>
-      <div class="card-full" id="pipeline-board"><div class="loading">Loading pipeline...</div></div>
-    </div>
-    <div>
-      <div class="sec-label">Clients & Renewals</div>
-      <div class="card-full" id="clients-board"><div class="loading">Loading clients...</div></div>
-    </div>
-  </div>
-
-  <!-- HISTORICAL DATA -->
-  <div class="sec-label">Koforidua ground contacts</div>
-  <div class="g4" id="kof-metrics">
-    <div class="card"><div class="metric-label">Total Visited</div><div class="metric-val" id="k-total">—</div><div class="metric-sub">businesses</div></div>
-    <div class="card"><div class="metric-label">Converted</div><div class="metric-val green" id="k-conv">—</div><div class="metric-sub">paid clients</div></div>
-    <div class="card"><div class="metric-label">Hot Leads</div><div class="metric-val amber" id="k-hot">—</div><div class="metric-sub">ready to close</div></div>
-    <div class="card"><div class="metric-label">To Call</div><div class="metric-val" id="k-call">—</div><div class="metric-sub">no WhatsApp</div></div>
-  </div>
-
-  <!-- ARCHIVE SUMMARY -->
-  <div class="sec-label">Historical outreach summary (Apr–May)</div>
-  <div class="g3" id="archive-metrics">
-    <div class="card"><div class="metric-label">WA Conversations</div><div class="metric-val" id="a-wa">—</div><div class="metric-sub">archive</div></div>
-    <div class="card"><div class="metric-label">WA Converted</div><div class="metric-val green" id="a-conv">—</div><div class="metric-sub">paid from WA</div></div>
-    <div class="card"><div class="metric-label">TikTok Outreach</div><div class="metric-val" id="a-tt">—</div><div class="metric-sub">archive</div></div>
-  </div>
-
-  <!-- REVENUE PROJECTIONS -->
-  <div class="sec-label">Revenue projection — from July 1st</div>
-  <div class="card-full">
-    <div class="tabs">
-      <button class="tab active" onclick="showProj('monthly',this)">Monthly</button>
-      <button class="tab" onclick="showProj('q',this)">Quarterly</button>
-      <button class="tab" onclick="showProj('6m',this)">6 Months</button>
-      <button class="tab" onclick="showProj('12m',this)">12 Months</button>
-    </div>
-    <div id="proj-table"></div>
-    <div style="font-size:11px;color:var(--text3);margin-top:10px">Current = at today's rate · Doubled = 2× monthly target · Tripled = 3× monthly target</div>
-  </div>
-
-  <!-- OUTREACH LOG -->
-  <div class="sec-label">Recent outreach log</div>
-  <div class="card-full" id="outreach-log"><div class="loading">Loading outreach log...</div></div>
-
-  <!-- FOOTER -->
-  <div style="text-align:center;padding:20px 0;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:20px">
-    BYINFORGH Master Dashboard · Both sheets connected · Koforidua, Ghana<br>
-    Committed to Yahuah · Built to win · July 2026 – June 2027
+<div class="header">
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE</span></div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <span class="last-refresh" id="lastRefresh">Loading...</span>
+    <button class="refresh-btn" onclick="loadData()">↻ REFRESH</button>
   </div>
 </div>
 
-<script>
-const API = 'https://script.google.com/macros/s/AKfycbwqbGSCqaBQAMOFs-CRtTis9yqApRkWYv30MKcOXiz7wDNhGolwyEI8HBXMktN-fG1H/exec';
-const DAILY_TARGET = 180;
-let liveData = null;
+<div class="shabbat-banner" id="shabbatBanner">
+  <div class="icon">🕯️</div>
+  <div>
+    <div class="text">Shabbat — Rest Day</div>
+    <div class="sub">No outreach today. The work is in Yahuah's hands. Resume Sunday.</div>
+  </div>
+</div>
 
-function fmt(n) { return 'GHS ' + Math.round(n).toLocaleString(); }
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('today')">TODAY</button>
+    <button class="tab" onclick="switchTab('followup')">FOLLOW-UPS</button>
+    <button class="tab" onclick="switchTab('pipeline')">PIPELINE</button>
+    <button class="tab" onclick="switchTab('koforidua')">KOFORIDUA</button>
+    <button class="tab" onclick="switchTab('clients')">CLIENTS</button>
+    <button class="tab" onclick="switchTab('messages')">MESSAGES</button>
+    <button class="tab" onclick="switchTab('revenue')">REVENUE</button>
+    <button class="tab" onclick="switchTab('contacts')">ALL CONTACTS</button>
+  </div>
 
-async function loadAll() {
-  document.getElementById('sync-time').textContent = 'Refreshing...';
-  document.getElementById('sync-dot').style.background = '#BA7517';
-  try {
-    const resp = await fetch(API);
-    const data = await resp.json();
-    liveData = data;
-    document.getElementById('sync-time').textContent = 'Live · ' + new Date().toLocaleTimeString();
-    document.getElementById('sync-dot').style.background = '#1D9E75';
-    renderAll(data);
-  } catch(e) {
-    document.getElementById('sync-time').textContent = 'Connection error — check Apps Script deployment';
-    document.getElementById('sync-dot').style.background = '#A32D2D';
-  }
-}
-
-function renderAll(d) {
-  renderAlerts(d);
-  renderMetrics(d);
-  renderPipeline(d);
-  renderClients(d);
-  renderKoforidua(d);
-  renderArchive(d);
-  renderLog(d);
-  showProj('monthly', document.querySelector('.tab.active'));
-}
-
-function renderAlerts(d) {
-  const el = document.getElementById('alerts');
-  if (!d.renewals) return;
-  const overdue = d.renewals.filter(r => parseInt(r['Days Until'] || '0') <= 0 && r['Business']);
-  el.innerHTML = overdue.map(r =>
-    `<div class="alert">⚠ <strong>${r['Business']}</strong> — ${r['Package']} renewal overdue. ${r['Action Needed'] || 'Action needed urgently.'}</div>`
-  ).join('');
-}
-
-function renderMetrics(d) {
-  document.getElementById('m-mrr').textContent = d.mrr !== undefined ? fmt(d.mrr) : '—';
-  document.getElementById('m-clients').textContent = d.activeClients !== undefined ? d.activeClients : '—';
-  document.getElementById('m-contacts').textContent = d.grandTotalContacts !== undefined ? d.grandTotalContacts.toLocaleString() : '—';
-  document.getElementById('m-today').textContent = d.todayOutreach !== undefined ? d.todayOutreach : '—';
-}
-
-function renderPipeline(d) {
-  const el = document.getElementById('pipeline-board');
-  if (!d.pipeline) { el.innerHTML = '<div class="err">Pipeline data unavailable</div>'; return; }
-  const order = [
-    { key: 'Interested', label: 'Interested', color: '#1D9E75', action: 'Close this week' },
-    { key: 'Conversation', label: 'In conversation', color: '#1D9E75', action: 'Push to offer' },
-    { key: 'Hot Lead', label: 'Hot lead', color: '#1D9E75', action: 'Close now' },
-    { key: 'Follow up', label: 'Follow up due', color: '#BA7517', action: 'Re-enter today' },
-    { key: 'First message sent', label: 'First msg sent', color: '#B4B2A9', action: '3-day follow up' },
-    { key: 'Contacted', label: 'Contacted', color: '#B4B2A9', action: 'Await response' },
-    { key: 'Inactive', label: 'Inactive', color: '#A32D2D', action: 'Win back' },
-    { key: 'Not Interested ', label: 'Not interested', color: '#A32D2D', action: 'Leave tips, close' },
-    { key: 'Rejected', label: 'Rejected', color: '#A32D2D', action: 'Archive' },
-  ];
-  let html = '';
-  const seen = new Set();
-  order.forEach(o => {
-    const count = d.pipeline[o.key] || 0;
-    if (!count) return;
-    seen.add(o.key);
-    html += `<div class="row">
-      <div class="row-label"><span class="dot" style="background:${o.color}"></span>${o.label}</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="row-sub">${o.action}</span>
-        <span class="row-val">${count}</span>
-      </div>
-    </div>`;
-  });
-  Object.entries(d.pipeline).forEach(([k,v]) => {
-    if (!seen.has(k) && v > 0) {
-      html += `<div class="row"><div class="row-label"><span class="dot" style="background:#B4B2A9"></span>${k}</div><span class="row-val">${v}</span></div>`;
-    }
-  });
-  html += `<div class="row" style="background:var(--bg);margin:8px -18px -16px;padding:8px 18px;border-radius:0 0 10px 10px">
-    <span style="font-size:12px;color:var(--text2)">Total in June CRM</span>
-    <span style="font-weight:600;font-size:13px">${d.crmCount || 0}</span>
-  </div>`;
-  el.innerHTML = html;
-}
-
-function renderClients(d) {
-  const el = document.getElementById('clients-board');
-  if (!d.clients || !d.clients.length) { el.innerHTML = '<div class="err">No client data</div>'; return; }
-  let html = d.clients.map(c => {
-    const status = (c['Status'] || '').toLowerCase();
-    const bc = status === 'active' ? 'b-green' : status === 'churned' ? 'b-red' : 'b-amber';
-    const amt = parseFloat((c['Monthly Amount (GHS)'] || '0').replace(/[^0-9.]/g,''));
-    return `<div class="row">
+  <!-- TODAY TAB -->
+  <div class="tab-content active" id="tab-today">
+    <div class="metrics-grid" id="topMetrics">
+      <div class="loading">Loading data</div>
+    </div>
+    <div class="target-bar-wrap" id="targetBar"></div>
+    <div class="two-col">
       <div>
-        <div style="font-size:13px;font-weight:500">${c['Business'] || '—'}</div>
-        <div class="row-sub">${c['Package'] || ''} · ${c['Renewal Date'] || '—'}</div>
+        <div class="section-title">🔥 ACTION REQUIRED TODAY</div>
+        <div id="todayActions"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:13px;font-weight:500">${isNaN(amt)?'—':'GHS '+Math.round(amt)}</span>
-        <span class="badge ${bc}">${c['Status'] || '—'}</span>
+      <div>
+        <div class="section-title">📊 WA STATUS BOARD</div>
+        <div class="wa-grid" id="waBoard"></div>
       </div>
-    </div>`;
-  }).join('');
-  html += `<div class="row" style="background:var(--bg);margin:8px -18px -16px;padding:8px 18px;border-radius:0 0 10px 10px">
-    <span style="font-size:12px;color:var(--text2)">Monthly recurring</span>
-    <span style="font-weight:600;font-size:13px;color:var(--green)">${fmt(d.mrr || 0)}</span>
-  </div>`;
-  el.innerHTML = html;
-}
+    </div>
+    <div class="section-title">🔴 CALL LIST — 1 TICK (NOT DELIVERED)</div>
+    <div id="callList"></div>
+    <div class="section-title" style="margin-top:20px">📍 KOFORIDUA VISITS TODAY</div>
+    <div id="kofVisitList"></div>
+  </div>
 
-function renderKoforidua(d) {
-  document.getElementById('k-total').textContent = d.koforiduaCount || '—';
-  document.getElementById('k-conv').textContent = d.koforiduaConverted || '—';
-  document.getElementById('k-hot').textContent = d.koforiduaHot || '—';
-  document.getElementById('k-call').textContent = d.koforiduaToCall || '—';
-}
-
-function renderArchive(d) {
-  if (d.archiveWA) {
-    document.getElementById('a-wa').textContent = d.archiveWA.conversations || '—';
-    document.getElementById('a-conv').textContent = d.archiveWA.converted || '—';
-  }
-  document.getElementById('a-tt').textContent = d.archiveTikTokCount || '—';
-}
-
-function renderLog(d) {
-  const el = document.getElementById('outreach-log');
-  if (!d.outreachLog || !d.outreachLog.length) { el.innerHTML = '<div class="err">No outreach log data</div>'; return; }
-  const recent = [...d.outreachLog].reverse().slice(0,15);
-  el.innerHTML = recent.map(l => {
-    const outcome = (l['Outcome'] || '').toLowerCase();
-    const dot = outcome.includes('conversation') ? '#1D9E75' : outcome.includes('1 tick') ? '#BA7517' : outcome.includes('read') ? '#185FA5' : '#B4B2A9';
-    return `<div class="row">
-      <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
-        <span class="dot" style="background:${dot};flex-shrink:0"></span>
-        <div style="min-width:0">
-          <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l['Business'] || '—'}</div>
-          <div class="row-sub">${l['Date'] || ''}</div>
+  <!-- FOLLOW UP TAB -->
+  <div class="tab-content" id="tab-followup">
+    <div class="generator-section">
+      <div class="section-title">FOLLOW-UP GENERATOR</div>
+      <div class="filter-row" id="labelFilters">
+        <button class="filter-btn active" onclick="setFilter('all',this)">ALL DUE</button>
+        <button class="filter-btn" onclick="setFilter('🟡',this)">🟡 2-TICK UNREAD</button>
+        <button class="filter-btn" onclick="setFilter('🟠',this)">🟠 READ NO REPLY</button>
+        <button class="filter-btn" onclick="setFilter('🟢',this)">🟢 CONVERSATION</button>
+        <button class="filter-btn" onclick="setFilter('🔄',this)">🔄 RE-ENGAGE</button>
+        <button class="filter-btn" onclick="setFilter('🔵',this)">🔵 HOT LEAD</button>
+      </div>
+      <div class="msg-version-row">
+        <span class="msg-version-label">MESSAGE VERSION:</span>
+        <button class="ver-btn active" onclick="setMsgVersion('A',this)">A</button>
+        <button class="ver-btn" onclick="setMsgVersion('B',this)">B</button>
+        <button class="ver-btn" onclick="setMsgVersion('C',this)">C</button>
+        <span style="font-size:11px;color:var(--text-dim);margin-left:8px">Rotate every 10 contacts to test which gets replies</span>
+      </div>
+      <div id="msgTracker">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">MESSAGE PERFORMANCE TRACKER</div>
+          <div id="trackerRows"></div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--text2);text-align:right;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;margin-left:8px">${l['Outcome'] || '—'}</div>
-    </div>`;
+      <div id="followupList"></div>
+    </div>
+  </div>
+
+  <!-- PIPELINE TAB -->
+  <div class="tab-content" id="tab-pipeline">
+    <div class="section-title">BUSINESS PIPELINE — ALL STAGES</div>
+    <div class="pipeline-grid" id="pipelineGrid"></div>
+    <div class="section-title">PIPELINE BREAKDOWN</div>
+    <div class="scroll-table">
+      <table class="contact-table" id="pipelineTable">
+        <thead><tr>
+          <th>CONTACT</th><th>BUSINESS</th><th>STAGE</th><th>WA LABEL</th><th>LAST CONTACT</th><th>NOTES</th>
+        </tr></thead>
+        <tbody id="pipelineBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- KOFORIDUA TAB -->
+  <div class="tab-content" id="tab-koforidua">
+    <div class="metrics-grid" id="kofMetrics"></div>
+    <div class="section-title">AREA FILTER</div>
+    <div class="kof-area" id="kofAreas"></div>
+    <div class="section-title" style="margin-top:12px">KOFORIDUA CONTACTS</div>
+    <div id="kofList"></div>
+  </div>
+
+  <!-- CLIENTS TAB -->
+  <div class="tab-content" id="tab-clients">
+    <div class="section-title">ACTIVE CLIENTS & RENEWALS</div>
+    <div id="clientsList"></div>
+    <div class="section-title" style="margin-top:20px">RENEWAL ALERTS</div>
+    <div id="renewalsList"></div>
+  </div>
+
+  <!-- MESSAGES TAB -->
+  <div class="tab-content" id="tab-messages">
+    <div class="section-title">MESSAGE LIBRARY — FROM YOUR SALES SOP</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setMsgCategory('cold',this)">COLD CONTACT</button>
+      <button class="filter-btn" onclick="setMsgCategory('warm',this)">WARM / RE-ENGAGE</button>
+      <button class="filter-btn" onclick="setMsgCategory('value',this)">VALUE / HOOKS</button>
+      <button class="filter-btn" onclick="setMsgCategory('objection',this)">OBJECTIONS</button>
+      <button class="filter-btn" onclick="setMsgCategory('upsell',this)">UPSELL</button>
+    </div>
+    <div id="msgLibrary"></div>
+  </div>
+
+  <!-- REVENUE TAB -->
+  <div class="tab-content" id="tab-revenue">
+    <div class="section-title">REVENUE OVERVIEW</div>
+    <div class="proj-grid" id="projCards"></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">WEEKLY PROJECTION — DOUBLING TRAJECTORY</div>
+        <div class="chart-wrap"><div class="chart-bars" id="weekChart"></div></div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-dim);display:flex;gap:16px">
+          <span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;margin-right:4px"></span>Base</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px"></span>Doubling</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">PRODUCT BREAKDOWN</div>
+        <div id="productBreakdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL CONTACTS TAB -->
+  <div class="tab-content" id="tab-contacts">
+    <input class="search-input" type="text" id="contactSearch" placeholder="Search by name, business, number, stage..." oninput="filterContacts()">
+    <div class="scroll-table">
+      <table class="contact-table" id="allContactsTable">
+        <thead><tr>
+          <th>ID</th><th>BUSINESS</th><th>NUMBER</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA LABEL</th><th>OFFER</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th>
+        </tr></thead>
+        <tbody id="allContactsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwqbGSCqaBQAMOFs-CRtTis9yqApRkWYv30MKcOXiz7wDNhGolwyEI8HBXMktN-fG1H/exec';
+
+let state = { contacts:[], clients:[], renewals:[], outreach:[], koforidua:[], raw:{} };
+let currentFilter = 'all';
+let currentMsgVersion = 'A';
+let currentMsgCategory = 'cold';
+let currentKofArea = 'ALL';
+let contactCount = { A:0, B:0, C:0, Areply:0, Breply:0, Creply:0 };
+
+// Message versions from SOP
+const MSG_VERSIONS = {
+  '🟡': {
+    A: `Hey [NAME], hope all is well.\n\nDid you know that Ghana business owners are only using 20% of their WhatsApp Business capabilities?\n\nLosing an average of 70–90% of their customers because of it.\n\nWant me to send you one quick tip that changes this? Free, no strings.`,
+    B: `Hey [NAME] 👋🏿 Just a quick one.\n\nI searched [BUSINESS] on Google just now.\n\nYour customers can't find you online. I can fix this today — free.\n\nWant me to sort it now?`,
+    C: `Hey [NAME], hope things are good.\n\nA [CATEGORY] business near you went live on BYINFORGH this week and got 3 enquiries in their first week.\n\nThought you'd want to know. Want me to set yours up today?`
+  },
+  '🟠': {
+    A: `Hey [NAME], I know you saw the last message.\n\nNo pressure at all. I just found something specific to [CATEGORY] businesses that gets more customers calling.\n\nWant me to send it? Free, no strings.`,
+    B: `Hey [NAME] 👋🏿\n\nQuick question — when someone searches for [CATEGORY] in your area on Google, does your business come up?\n\nTry it now and tell me what comes up.`,
+    C: `Hey [NAME], not coming back to push anything.\n\nJust wanted to share — businesses with a verified BYINFORGH listing are getting found by customers who search on Google Maps.\n\nYours isn't there yet. Takes 2 minutes. Free to start. Want me to?`
+  },
+  '🟢': {
+    A: `Hey [NAME], hope business is going well this week.\n\nBased on our conversation — you're at the stage where a Verified Business listing would make a real difference.\n\nThat's GHS 180 setup. 4 cedis 60 a day. Less than a bottle of water.\n\nWant me to get it done today?`,
+    B: `Hey [NAME] 👋🏿 Following on from us talking.\n\nI've put together what your BYINFORGH profile would look like. Want me to send it over?`,
+    C: `Hey [NAME], two businesses similar to yours just went live this week and started getting enquiries.\n\nI'd hate for you to miss this window. Ready to get yours live today?`
+  },
+  '🔄': {
+    A: `Hey [NAME], hope all is well and things are good.\n\nNot reaching out about the old offer. Just thought of you — a [CATEGORY] business near you recently went live and got results fast.\n\nThought you should know. How's business going these days?`,
+    B: `Hey [NAME] 👋🏿 It's been a while.\n\nWe've made some changes to how we help businesses get found. The free option is still free. But the results are better now.\n\nWorth a quick chat?`,
+    C: `Hey [NAME], checking in. June is the halfway point of the year.\n\nA lot of businesses are making moves now to finish strong. Yours could too.\n\nWant me to run a quick visibility check on your business? Free.`
+  },
+  '🔵': {
+    A: `Hey [NAME] 👋🏿 Following up on our conversation.\n\nI've got everything ready to get you started as a Visibility Partner.\n\nWhen's a good time today to sort the details?`,
+    B: `Hey [NAME], you mentioned you were interested.\n\nI just want to make sure you don't lose your spot — we're only taking a limited number of Visibility Partners in Koforidua this month.\n\nShall we lock it in today?`,
+    C: `Hey [NAME], hope all is well.\n\nJust a quick update — I've started preparing your visibility setup already.\n\nLet's confirm the details today so we can go live this week.`
+  }
+};
+
+const MSG_LIBRARY = {
+  cold: [
+    { title: 'Option A — Simplest', msg: 'Hey quick one. What kind of business do you run?' },
+    { title: 'Option B — Problem hook', msg: 'Hey, do your customers find your business when they search online?' },
+    { title: 'Option C — Know industry', msg: 'Hey when someone searches for [INDUSTRY] in your area on Google, does your business come up?' },
+    { title: 'Option D — Know area', msg: 'Hey, I work with businesses in [AREA] on getting found online. Quick question, what kind of business do you run?' },
+    { title: 'Option E — From TikTok', msg: 'Hey, you might have seen me on TikTok (@BYINFORGH). What kind of business do you run?' },
+    { title: 'Voice Note Script', msg: 'Hey, hope you are well. Quick question, what kind of business do you run? I work with businesses in Ghana on something that could be useful. Just a voice note to keep it personal. What do you do?' }
+  ],
+  warm: [
+    { title: 'Warm A — Honest restart', msg: 'Hey [NAME], hope you are well. Lost a lot of my chats when WhatsApp flagged my account. Just rebuilding. How is business going?' },
+    { title: 'Warm B — Remember them', msg: "Hey [NAME] it has been a while. Lost our chats when WhatsApp flagged me. How is [the shop / the business] going your end?" },
+    { title: 'Warm C — Recent, casual', msg: 'Hey hope things are good. Just checking in. How has business been this week?' },
+    { title: 'Re-engage opener', msg: 'Hey [NAME] not coming back to push anything. Just thought of you. A [INDUSTRY] business near you went live on BYINFORGH this week and got 3 enquiries in 3 days. Figured you would want to know.' },
+    { title: 'Voice Note Script', msg: 'Hey [NAME], it is YJ from BYINFORGH. WhatsApp flagged my account and I lost all my conversations, rebuilding now. I just wanted to check in and see how business is going. It has been a while. How are things?' }
+  ],
+  value: [
+    { title: 'H1 — Live Search Drop', msg: 'This is what your customers see when they search for you on Google. [SCREENSHOT]\n\n(Search their product + area. Screenshot what comes up. Send with that one line. Wait.)' },
+    { title: 'H2 — Visibility Score', msg: 'Your business scored 2/10 for online visibility. What is missing: no Google Maps listing, no searchable profile, no reviews, no contact link.' },
+    { title: 'H3 — Google Maps Audit', msg: '[Voice note] For chop bars, the one thing that gets WhatsApp enquiries is showing your food on Google Maps with a photo. Most chop bars are not on there. If you get listed with a photo and your WhatsApp number, customers who search "chop bar near me" start calling you. I can set that up for you today. It takes about 10 minutes. Want me to?' },
+    { title: 'H4 — Industry Tip', msg: 'I was working with a salon this week and found the one thing that gets the most WhatsApp enquiries. Want me to send it? Free, no strings.' },
+    { title: 'H5 — Competitor Reveal', msg: 'I was looking at salons in your area — one on Spintex Road gets 30+ enquiries a week just from their online listing. Your business is not there yet.' },
+    { title: 'WhatsApp Tip', msg: 'Did you know that Ghana business owners are only using only 20% of WhatsApp Business capabilities?\n\nLosing an average of 70–90% of their customers.' }
+  ],
+  objection: [
+    { title: 'I will think about it', msg: 'No pressure. Let me just put the free listing live while you think — costs nothing, and if you decide not, we remove it. What is your business name?' },
+    { title: 'I don\'t use the internet', msg: 'Your customers do. 7 out of 10 Ghanaians search on their phone before buying. Your competitor shows up when they search. You do not. The listing works while you sleep — you do not touch it.' },
+    { title: 'Too expensive', msg: 'The free listing costs zero — start there. The 80 cedis plan is 2 cedis 60 a day. If one extra customer finds you and buys, it pays for two months. You can cancel any time.' },
+    { title: 'Tried Facebook ads, lost money', msg: "That is exactly the problem we solve. Ads need a budget. Your BYINFORGH listing just lives there and works. What didn't work before — cost, time, or no results?" },
+    { title: 'No time', msg: 'You do not need any time. Give me your business name, what you sell, and your WhatsApp number. I do everything else. It takes you 60 seconds.' },
+    { title: 'How do I know this is real?', msg: 'Go to BYINFORGH.COM right now and search [NEARBY BUSINESS]. You will see their live profile. I am happy to call you if you prefer a voice.' },
+    { title: 'Send me more info', msg: 'I would rather show you than explain it. Let me put your free listing live. That is the best way to understand what we do. Once it is live, any questions become much easier to answer.' },
+    { title: 'Business is fine', msg: 'Great to hear. The businesses that grow fastest build their online presence before they need it. The free listing takes 2 minutes and costs nothing — worth having even when business is good.' }
+  ],
+  upsell: [
+    { title: 'Free → Verified (2 weeks)', msg: 'Hey [NAME] your listing has been live for 2 weeks. Just checked — you have had [X] views. Customers are finding you.\n\nBusinesses getting the most enquiries have the blue tick. It adds a verified badge and we create a 60-second video for your business. 80 cedis a month — 2 cedis 60 a day. Less than a bottle of water.' },
+    { title: 'Price anchor', msg: 'GHS 180 setup / GHS 80 monthly = 4 cedis 60 pesewas a day. Less than a bottle of water. If one extra customer finds them and buys, it pays for two full months.' },
+    { title: 'Verified → Partner', msg: 'Hey [NAME], you have been verified for [X] months and your listing is getting consistent views. I want to talk to you about our Visibility Partner plan — full managed visibility, content creation, monthly reporting. For businesses ready to scale. When can we talk?' }
+  ]
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function copyMsg(text, btn) {
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent = '✓ COPIED';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='COPY'; btn.classList.remove('copied'); }, 2000);
+    showToast('Message copied — ready to send');
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='followup') renderFollowUps();
+  if(name==='contacts') renderAllContacts();
+  if(name==='messages') renderMsgLibrary();
+  if(name==='koforidua') renderKoforidua();
+  if(name==='revenue') renderRevenue();
+  if(name==='pipeline') renderPipeline();
+  if(name==='clients') renderClients();
+}
+
+function checkShabbat() {
+  const day = new Date().getDay(); // 6=Saturday
+  const banner = document.getElementById('shabbatBanner');
+  if(day===6) banner.classList.add('active');
+  else banner.classList.remove('active');
+}
+
+function isShabbat() { return new Date().getDay()===6; }
+
+async function loadData() {
+  document.getElementById('lastRefresh').textContent = 'Refreshing...';
+  try {
+    const res = await fetch(API_URL + '?t=' + Date.now());
+    const raw = await res.json();
+    state.raw = raw;
+    // Parse contacts from CRM
+    if(raw.masterCRM && Array.isArray(raw.masterCRM)) {
+      state.contacts = raw.masterCRM.filter(r=>r.ID && r.Business);
+    }
+    if(raw.clients && Array.isArray(raw.clients)) state.clients = raw.clients;
+    if(raw.renewals && Array.isArray(raw.renewals)) state.renewals = raw.renewals;
+    if(raw.outreachLog && Array.isArray(raw.outreachLog)) state.outreach = raw.outreachLog;
+    if(raw.koforidua && Array.isArray(raw.koforidua)) state.koforidua = raw.koforidua;
+    document.getElementById('lastRefresh').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    renderToday();
+  } catch(e) {
+    document.getElementById('lastRefresh').textContent = 'Offline — using demo data';
+    loadDemoData();
+  }
+}
+
+function loadDemoData() {
+  // Parse from embedded data
+  const crm = [
+    {ID:'BCRM1',WA_Label:'🔴',Business:'Abena TikTok Business',Number:'0549656360',Town:'',Category:'',Stage:'Inactive',Offer:'Warm Message',Last_Contact:'5/June/2026',Next_Follow_Up:'08/June/2026',Notes:'sent one message, 1 tick from past 2 messages'},
+    {ID:'BCRM2',WA_Label:'🟢',Business:'Abis Fashion TikTok',Number:'0558500349',Town:'Koforidua',Category:'Fashion',Stage:'Interested',Offer:'Free Listing',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Communicated before about visibility, she frozen on price, new offer sent'},
+    {ID:'BCRM3',WA_Label:'🔴',Business:'Abraham Anani Foster',Number:'0547307336',Town:'',Category:'Electricals',Stage:'Inactive',Offer:'Warm Message',Last_Contact:'5/June/2026',Next_Follow_Up:'08/June/2026',Notes:'First outreach, 1 tick'},
+    {ID:'BCRM4',WA_Label:'🟡',Business:'Achiaas Hair Business',Number:'0531899977',Town:'',Category:'Hair',Stage:'Follow up',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'2 tick message not reply, followed up with value'},
+    {ID:'BCRM5',WA_Label:'🟢',Business:'Mohsirin89 Accra Business',Number:'0248524183',Town:'Accra',Category:'Appliances',Stage:'First message sent',Offer:'Free Listing',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Conversation active'},
+    {ID:'BCRM6',WA_Label:'🟠',Business:'Accra Living Person',Number:'0546667353',Town:'Accra',Category:'Contact',Stage:'Follow up',Offer:'Warm Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'First message read and no reply, left value'},
+    {ID:'BCRM7',WA_Label:'🟡',Business:'Affiyie Addo Playbook',Number:'0530756866',Town:'',Category:'Data Selling',Stage:'Follow up',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Had playbook before, 2 tick unread'},
+    {ID:'BCRM8',WA_Label:'🟡',Business:'Addodankwaedmond11',Number:'0593880326',Town:'',Category:'',Stage:'First message sent',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'2 tick unread'},
+    {ID:'BCRM9',WA_Label:'📍',Business:'Adjua Shoe Shop',Number:'0544978696',Town:'Koforidua',Category:'Shoe',Stage:'Contacted',Offer:'Free Listing',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Physical visit before, seen status in past'},
+    {ID:'BCRM10',WA_Label:'🟠',Business:'Adiepena TikTok Business',Number:'0548651887',Town:'',Category:'',Stage:'Follow up',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'2 tick read no reply'},
+    {ID:'BCRM11',WA_Label:'🟢',Business:'Adwoas Collection TikTok',Number:'0556038525',Town:'',Category:'Fashion',Stage:'Follow up',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Follow up with new June offer'},
+    {ID:'BCRM12',WA_Label:'🔄',Business:'Browns Beauty Bags',Number:'0548490310',Town:'Accra',Category:'Bags',Stage:'Inactive',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Was verified, did not renew May, re-engaging warm'},
+    {ID:'BCRM52',WA_Label:'⬛',Business:'BC Spa & Beauty',Number:'0592037055',Town:'Accra',Category:'Beauty',Stage:'Not Interested',Offer:'',Last_Contact:'3/June/2026',Next_Follow_Up:'',Notes:'Rejected — left tips'},
+    {ID:'BCRM54',WA_Label:'',Business:'Spice & Sizzle Food',Number:'0547638655',Town:'Accra',Category:'Food',Stage:'Interested',Offer:'Warm Message',Last_Contact:'3/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Conversation about spotlight business'},
+    {ID:'BCRM78',WA_Label:'',Business:'Barbers Friend',Number:'0548319429',Town:'Koforidua',Category:'Barber',Stage:'Conversation',Offer:'Warm Message',Last_Contact:'4/June/2026',Next_Follow_Up:'07/June/2026',Notes:'Will visit in Koforidua'},
+    {ID:'BCRM79',WA_Label:'🟠',Business:'Ambassador Business',Number:'0592766050',Town:'',Category:'',Stage:'Follow up',Offer:'Tip Message',Last_Contact:'5/June/2026',Next_Follow_Up:'7/June/2026',Notes:'Read first message, second value sent'},
+    {ID:'BCRM80',WA_Label:'🔵',Business:'Destiny Nana Eclipse Pub',Number:'0249650537',Town:'Effuedase',Category:'Pub',Stage:'Conversation',Offer:'Visibility Partner — 500 GHS/month',Last_Contact:'5/June/2026',Next_Follow_Up:'7/June/2026',Notes:'Hot lead — looking to close very soon'}
+  ];
+  state.contacts = crm;
+  state.clients = [
+    {Business:'EQUIYAHS HAIR',Package:'Visibility Partner',Joined:'11/May/2026',Renewal:'11/June/2026',Amount:500,Status:'Active',Number:'0249776957',Notes:'Needs support often, new to content posting'},
+    {Business:'RichPris Enterprise',Package:'Verified Business',Joined:'25/May/2026',Renewal:'25/June/2026',Amount:200,Status:'Active',Number:'0248294239',Notes:'Needs hand-holding and guidance always'},
+    {Business:'Finese Home Of Beauty',Package:'Verified Business',Joined:'12/April/2026',Renewal:'12/May/2026',Amount:80,Status:'Churned',Number:'0244766677',Notes:'62 years old, did not renew May'}
+  ];
+  state.renewals = [
+    {Business:'EQUIYAHS HAIR',Package:'Visibility Partner',Date:'11/06/2026',Days:-23,Status:'OVERDUE'},
+    {Business:'RichPris Enterprise',Package:'Verified Business',Date:'25/06/2026',Days:-9,Status:'OVERDUE'},
+    {Business:'Finese Home Of Beauty',Package:'Verified Business',Date:'12/05/2026',Days:-52,Status:'OVERDUE'}
+  ];
+  renderToday();
+}
+
+function getWAEmoji(label) {
+  if(!label) return '';
+  if(label.includes('🔴')) return '🔴';
+  if(label.includes('🟡')) return '🟡';
+  if(label.includes('🟠')) return '🟠';
+  if(label.includes('🟢')) return '🟢';
+  if(label.includes('🔵')) return '🔵';
+  if(label.includes('✅')) return '✅';
+  if(label.includes('⬛')) return '⬛';
+  if(label.includes('⬜')) return '⬜';
+  if(label.includes('🔄')) return '🔄';
+  if(label.includes('📍')) return '📍';
+  return label.charAt(0);
+}
+
+function countByLabel(emoji) {
+  return state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes(emoji)).length;
+}
+
+function countByStage(stage) {
+  return state.contacts.filter(c=>c.Stage && c.Stage.toLowerCase().includes(stage.toLowerCase())).length;
+}
+
+function getMRR() {
+  return state.clients.filter(c=>c.Status==='Active').reduce((s,c)=>s+(parseFloat(c.Amount)||0),0);
+}
+
+function renderToday() {
+  checkShabbat();
+  const total = state.contacts.filter(c=>c.Business).length;
+  const active = state.clients.filter(c=>c.Status==='Active').length;
+  const mrr = getMRR();
+  const hot = countByLabel('🔵');
+  const conv = countByLabel('🟢');
+  const overdue = state.renewals.filter(r=>r.Status==='OVERDUE').length;
+  const todayOutreach = state.outreach ? state.outreach.filter(o=>{
+    const d = new Date(o.Date||o.date||'');
+    const t = new Date();
+    return d.toDateString()===t.toDateString();
+  }).length : 0;
+
+  document.getElementById('topMetrics').innerHTML = `
+    <div class="metric-card gold">
+      <div class="metric-label">MONTHLY REVENUE</div>
+      <div class="metric-value">₵${mrr}</div>
+      <div class="metric-sub">${active} active clients</div>
+    </div>
+    <div class="metric-card green">
+      <div class="metric-label">TOTAL CONTACTS</div>
+      <div class="metric-value">${total}</div>
+      <div class="metric-sub">in pipeline</div>
+    </div>
+    <div class="metric-card orange">
+      <div class="metric-label">HOT LEADS</div>
+      <div class="metric-value">${hot}</div>
+      <div class="metric-sub">verbal yes / proposal sent</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label">CONVERSATIONS</div>
+      <div class="metric-value">${conv}</div>
+      <div class="metric-sub">active this week</div>
+    </div>
+    <div class="metric-card red">
+      <div class="metric-label">RENEWALS OVERDUE</div>
+      <div class="metric-value">${overdue}</div>
+      <div class="metric-sub">urgent attention</div>
+    </div>
+    <div class="metric-card purple">
+      <div class="metric-label">TODAY'S OUTREACH</div>
+      <div class="metric-value">${todayOutreach}</div>
+      <div class="metric-sub">messages sent</div>
+    </div>
+  `;
+
+  const target = 180;
+  const pct = Math.min(100, Math.round((mrr/target)*100));
+  document.getElementById('targetBar').innerHTML = `
+    <div class="target-header">
+      <div class="target-title">DAILY REVENUE TARGET</div>
+      <div class="target-amount">₵${mrr} / ₵${target}</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="target-stats">
+      Progress: <span>${pct}%</span> &nbsp;|&nbsp; Still needed: <span>₵${Math.max(0,target-mrr)}</span> &nbsp;|&nbsp; Next close: <span>₵${mrr+180}</span>
+    </div>
+  `;
+
+  // Today actions
+  const dueFollowUps = state.contacts.filter(c=>{
+    if(!c.Next_Follow_Up) return false;
+    const d = new Date(c.Next_Follow_Up.replace(/(\d+)\/(\w+)\/(\d+)/,'$2 $1 $3'));
+    const today = new Date();
+    return d <= today && c.WA_Label && !c.WA_Label.includes('⬛');
+  });
+  const callContacts = state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes('🔴'));
+  const kofContacts = state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes('📍'));
+
+  document.getElementById('todayActions').innerHTML = `
+    <div class="card">
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Send 10+ new outreach messages (cold/warm)</div>
+        <div class="action-tag tag-outreach">OUTREACH</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Follow up ${dueFollowUps.length} contacts with due dates today (see Follow-Ups tab)</div>
+        <div class="action-tag tag-followup">FOLLOW-UP</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Call or visit ${callContacts.length} contacts with 🔴 1-tick (message not delivered)</div>
+        <div class="action-tag tag-visit">CALL/VISIT</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Post or comment on TikTok today — deposit in trust bank</div>
+        <div class="action-tag tag-content">CONTENT</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Do 3 live Google search drops on new contacts</div>
+        <div class="action-tag tag-outreach">OUTREACH</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Check WhatsApp status views — log any non-clients watching (Status Viewer = Yes)</div>
+        <div class="action-tag tag-followup">STATUS</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Retention: Contact ${overdue} overdue clients — EQUIYAHS, RichPris renewal conversations</div>
+        <div class="action-tag tag-client">CLIENT</div>
+      </div>
+      <div class="action-item">
+        <div class="action-check" onclick="toggleCheck(this)"></div>
+        <div class="action-text">Update CRM after every conversation — keep data live</div>
+        <div class="action-tag tag-client">CRM</div>
+      </div>
+    </div>
+  `;
+
+  // WA Board
+  const labels = [
+    {e:'🔴',l:'1 Tick — call only'},
+    {e:'🟡',l:'2 Tick unread'},
+    {e:'🟠',l:'Read no reply'},
+    {e:'🟢',l:'Conversation'},
+    {e:'🔵',l:'Hot lead'},
+    {e:'✅',l:'Client'},
+    {e:'⬛',l:'Rejected'},
+    {e:'🔄',l:'Re-engage'},
+    {e:'📍',l:'Koforidua physical'},
+    {e:'⬜',l:'Non-business'}
+  ];
+  document.getElementById('waBoard').innerHTML = labels.map(l=>`
+    <div class="wa-item">
+      <div class="wa-emoji">${l.e}</div>
+      <div>
+        <div class="wa-count" style="color:${getColorForLabel(l.e)}">${countByLabel(l.e)}</div>
+        <div class="wa-label">${l.l}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Call list
+  const callList = state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes('🔴'));
+  document.getElementById('callList').innerHTML = callList.length ? callList.slice(0,8).map(c=>`
+    <div class="call-item">
+      <div>
+        <div class="call-name">${c.Business}</div>
+        <div class="call-sub">${c.Town||'—'} · ${c.Category||'—'} · Message not delivered</div>
+      </div>
+      <div class="call-number">${c.Number}</div>
+    </div>
+  `).join('') : '<div class="empty">No 1-tick contacts right now</div>';
+
+  // Koforidua visit list
+  const kofList = state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes('📍'));
+  document.getElementById('kofVisitList').innerHTML = kofList.length ? kofList.slice(0,5).map(c=>`
+    <div class="call-item" style="border-left-color:var(--teal)">
+      <div>
+        <div class="call-name">${c.Business}</div>
+        <div class="call-sub">${c.Town||'Koforidua'} · Face-to-face required</div>
+      </div>
+      <div class="call-number">${c.Number}</div>
+    </div>
+  `).join('') : '<div class="empty">No physical visit contacts today</div>';
+}
+
+function getColorForLabel(e) {
+  const m = {'🔴':'#ef4444','🟡':'#eab308','🟠':'#f97316','🟢':'#22c55e','🔵':'#3b82f6','✅':'#22c55e','⬛':'#555','🔄':'#a855f7','📍':'#14b8a6','⬜':'#555'};
+  return m[e]||'#999';
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('done');
+  const txt = el.parentElement.querySelector('.action-text');
+  if(txt) txt.classList.toggle('done-text');
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFollowUps();
+}
+
+function setMsgVersion(ver, btn) {
+  currentMsgVersion = ver;
+  document.querySelectorAll('.ver-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFollowUps();
+}
+
+function renderFollowUps() {
+  // Tracker
+  const versions = ['A','B','C'];
+  const total = {A:12,B:9,C:8}; // demo counts
+  const replies = {A:3,B:2,C:4};
+  document.getElementById('trackerRows').innerHTML = versions.map(v=>{
+    const rate = total[v]>0 ? Math.round((replies[v]/total[v])*100) : 0;
+    const winner = rate === Math.max(...versions.map(x=>total[x]>0?Math.round((replies[x]/total[x])*100):0));
+    return `
+      <div class="tracker-row">
+        <div class="tracker-ver">V-${v}${winner?' 🏆':''}</div>
+        <div style="flex:1">
+          <div class="tracker-bar"><div class="tracker-fill" style="width:${rate}%;background:${winner?'var(--green)':'var(--gold)'}"></div></div>
+        </div>
+        <div class="tracker-count" style="color:var(--text-dim)">${total[v]} sent</div>
+        <div class="tracker-rate" style="color:${winner?'var(--green)':'var(--text)'}">${rate}%</div>
+      </div>
+    `;
+  }).join('');
+
+  // Filter contacts
+  let contacts = state.contacts.filter(c=>c.Business && !c.WA_Label.includes('⬛') && !c.WA_Label.includes('✅'));
+  if(currentFilter !== 'all') {
+    contacts = contacts.filter(c=>c.WA_Label && c.WA_Label.includes(currentFilter));
+  } else {
+    // All due — exclude 1-tick (they go to call list) and rejected
+    contacts = contacts.filter(c=>!c.WA_Label.includes('🔴'));
+  }
+
+  if(contacts.length===0) {
+    document.getElementById('followupList').innerHTML = '<div class="empty">No contacts match this filter</div>';
+    return;
+  }
+
+  document.getElementById('followupList').innerHTML = contacts.slice(0,15).map(c=>{
+    const emoji = getWAEmoji(c.WA_Label);
+    const msgTemplate = (MSG_VERSIONS[emoji] || MSG_VERSIONS['🟡'])[currentMsgVersion] || '';
+    const msg = msgTemplate
+      .replace(/\[NAME\]/g, c.Business.split(' ')[0])
+      .replace(/\[BUSINESS\]/g, c.Business)
+      .replace(/\[CATEGORY\]/g, c.Category||'business');
+
+    return `
+      <div class="followup-item">
+        <div class="followup-header">
+          <div>
+            <div class="followup-name">${emoji} ${c.Business}</div>
+            <div class="followup-meta">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'} · Follow-up: ${c.Next_Follow_Up||'—'}</div>
+            <div class="followup-meta" style="margin-top:4px;color:var(--text-dim)">${c.Notes ? c.Notes.substring(0,100)+'...' : '—'}</div>
+          </div>
+          <div class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</div>
+        </div>
+        <div class="message-box">${msg}</div>
+        <button class="copy-btn" onclick="copyMsg(\`${msg.replace(/`/g,"'")}\`, this)">COPY</button>
+      </div>
+    `;
   }).join('');
 }
 
-function logDaily() {
-  const cash = parseFloat(document.getElementById('i-cash').value) || 0;
-  const msgs = parseInt(document.getElementById('i-msgs').value) || 0;
-  const convos = parseInt(document.getElementById('i-convos').value) || 0;
-  const closes = parseInt(document.getElementById('i-closes').value) || 0;
-  const gap = DAILY_TARGET - cash;
-  const pct = Math.min(100, Math.round((cash / DAILY_TARGET) * 100));
-  const barClass = pct >= 100 ? 'prog-green' : pct >= 50 ? 'prog-amber' : 'prog-red';
-  let tip = '';
-  if (cash >= DAILY_TARGET) tip = 'Target reached. Tomorrow double the effort — Yahuah be praised.';
-  else if (msgs < 30 && closes === 0) tip = 'Messages are low. Send more — target is 30/day minimum. Every message is a seed.';
-  else if (msgs >= 30 && convos < 15) tip = 'Messages good but conversations low. Improve your opening line. Ask a question, not a pitch.';
-  else if (convos >= 15 && closes === 0) tip = 'Conversations happening but no closes. Push clearly to the offer. Use the script.';
-  else if (closes > 0 && cash < DAILY_TARGET) tip = 'Closes logged — collect payment on MoMo now. Confirm and update the sheet.';
-  document.getElementById('daily-result').innerHTML = `
-    <div style="margin-top:14px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-        <span style="color:var(--text2)">GHS ${Math.round(cash)} of GHS ${DAILY_TARGET} target</span>
-        <span style="font-weight:600">${pct}%</span>
+function getStageBadge(stage) {
+  if(!stage) return 'stage-cold';
+  const s = stage.toLowerCase();
+  if(s.includes('hot')||s.includes('interested')) return 'stage-hot';
+  if(s.includes('conv')||s.includes('active')) return 'stage-conv';
+  if(s.includes('follow')||s.includes('warm')) return 'stage-warm';
+  if(s.includes('reject')||s.includes('not interested')) return 'stage-reject';
+  if(s.includes('client')||s.includes('partner')||s.includes('verified')) return 'stage-client';
+  return 'stage-cold';
+}
+
+function renderPipeline() {
+  const stages = [
+    {n:'Lead / New',key:'lead'},
+    {n:'First Message',key:'first message'},
+    {n:'Follow Up',key:'follow up'},
+    {n:'Conversation',key:'conversation'},
+    {n:'Interested',key:'interested'},
+    {n:'Free Listing',key:'free listing'},
+    {n:'Verified',key:'verified'},
+    {n:'Partner',key:'partner'},
+    {n:'Rejected',key:'not interested'}
+  ];
+  document.getElementById('pipelineGrid').innerHTML = stages.map(s=>`
+    <div class="pipeline-stage">
+      <div class="pipeline-count">${countByStage(s.key)}</div>
+      <div class="pipeline-name">${s.n}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('pipelineBody').innerHTML = state.contacts.map(c=>`
+    <tr>
+      <td>${c.ID}</td>
+      <td><strong>${c.Business}</strong><br><span style="color:var(--text-dim);font-size:10px">${c.Number}</span></td>
+      <td><span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span></td>
+      <td>${getWAEmoji(c.WA_Label)} ${c.WA_Label ? c.WA_Label.replace(/[^\x20-\x7E]/g,'').trim().substring(0,20) : '—'}</td>
+      <td style="font-size:11px">${c.Last_Contact||'—'}</td>
+      <td style="font-size:11px;max-width:200px;color:var(--text-dim)">${c.Notes ? c.Notes.substring(0,80)+'...' : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderKoforidua() {
+  const kof = state.contacts.filter(c=>c.Town && c.Town.toLowerCase().includes('koforidua'));
+  const phys = state.contacts.filter(c=>c.WA_Label && c.WA_Label.includes('📍'));
+  const converted = state.clients.filter(c=>c.Notes && c.Notes.toLowerCase().includes('koforidua')).length;
+
+  document.getElementById('kofMetrics').innerHTML = `
+    <div class="metric-card teal" style="--teal:#14b8a6">
+      <div class="metric-label">KOF CONTACTS</div>
+      <div class="metric-value" style="color:var(--teal)">${kof.length}</div>
+      <div class="metric-sub">in master CRM</div>
+    </div>
+    <div class="metric-card orange">
+      <div class="metric-label">PHYSICAL ONLY</div>
+      <div class="metric-value">${phys.length}</div>
+      <div class="metric-sub">face-to-face required</div>
+    </div>
+    <div class="metric-card green">
+      <div class="metric-label">CONVERTED</div>
+      <div class="metric-value">3</div>
+      <div class="metric-sub">Joeans, Bigten, Reggies</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label">HOT IN KOF</div>
+      <div class="metric-value">1</div>
+      <div class="metric-sub">Eclipse Pub Effuedase</div>
+    </div>
+  `;
+
+  const areas = ['ALL','Antarctic Plaza','Main Street','JK Okyere','Bus Station','Jackson Park','Behind UMB Bank'];
+  document.getElementById('kofAreas').innerHTML = areas.map(a=>`
+    <div class="kof-tag ${a===currentKofArea?'active':''}" onclick="setKofArea('${a}',this)">${a}</div>
+  `).join('');
+
+  renderKofList();
+}
+
+function setKofArea(area, el) {
+  currentKofArea = area;
+  document.querySelectorAll('.kof-tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderKofList();
+}
+
+function renderKofList() {
+  const kof = state.contacts.filter(c=>
+    (c.Town && c.Town.toLowerCase().includes('koforidua')) ||
+    (c.WA_Label && c.WA_Label.includes('📍'))
+  );
+  const filtered = currentKofArea==='ALL' ? kof : kof.filter(c=>c.Notes && c.Notes.toLowerCase().includes(currentKofArea.toLowerCase()));
+
+  document.getElementById('kofList').innerHTML = filtered.length ? filtered.map(c=>`
+    <div class="followup-item">
+      <div class="followup-header">
+        <div>
+          <div class="followup-name">${getWAEmoji(c.WA_Label)} ${c.Business}</div>
+          <div class="followup-meta">${c.Number} · ${c.Category||'—'} · ${c.Stage||'—'}</div>
+          <div class="followup-meta" style="color:var(--text-dim);margin-top:4px">${c.Notes ? c.Notes.substring(0,120) : '—'}</div>
+        </div>
+        <div>
+          <span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span>
+          ${c.WA_Label && c.WA_Label.includes('📍') ? '<br><span style="font-size:10px;color:var(--teal);margin-top:4px;display:block">📍 VISIT IN PERSON</span>' : ''}
+        </div>
       </div>
-      <div class="prog-wrap"><div class="prog-bar ${barClass}" style="width:${pct}%"></div></div>
-      ${gap > 0 ? `<div style="font-size:12px;color:var(--text2);margin-top:5px">Gap: GHS ${Math.round(gap)} still needed today</div>` : `<div style="font-size:12px;color:var(--green);margin-top:5px;font-weight:500">Target hit ✓</div>`}
-      ${tip ? `<div class="action-tip">${tip}</div>` : ''}
-      <div style="font-size:12px;color:var(--text3);margin-top:8px">Messages: ${msgs} · Conversations: ${convos} · Closes: ${closes}</div>
-    </div>`;
+    </div>
+  `).join('') : '<div class="empty">No contacts for this area</div>';
 }
 
-function showProj(period, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const mrr = (liveData && liveData.mrr) || 700;
-  const dailySales = DAILY_TARGET;
-  const workDays = 22;
-  const monthlyBase = mrr + (dailySales * workDays);
-  let rows = [];
-  if (period === 'monthly') {
-    const months = ['July 2026','Aug 2026','Sep 2026','Oct 2026','Nov 2026','Dec 2026','Jan 2027','Feb 2027','Mar 2027','Apr 2027','May 2027','Jun 2027'];
-    months.forEach((m, i) => {
-      const growth = Math.pow(1.15, i);
-      rows.push({ period: m, current: Math.round(monthlyBase), doubled: Math.round(monthlyBase * 2 * growth), tripled: Math.round(monthlyBase * 3 * growth) });
-    });
-  } else if (period === 'q') {
-    [['Q3 2026 (Jul–Sep)', 3], ['Q4 2026 (Oct–Dec)', 3], ['Q1 2027 (Jan–Mar)', 3], ['Q2 2027 (Apr–Jun)', 3]].forEach(([p, m], i) => {
-      rows.push({ period: p, current: Math.round(monthlyBase * m), doubled: Math.round(monthlyBase * m * 2 * Math.pow(1.2,i)), tripled: Math.round(monthlyBase * m * 3 * Math.pow(1.3,i)) });
-    });
-  } else if (period === '6m') {
-    rows = [
-      { period: 'Jul – Dec 2026 (6 months)', current: Math.round(monthlyBase * 6), doubled: Math.round(monthlyBase * 6 * 2), tripled: Math.round(monthlyBase * 6 * 3.5) },
-      { period: 'Jan – Jun 2027 (6 months)', current: Math.round(monthlyBase * 6 * 1.2), doubled: Math.round(monthlyBase * 6 * 3), tripled: Math.round(monthlyBase * 6 * 6) }
-    ];
-  } else {
-    rows = [
-      { period: 'Full year (Jul 2026 – Jun 2027)', current: Math.round(monthlyBase * 12), doubled: Math.round(monthlyBase * 12 * 2.5), tripled: Math.round(monthlyBase * 12 * 5) },
-      { period: 'GHS 100/day × 260 working days', current: Math.round(100 * 260), doubled: Math.round(180 * 260), tripled: Math.round(300 * 260) }
-    ];
-  }
-  const el = document.getElementById('proj-table');
-  el.innerHTML = `<div class="proj-head"><span>Period</span><span>At current rate</span><span>Doubled target</span><span>Tripled target</span></div>` +
-    rows.map(r => `<div class="proj-row">
-      <span class="proj-period">${r.period}</span>
-      <span class="proj-current">${fmt(r.current)}</span>
-      <span class="proj-target">${fmt(r.doubled)}</span>
-      <span style="font-size:12px;color:#185FA5;min-width:110px;text-align:right">${fmt(r.tripled)}</span>
-    </div>`).join('');
+function renderClients() {
+  document.getElementById('clientsList').innerHTML = state.clients.map(c=>`
+    <div class="client-item ${c.Status==='Churned'?'overdue':''}">
+      <div style="flex:1">
+        <div class="client-name">${c.Business}</div>
+        <div class="client-pkg">${c.Package} · Joined ${c.Joined||c['Joined Date']||'—'}</div>
+        <div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="client-amount">₵${c.Amount||c['Monthly Amount (GHS)']||0}</div>
+        <div class="client-renewal ${c.Status==='Active'?'active-tag':'overdue-tag'}">${c.Status}</div>
+        <div class="client-renewal" style="color:var(--text-dim)">Renewal: ${c.Renewal||c['Renewal Date']||'—'}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('renewalsList').innerHTML = state.renewals.map(r=>`
+    <div class="client-item overdue">
+      <div style="flex:1">
+        <div class="client-name">${r.Business}</div>
+        <div class="client-pkg">${r.Package}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="overdue-tag" style="font-size:14px">${r.Status}</div>
+        <div style="font-size:11px;color:var(--text-dim)">${Math.abs(r.Days)} days ${r.Days<0?'overdue':'until renewal'}</div>
+        <div style="font-size:10px;color:var(--red);margin-top:4px">Contact today — retention conversation needed</div>
+      </div>
+    </div>
+  `).join('');
 }
 
-// Load on start
-loadAll();
-showProj('monthly', null);
+function setMsgCategory(cat, btn) {
+  currentMsgCategory = cat;
+  document.querySelectorAll('#tab-messages .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMsgLibrary();
+}
+
+function renderMsgLibrary() {
+  const msgs = MSG_LIBRARY[currentMsgCategory] || [];
+  document.getElementById('msgLibrary').innerHTML = msgs.map(m=>`
+    <div class="followup-item">
+      <div class="followup-header">
+        <div class="followup-name">${m.title}</div>
+      </div>
+      <div class="message-box">${m.msg}</div>
+      <button class="copy-btn" onclick="copyMsg(\`${m.msg.replace(/`/g,"'")}\`, this)">COPY</button>
+    </div>
+  `).join('');
+}
+
+function renderRevenue() {
+  const mrr = getMRR();
+  const projs = [
+    {period:'THIS MONTH',amount:mrr,clients:state.clients.filter(c=>c.Status==='Active').length+' clients'},
+    {period:'MONTH 2',amount:mrr*2,clients:'Target: 2x'},
+    {period:'MONTH 3',amount:mrr*4,clients:'Target: 4x'},
+    {period:'MONTH 6',amount:mrr*8,clients:'Target: 8x'}
+  ];
+  document.getElementById('projCards').innerHTML = projs.map(p=>`
+    <div class="proj-card">
+      <div class="proj-period">${p.period}</div>
+      <div class="proj-amount">₵${p.amount.toLocaleString()}</div>
+      <div class="proj-clients">${p.clients}</div>
+    </div>
+  `).join('');
+
+  // Weekly chart
+  const weeks = ['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7','Wk8'];
+  const base = [180,180,180,180,180,180,180,180];
+  const doubling = [180,360,720,1440,2880,5760,11520,23040];
+  const maxV = Math.max(...doubling);
+  document.getElementById('weekChart').innerHTML = weeks.map((w,i)=>`
+    <div class="chart-bar-group">
+      <div style="display:flex;gap:2px;align-items:flex-end;height:130px">
+        <div class="chart-bar base" style="height:${Math.round((base[i]/maxV)*120)+10}px;width:14px"></div>
+        <div class="chart-bar double" style="height:${Math.round((doubling[i]/maxV)*120)+2}px;width:14px"></div>
+      </div>
+      <div class="chart-label">${w}</div>
+    </div>
+  `).join('');
+
+  // Product breakdown
+  const products = [
+    {name:'Free Listing',count:state.contacts.filter(c=>c.Offer&&c.Offer.includes('Free')).length,price:'₵0',color:'var(--text-dim)'},
+    {name:'Verified Setup',count:1,price:'₵180',color:'var(--gold)'},
+    {name:'Monthly Retainer',count:state.clients.filter(c=>c.Status==='Active').length,price:'₵80+',color:'var(--green)'},
+    {name:'Visibility Partner',count:1,price:'₵500+',color:'var(--orange)'},
+    {name:'One-off / Spotlight',count:0,price:'₵25+',color:'var(--blue)'}
+  ];
+  document.getElementById('productBreakdown').innerHTML = products.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a">
+      <div>
+        <div style="font-size:13px;font-weight:700">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-dim)">${p.count} active</div>
+      </div>
+      <div style="font-size:16px;font-weight:800;font-family:'Space Mono',monospace;color:${p.color}">${p.price}</div>
+    </div>
+  `).join('');
+}
+
+let allContactsData = [];
+function renderAllContacts() {
+  allContactsData = state.contacts;
+  filterContacts();
+}
+
+function filterContacts() {
+  const q = (document.getElementById('contactSearch').value||'').toLowerCase();
+  const filtered = allContactsData.filter(c=>
+    !q ||
+    (c.Business||'').toLowerCase().includes(q)||
+    (c.Number||'').includes(q)||
+    (c.Stage||'').toLowerCase().includes(q)||
+    (c.Town||'').toLowerCase().includes(q)||
+    (c.Category||'').toLowerCase().includes(q)||
+    (c.WA_Label||'').toLowerCase().includes(q)
+  );
+  document.getElementById('allContactsBody').innerHTML = filtered.map(c=>`
+    <tr>
+      <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td>
+      <td><strong>${c.Business}</strong></td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${c.Number||'—'}</td>
+      <td style="font-size:11px">${c.Town||'—'}</td>
+      <td style="font-size:11px">${c.Category||'—'}</td>
+      <td><span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span></td>
+      <td style="font-size:13px">${getWAEmoji(c.WA_Label)}</td>
+      <td style="font-size:11px">${c.Offer||'—'}</td>
+      <td style="font-size:11px;white-space:nowrap">${c.Last_Contact||'—'}</td>
+      <td style="font-size:11px;white-space:nowrap;color:${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--text-dim)'}">${c.Next_Follow_Up||'—'}</td>
+      <td style="font-size:11px;max-width:180px;color:var(--text-dim)">${c.Notes ? c.Notes.substring(0,80) : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function isOverdue(dateStr) {
+  if(!dateStr) return false;
+  const d = new Date(dateStr.replace(/(\d+)\/(\w+)\/(\d+)/,'$2 $1 $3'));
+  return d < new Date();
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', ()=>{
+  checkShabbat();
+  loadData();
+  // Auto refresh every 5 mins
+  setInterval(()=>{
+    if(!isShabbat()) loadData();
+  }, 300000);
+});
 </script>
 </body>
 </html>
