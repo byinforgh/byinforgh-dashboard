@@ -247,10 +247,10 @@
     font-size: 10px;
   }
   .contact-table td {
-    padding: 9px 10px;
+    padding: 6px 10px;
     border-bottom: 1px solid #1a1a1a;
-    vertical-align: top;
-    line-height: 1.4;
+    vertical-align: middle;
+    line-height: 1.3;
   }
   .contact-table tr:hover td { background: #1c1c1c; }
   .stage-badge {
@@ -1195,7 +1195,7 @@ function renderPipeline() {
       <td><strong>${c.Business}</strong><br><span style="color:var(--text-dim);font-size:10px">${c.Number}</span></td>
       <td><span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span></td>
       <td>${getWAEmoji(c.WA_Label)} ${c.WA_Label ? c.WA_Label.replace(/[^\x20-\x7E]/g,'').trim().substring(0,20) : '—'}</td>
-      <td style="font-size:11px">${c.Last_Contact||'—'}</td>
+      <td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td>
       <td style="font-size:11px;max-width:200px;color:var(--text-dim)">${c.Notes ? c.Notes.substring(0,80)+'...' : '—'}</td>
     </tr>
   `).join('');
@@ -1207,10 +1207,10 @@ function renderKoforidua() {
   const total = kof.length;
 
   // Bucket counts from Koforidua Master
-  const converted = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('conver') || c.Bucket.toLowerCase().includes('deal') || c.Bucket.toLowerCase().includes('client'))).length;
-  const hotLeads = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('hot') || c.Bucket.toLowerCase().includes('warm lead'))).length;
-  const noReply = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('no reply') || c.Bucket.toLowerCase().includes('seen, no'))).length;
-  const toCall = kof.filter(c=>c.Bucket && c.Bucket.toLowerCase().includes('call')).length;
+  const converted = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('conver')||c.Bucket.toLowerCase().includes('deal')||c.Bucket.toLowerCase().includes('client')||c.Bucket.toLowerCase().includes('b4')||c.Bucket.toLowerCase().includes('b5'))).length;
+  const hotLeads = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('hot')||c.Bucket.toLowerCase().includes('warm')||c.Bucket.toLowerCase().includes('b2'))).length;
+  const noReply = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('no reply')||c.Bucket.toLowerCase().includes('seen')||c.Bucket.toLowerCase().includes('b3'))).length;
+  const toCall = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('call')||c.Bucket.toLowerCase().includes('b1'))).length;
 
   document.getElementById('kofMetrics').innerHTML = `
     <div class="metric-card" style="border-top:2px solid var(--teal)">
@@ -1257,11 +1257,12 @@ function setKofArea(area, el) {
 function getBucketBadge(bucket) {
   if(!bucket) return 'stage-cold';
   const b = bucket.toLowerCase();
-  if(b.includes('hot')||b.includes('deal')) return 'stage-hot';
-  if(b.includes('warm')||b.includes('conver')) return 'stage-conv';
-  if(b.includes('seen')||b.includes('follow')) return 'stage-warm';
+  if(b.includes('hot')||b.includes('deal')||b.includes('b4')||b.includes('b5')) return 'stage-hot';
+  if(b.includes('warm')||b.includes('conver')||b.includes('b2')) return 'stage-conv';
+  if(b.includes('seen')||b.includes('follow')||b.includes('b3')) return 'stage-warm';
   if(b.includes('reject')) return 'stage-reject';
   if(b.includes('client')) return 'stage-client';
+  if(b.includes('b1')) return 'stage-cold';
   return 'stage-cold';
 }
 
@@ -1405,6 +1406,19 @@ function renderAllContacts() {
   filterContacts();
 }
 
+function cleanDate(str) {
+  if(!str) return '—';
+  // If it's a full timestamp like "Fri Jun 05 2026 00:00:00 GMT+0000..."
+  const d = new Date(str);
+  if(!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+    const day = d.getDate().toString().padStart(2,'0');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return day + '/' + months[d.getMonth()] + '/' + d.getFullYear();
+  }
+  // If already clean like "5/June/2026" just return as-is
+  return str.length > 20 ? str.substring(0,12) : str;
+}
+
 function filterContacts() {
   const q = (document.getElementById('contactSearch').value||'').toLowerCase();
   const filtered = allContactsData.filter(c=>
@@ -1414,29 +1428,31 @@ function filterContacts() {
     (c.Stage||'').toLowerCase().includes(q)||
     (c.Town||'').toLowerCase().includes(q)||
     (c.Category||'').toLowerCase().includes(q)||
-    (c.WA_Label||'').toLowerCase().includes(q)
+    (c.WA_Label||'').toLowerCase().includes(q)||
+    (c.Notes||'').toLowerCase().includes(q)
   );
   document.getElementById('allContactsBody').innerHTML = filtered.map(c=>`
     <tr>
-      <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td>
-      <td><strong>${c.Business}</strong></td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px">${c.Number||'—'}</td>
-      <td style="font-size:11px">${c.Town||'—'}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap">${c.ID}</td>
+      <td style="white-space:nowrap"><strong style="font-size:12px">${c.Business}</strong><br><span style="color:var(--text-dim);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span></td>
+      <td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td>
       <td style="font-size:11px">${c.Category||'—'}</td>
-      <td><span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span></td>
-      <td style="font-size:13px">${getWAEmoji(c.WA_Label)}</td>
-      <td style="font-size:11px">${c.Offer||'—'}</td>
-      <td style="font-size:11px;white-space:nowrap">${c.Last_Contact||'—'}</td>
-      <td style="font-size:11px;white-space:nowrap;color:${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--text-dim)'}">${c.Next_Follow_Up||'—'}</td>
-      <td style="font-size:11px;max-width:180px;color:var(--text-dim)">${c.Notes ? c.Notes.substring(0,80) : '—'}</td>
+      <td><span class="stage-badge ${getStageBadge(c.Stage)}" style="white-space:nowrap">${c.Stage||'—'}</span></td>
+      <td style="font-size:16px;text-align:center">${getWAEmoji(c.WA_Label)}</td>
+      <td style="font-size:10px;color:var(--text-dim)">${c.Offer||'—'}</td>
+      <td style="font-size:10px;white-space:nowrap;color:var(--text-dim)">${cleanDate(c.Last_Contact)}</td>
+      <td style="font-size:10px;white-space:nowrap;color:${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--text-dim)'};font-weight:${isOverdue(c.Next_Follow_Up)?'700':'400'}">${cleanDate(c.Next_Follow_Up)}</td>
+      <td style="font-size:10px;max-width:160px;color:var(--text-dim);line-height:1.3">${c.Notes ? c.Notes.substring(0,70) : '—'}</td>
     </tr>
   `).join('');
 }
 
 function isOverdue(dateStr) {
   if(!dateStr) return false;
-  const d = new Date(dateStr.replace(/(\d+)\/(\w+)\/(\d+)/,'$2 $1 $3'));
-  return d < new Date();
+  const d = new Date(dateStr);
+  if(!isNaN(d.getTime())) return d < new Date();
+  const cleaned = dateStr.replace(/(\d+)\/(\w+)\/(\d+)/,'$2 $1 $3');
+  return new Date(cleaned) < new Date();
 }
 
 // Init
