@@ -2056,15 +2056,18 @@ function switchTab(name) {
 async function loadTrackerData() {
   try {
     const res = await fetch(API_URL + '?action=getActivityLog&t=' + Date.now());
+    if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    if(data.error) throw new Error(data.error);
     trackerData = data;
-    // Update today outreach count on TODAY tab
     if(data.todayOutreachCount !== undefined) {
       const el = document.getElementById('outreachTodayCount');
       if(el) el.textContent = data.todayOutreachCount;
     }
   } catch(e) {
-    console.log('Tracker data load error:', e);
+    console.log('Tracker data load error:', e.message);
+    // Use empty defaults so tracker still renders
+    trackerData = { activities:[], statusViewers:[], outreachLog:[], conversions:[], todayOutreachCount:0, totalOutreachCount:0 };
   }
 }
 
@@ -2314,15 +2317,8 @@ async function logOutreachTap() {
   const business = parts[0]; const number = parts[1]||''; const waLabel = parts[2]||'';
 
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'logOutreach', business, number, messageType:type, waLabel})
-    });
-  } catch(e) {
-    // fallback GET
-    await fetch(API_URL + '?action=logOutreach&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&messageType='+encodeURIComponent(type));
-  }
+    await fetch(API_URL + '?action=logOutreach&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&messageType='+encodeURIComponent(type)+'&waLabel='+encodeURIComponent(waLabel)+'&t='+Date.now());
+  } catch(e) { console.log('logOutreach error:', e); }
 
   // Update local count immediately
   trackerData.todayOutreachCount = (trackerData.todayOutreachCount||0) + 1;
@@ -2343,14 +2339,8 @@ async function logStatusViewTap() {
   const business = parts[0]; const number = parts[1]||''; const waLabel = parts[2]||'';
 
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'logStatusView', business, number, waLabel})
-    });
-  } catch(e) {
-    await fetch(API_URL + '?action=logStatusView&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number));
-  }
+    await fetch(API_URL + '?action=logStatusView&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&waLabel='+encodeURIComponent(waLabel)+'&t='+Date.now());
+  } catch(e) { console.log('logStatusView error:', e); }
 
   trackerData.statusViewers = [{timestamp:new Date().toString(),business,number,waLabel},...(trackerData.statusViewers||[])];
   renderStatusViewers();
@@ -2367,14 +2357,8 @@ async function logConversionTap() {
   const notes = document.getElementById('conversionNotes').value;
 
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'logConversion', business, number, offer, amount, notes})
-    });
-  } catch(e) {
-    await fetch(API_URL + '?action=logConversion&business='+encodeURIComponent(business)+'&offer='+encodeURIComponent(offer)+'&amount='+encodeURIComponent(amount));
-  }
+    await fetch(API_URL + '?action=logConversion&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&offer='+encodeURIComponent(offer)+'&amount='+encodeURIComponent(amount)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now());
+  } catch(e) { console.log('logConversion error:', e); }
 
   const newConv = {timestamp:new Date().toString(),date:new Date().toLocaleDateString(),business,number,offer,amount:parseFloat(amount)||0,notes};
   trackerData.conversions = [newConv,...(trackerData.conversions||[])];
@@ -2396,14 +2380,8 @@ async function logActivityTap() {
   const notes = document.getElementById('activityNote').value;
 
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'logActivity', business, id, actionType, notes})
-    });
-  } catch(e) {
-    await fetch(API_URL + '?action=logActivity&business='+encodeURIComponent(business)+'&actionType='+encodeURIComponent(actionType)+'&notes='+encodeURIComponent(notes));
-  }
+    await fetch(API_URL + '?action=logActivity&business='+encodeURIComponent(business)+'&actionType='+encodeURIComponent(actionType)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now());
+  } catch(e) { console.log('logActivity error:', e); }
 
   trackerData.activities = [{timestamp:new Date().toString(),business,action:actionType,notes},...(trackerData.activities||[])];
   renderActivityLog();
