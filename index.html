@@ -522,6 +522,75 @@
   /* SCROLLABLE */
   .scroll-table { overflow-x: auto; }
 
+  /* SEARCHABLE CONTACT INPUT */
+  .contact-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+  }
+  .contact-search-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-family: Syne, sans-serif;
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+  }
+  .contact-search-input:focus { border-color: var(--gold); }
+  .contact-search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 200;
+    display: none;
+    margin-top: 2px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .contact-search-dropdown.open { display: block; }
+  .contact-search-option {
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .contact-search-option:hover { background: var(--border); }
+  .contact-search-option .opt-name { font-weight: 700; }
+  .contact-search-option .opt-number { font-size: 10px; color: var(--gold); font-family: 'Space Mono', monospace; }
+  .contact-search-option .opt-label { font-size: 14px; }
+  .contact-selected {
+    background: var(--surface);
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    display: none;
+  }
+  .contact-selected.visible { display: flex; }
+  .contact-selected-clear {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .contact-selected-clear:hover { color: var(--red); }
+
+
   /* EMPTY STATE */
   .empty { text-align: center; padding: 30px; color: var(--muted); font-size: 12px; }
 
@@ -762,9 +831,18 @@
         </div>
         <div style="flex:1;min-width:200px">
           <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">Select contact then tap LOG</div>
-          <select id="outreachContact" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px;width:100%;margin-bottom:8px">
-            <option value="">Select contact...</option>
-          </select>
+          <div class="contact-search-wrap" style="width:100%;margin-bottom:8px">
+            <input class="contact-search-input" id="outreachContactInput" placeholder="Type to search contact..." autocomplete="off"
+              oninput="filterContactSearch('outreach',this.value)"
+              onfocus="openContactSearch('outreach')"
+              onblur="setTimeout(()=>closeContactSearch('outreach'),200)">
+            <div class="contact-search-dropdown" id="outreachContactDropdown"></div>
+          </div>
+          <div class="contact-selected" id="outreachContactSelected">
+            <span id="outreachContactLabel">—</span>
+            <span class="contact-selected-clear" onclick="clearContactSearch('outreach')">✕</span>
+          </div>
+          <input type="hidden" id="outreachContact" value="">
           <select id="outreachType" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px;width:100%;margin-bottom:10px">
             <option value="WhatsApp Message">WhatsApp Message</option>
             <option value="WhatsApp Voice Note">WhatsApp Voice Note</option>
@@ -785,9 +863,18 @@
     <div class="card" style="margin-bottom:20px">
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">When you check your WhatsApp status views, tap any contact here who viewed it. These are warm — they see you but haven't replied yet.</div>
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <select id="statusViewerContact" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px;flex:1;min-width:180px">
-          <option value="">Select contact who viewed your status...</option>
-        </select>
+        <div class="contact-search-wrap">
+          <input class="contact-search-input" id="statusViewerContactInput" placeholder="Type to search contact..." autocomplete="off"
+            oninput="filterContactSearch('statusViewer',this.value)"
+            onfocus="openContactSearch('statusViewer')"
+            onblur="setTimeout(()=>closeContactSearch('statusViewer'),200)">
+          <div class="contact-search-dropdown" id="statusViewerContactDropdown"></div>
+        </div>
+        <div class="contact-selected" id="statusViewerContactSelected">
+          <span id="statusViewerContactLabel">—</span>
+          <span class="contact-selected-clear" onclick="clearContactSearch('statusViewer')">✕</span>
+        </div>
+        <input type="hidden" id="statusViewerContact" value="">
         <button class="refresh-btn" onclick="logStatusViewTap()" style="background:var(--blue);color:#fff;padding:10px 20px">👁 LOG STATUS VIEW</button>
       </div>
       <div id="statusViewerList"></div>
@@ -798,9 +885,18 @@
     <div class="card" style="margin-bottom:20px">
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">When a business converts — tap here to log it. Builds your conversion history and avg days-to-close.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <select id="conversionContact" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px">
-          <option value="">Select business that converted...</option>
-        </select>
+        <div class="contact-search-wrap" style="grid-column:span 2">
+          <input class="contact-search-input" id="conversionContactInput" placeholder="Type to search contact..." autocomplete="off"
+            oninput="filterContactSearch('conversion',this.value)"
+            onfocus="openContactSearch('conversion')"
+            onblur="setTimeout(()=>closeContactSearch('conversion'),200)">
+          <div class="contact-search-dropdown" id="conversionContactDropdown"></div>
+        </div>
+        <div class="contact-selected" id="conversionContactSelected" style="grid-column:span 2">
+          <span id="conversionContactLabel">—</span>
+          <span class="contact-selected-clear" onclick="clearContactSearch('conversion')">✕</span>
+        </div>
+        <input type="hidden" id="conversionContact" value="">
         <select id="conversionOffer" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px">
           <option value="Business Presence">Business Presence — Free</option>
           <option value="Verified Business" selected>Verified Business — GHS 180</option>
@@ -819,9 +915,18 @@
     <div class="card" style="margin-bottom:20px">
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Every time you change a stage or follow-up date, log it here. Builds the full contact history.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-        <select id="activityContact" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px">
-          <option value="">Select contact...</option>
-        </select>
+        <div class="contact-search-wrap">
+          <input class="contact-search-input" id="activityContactInput" placeholder="Type to search contact..." autocomplete="off"
+            oninput="filterContactSearch('activity',this.value)"
+            onfocus="openContactSearch('activity')"
+            onblur="setTimeout(()=>closeContactSearch('activity'),200)">
+          <div class="contact-search-dropdown" id="activityContactDropdown"></div>
+        </div>
+        <div class="contact-selected" id="activityContactSelected">
+          <span id="activityContactLabel">—</span>
+          <span class="contact-selected-clear" onclick="clearContactSearch('activity')">✕</span>
+        </div>
+        <input type="hidden" id="activityContact" value="">
         <select id="activityType" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px">
           <option value="conversation">Conversation</option>
           <option value="stage_change">Stage Change</option>
@@ -840,9 +945,18 @@
     <div class="section-title">🔍 CONTACT HISTORY LOOKUP</div>
     <div class="card">
       <div style="display:flex;gap:8px;margin-bottom:12px">
-        <select id="historyContact" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px;flex:1">
-          <option value="">Select a contact to view full history...</option>
-        </select>
+        <div class="contact-search-wrap" style="flex:1">
+          <input class="contact-search-input" id="historyContactInput" placeholder="Type to search contact..." autocomplete="off"
+            oninput="filterContactSearch('history',this.value)"
+            onfocus="openContactSearch('history')"
+            onblur="setTimeout(()=>closeContactSearch('history'),200)">
+          <div class="contact-search-dropdown" id="historyContactDropdown"></div>
+        </div>
+        <div class="contact-selected" id="historyContactSelected">
+          <span id="historyContactLabel">—</span>
+          <span class="contact-selected-clear" onclick="clearContactSearch('history')">✕</span>
+        </div>
+        <input type="hidden" id="historyContact" value="">
         <button class="refresh-btn" onclick="loadContactHistory()">VIEW HISTORY</button>
       </div>
       <div id="contactHistoryPanel"></div>
@@ -1954,17 +2068,76 @@ async function loadTrackerData() {
   }
 }
 
+// Selected contact values per search field
+const contactSearchState = {};
+
 function populateContactDropdowns() {
+  // Now handled by searchable inputs - nothing needed here
+}
+
+function filterContactSearch(field, query) {
+  const dropdown = document.getElementById(field + 'ContactDropdown');
+  if(!dropdown) return;
+  const q = query.toLowerCase().trim();
   const contacts = state.contacts;
-  const selects = ['outreachContact','statusViewerContact','conversionContact','activityContact','historyContact'];
-  selects.forEach(id => {
-    const sel = document.getElementById(id);
-    if(!sel) return;
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Select contact...</option>' +
-      contacts.map(c=>`<option value="${c.Business}|${c.Number}|${c.WA_Label}">${c.Business} ${c.Number?'('+c.Number+')':''}</option>`).join('');
-    if(current) sel.value = current;
-  });
+  const filtered = q.length === 0
+    ? contacts.slice(0, 20)
+    : contacts.filter(c =>
+        (c.Business||'').toLowerCase().includes(q) ||
+        (c.Number||'').includes(q) ||
+        (c.Category||'').toLowerCase().includes(q) ||
+        (c.Town||'').toLowerCase().includes(q)
+      ).slice(0, 20);
+
+  dropdown.innerHTML = filtered.map(c => `
+    <div class="contact-search-option" onmousedown="selectContact('${field}','${c.Business.replace(/'/g,"\'")}','${c.Number||''}','${c.WA_Label ? c.WA_Label.substring(0,10).replace(/'/g,"\'") : ''}')">
+      <div>
+        <div class="opt-name">${c.Business}</div>
+        <div class="opt-number">${c.Number||'—'} · ${c.Category||'—'}</div>
+      </div>
+      <div class="opt-label">${getWAEmoji(c.WA_Label)}</div>
+    </div>
+  `).join('');
+  dropdown.classList.add('open');
+}
+
+function openContactSearch(field) {
+  filterContactSearch(field, document.getElementById(field+'ContactInput')?.value||'');
+}
+
+function closeContactSearch(field) {
+  const dropdown = document.getElementById(field + 'ContactDropdown');
+  if(dropdown) dropdown.classList.remove('open');
+}
+
+function selectContact(field, business, number, waLabel) {
+  // Set hidden input value
+  const hidden = document.getElementById(field + 'Contact');
+  if(hidden) hidden.value = business + '|' + number + '|' + waLabel;
+
+  // Show selected pill
+  const selected = document.getElementById(field + 'ContactSelected');
+  const label = document.getElementById(field + 'ContactLabel');
+  if(selected) selected.classList.add('visible');
+  if(label) label.textContent = business + (number ? ' · ' + number : '');
+
+  // Clear and close input
+  const input = document.getElementById(field + 'ContactInput');
+  if(input) { input.value = ''; input.style.display = 'none'; }
+  const dropdown = document.getElementById(field + 'ContactDropdown');
+  if(dropdown) dropdown.classList.remove('open');
+
+  contactSearchState[field] = {business, number, waLabel};
+}
+
+function clearContactSearch(field) {
+  const hidden = document.getElementById(field + 'Contact');
+  if(hidden) hidden.value = '';
+  const selected = document.getElementById(field + 'ContactSelected');
+  if(selected) selected.classList.remove('visible');
+  const input = document.getElementById(field + 'ContactInput');
+  if(input) { input.value = ''; input.style.display = ''; input.focus(); }
+  delete contactSearchState[field];
 }
 
 function renderTracker() {
