@@ -1372,9 +1372,24 @@ function renderFollowUps() {
   if(currentFilter !== 'all') {
     contacts = contacts.filter(c=>c.WA_Label && c.WA_Label.includes(currentFilter));
   } else {
-    // All due — exclude 1-tick (they go to call list) and rejected
     contacts = contacts.filter(c=>!c.WA_Label.includes('🔴'));
   }
+
+  // Sort: overdue first, then by follow-up date ascending
+  const today = new Date(); today.setHours(0,0,0,0);
+  contacts.sort((a, b) => {
+    const getDate = (c) => {
+      if(!c.Next_Follow_Up) return new Date('2099-01-01');
+      const d = new Date(c.Next_Follow_Up);
+      if(!isNaN(d.getTime())) return d;
+      return new Date('2099-01-01');
+    };
+    const da = getDate(a); const db = getDate(b);
+    const aOverdue = da <= today; const bOverdue = db <= today;
+    if(aOverdue && !bOverdue) return -1;
+    if(!aOverdue && bOverdue) return 1;
+    return da - db;
+  });
 
   if(contacts.length===0) {
     document.getElementById('followupList').innerHTML = '<div class="empty">No contacts match this filter</div>';
@@ -1389,18 +1404,27 @@ function renderFollowUps() {
       .replace(/\[BUSINESS\]/g, c.Business)
       .replace(/\[CATEGORY\]/g, c.Category||'business');
 
+    // Calculate days overdue
+    const followDate = new Date(c.Next_Follow_Up);
+    const daysOverdue = !isNaN(followDate.getTime()) ? Math.floor((today - followDate)/(1000*60*60*24)) : 0;
+    const overdueTag = daysOverdue > 0 ? `<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:8px">⚠️ ${daysOverdue}d overdue</span>` : '';
+    const dueTodayTag = daysOverdue === 0 && !isNaN(followDate.getTime()) ? `<span style="color:var(--gold);font-size:10px;font-weight:700;margin-left:8px">📅 DUE TODAY</span>` : '';
+
     return `
-      <div class="followup-item">
+      <div class="followup-item" style="${daysOverdue > 0 ? 'border-color:#2a1500;border-left:3px solid var(--red)' : ''}">
         <div class="followup-header">
-          <div>
-            <div class="followup-name">${emoji} ${c.Business}</div>
-            <div class="followup-meta">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'} · Follow-up: ${c.Next_Follow_Up||'—'}</div>
-            <div class="followup-meta" style="margin-top:4px;color:var(--text-dim)">${c.Notes ? c.Notes.substring(0,100)+'...' : '—'}</div>
+          <div style="flex:1">
+            <div class="followup-name">${emoji} ${c.Business}${overdueTag}${dueTodayTag}</div>
+            <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)}</div>
+            <div class="followup-meta" style="margin-top:4px;color:var(--text-dim);font-style:italic">${c.Notes ? c.Notes.substring(0,120) : '—'}</div>
           </div>
           <div class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</div>
         </div>
         <div class="message-box">${msg}</div>
-        <button class="copy-btn" onclick="copyMsg(\`${msg.replace(/`/g,"'")}\`, this)">COPY</button>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <button class="copy-btn" onclick="copyMsg(\`${msg.replace(/`/g,"'")}\`, this)">COPY</button>
+          <button class="copy-btn" style="background:var(--surface)" data-biz="${c.Business}" data-notes="${(c.Notes||''). substring(0,200)}" data-cat="${c.Category||''}" data-emoji="${emoji}" onclick="generatePersonalMsgFromBtn(this)">✨ PERSONALISE</button>
+        </div>
       </div>
     `;
   }).join('');
@@ -1865,17 +1889,63 @@ function renderAI() {
   // Daily suggestions
   const day = new Date().getDay();
   const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][day];
-  const suggestions = [
-    {icon:'📱',title:'WhatsApp Status Strategy',body:'Post a business success story or visibility tip on your status today. The contacts watching but not replying will see it. This warms them up without you chasing them.'},
-    {icon:'\u{1F5FA}',title:'Google Maps Drop',body:'Pick 3 contacts from your pipeline and search their business on Google Maps right now. Screenshot what you find (or don\'t find). Send that screenshot as your opener — it\'s the most powerful cold hook you have.'},
-    {icon:'\u{1F3AF}',title:'Daily Close Target',body:`Today is your target: get 1 Verified close (GHS 180). That is your only goal. Focus on your ${green} active conversations and ${blue} hot lead${blue!==1?'s':''} first.`},
-    {icon:'\u{1F4AC}',title:'Voice Note Day',body:'Every 3rd day, send voice notes instead of text. Voice notes get 3x more replies because they feel personal. Pick your top 5 warm contacts and send a 30-second voice note today.'},
-    {icon:'\u{1F3D9}',title:'Koforidua Physical Visit',body:`You have ${state.koforidua?state.koforidua.filter(c=>c.Bucket&&c.Bucket.includes('B3')).length:0} businesses in Koforidua that saw your message and did not reply. A physical visit converts at a much higher rate than more messages.`}
-  ];
+  const hour = new Date().getHours();
+
+  // Dynamic suggestions based on pipeline state + day of week
+  const dynamicSuggestions = [];
+
+  // Always first: close target based on actual hot leads
+  if(blue > 0) {
+    const hotContact = state.contacts.find(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
+    dynamicSuggestions.push({
+      icon:'🔵',
+      title:'Close ' + (hotContact ? hotContact.Business : 'your hot lead') + ' today',
+      body: (hotContact ? hotContact.Business : 'Your hot lead') + ' is at verbal yes stage. Contact them first, before any new outreach. Say: "I have everything ready — shall we get you live today? GHS 180 setup, done in 24 hours." Do not over-explain. One question. Wait for the yes.'
+    });
+  }
+
+  // Day-specific suggestions
+  const daySpecific = {
+    1: {icon:'📞', title:'Monday Call Blitz', body:`Start the week strong. You have ${red} contacts with 1-tick (message not delivered). Today is the day to call them — not WhatsApp, not voice note. An actual call. Pick the 5 most promising ones from your call list and dial.`},
+    2: {icon:'🗺', title:'Google Maps Drop Day', body:'Pick 3 contacts from your pipeline and search their business on Google Maps right now. Screenshot what you find. Send that screenshot with one line: "This is what your customers see when they search for you." Nothing else. Wait.'},
+    3: {icon:'🎤', title:'Voice Note Wednesday', body:'Today send voice notes instead of text to your top 5 warm contacts. Voice notes get 3x more replies — they feel personal. 30 seconds max. Start with their name, say one specific thing about their business, end with one question.'},
+    4: {icon:'🏙', title:'Koforidua Thursday', body:`You have ${state.koforidua?state.koforidua.length:0} Koforidua businesses in your master sheet. Plan a physical route for tomorrow or next week. Face-to-face converts at a higher rate than any message. Pick the businesses in the same area and batch them.`},
+    5: {icon:'📊', title:'Friday Pipeline Review', body:`End the week by updating every WA Label in the sheet. ${orange} contacts read your message and did not reply — change their label, update the follow-up date for Monday. Clean data this weekend means clean outreach next week.`},
+    0: {icon:'📖', title:'Sunday Prep', body:`Sunday is prep day. Review your ${state.contacts.filter(c=>c.Next_Follow_Up).length} contacts with follow-up dates. Update the sheet. Plan tomorrow's outreach batch. The week you plan on Sunday is the week you execute on Monday.`},
+    6: {icon:'🕯', title:'Shabbat Rest', body:'Today is rest. The work is in Yahuah\'s hands. No outreach, no chasing. Rest fully so you execute fully from Sunday.'}
+  };
+
+  if(daySpecific[day]) dynamicSuggestions.push(daySpecific[day]);
+
+  // Pipeline-based suggestions
+  if(orange > 5) {
+    const orangeContact = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟠'))[0];
+    dynamicSuggestions.push({
+      icon:'🟠',
+      title:`Re-enter ${orange} contacts who read but did not reply`,
+      body: `${orange > 5 ? 'You have a big group here. ' : ''}Do not send the same message again. For ${orangeContact ? orangeContact.Business : 'these contacts'}: search their business on Google, screenshot it, send that with one line. Show them the problem with their own eyes. That is the re-entry.`
+    });
+  }
+
+  if(yellow > 8) {
+    dynamicSuggestions.push({
+      icon:'🟡',
+      title:`${yellow} delivered but unread — wait or act`,
+      body: `These messages were delivered but not opened. If it has been less than 3 days, wait. If it has been more than 5 days, send a new message — not a follow-up on the old one. Lead with something new: a nearby business result, a Google Maps screenshot, a question.`
+    });
+  }
+
+  if(green > 3) {
+    dynamicSuggestions.push({
+      icon:'🟢',
+      title:`Close from your ${green} active conversations`,
+      body: `These contacts are talking to you. The next message to each of them should include a direct close question: "Are you ready to get listed as a Verified Business today? GHS 180 setup, takes 24 hours." If they say they need to think, offer the free listing instead and upsell later.`
+    });
+  }
 
   document.getElementById('aiSuggestions').innerHTML = `
-    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Today is ${dayName}. Here's what will move the needle most today:</div>
-    ${suggestions.map(s=>`
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Today is ${dayName} · ${hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'} · Based on your live pipeline right now:</div>
+    ${dynamicSuggestions.slice(0,5).map(s=>`
       <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a1a">
         <div style="font-size:24px;flex-shrink:0">${s.icon}</div>
         <div>
@@ -1956,6 +2026,114 @@ function addAIMessage(role, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+
+
+function getSmartLocalReply(question) {
+  const q = question.toLowerCase();
+  const mrr = getMRR();
+  const total = state.contacts.length;
+  const blue = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
+  const green = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢'));
+  const red = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
+  const orange = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟠'));
+  const dueToday = state.contacts.filter(c=>{
+    if(!c.Next_Follow_Up) return false;
+    const d = new Date(c.Next_Follow_Up);
+    return !isNaN(d.getTime()) && d <= new Date();
+  });
+
+  if(q.includes('contact first') || q.includes('who should i')) {
+    if(blue.length > 0) {
+      return `Contact ${blue[0].Business} first — they are your hot lead.\n\nNumber: ${blue[0].Number}\n\nNotes: ${blue[0].Notes ? blue[0].Notes.substring(0,150) : 'Verbal yes / proposal sent'}\n\nSay: "Hey, I have everything ready to get you listed as Verified today. Shall we sort it now?" One question. Wait for the answer.`;
+    }
+    if(green.length > 0) {
+      return `Your hottest active conversation is ${green[0].Business}.\n\nNumber: ${green[0].Number}\nNotes: ${green[0].Notes ? green[0].Notes.substring(0,150) : 'Active conversation'}\n\nNext step: ask them directly about Verified GHS 180 today. Do not wait for them to ask.`;
+    }
+    return `No hot leads right now. Focus on your ${green.length} active conversations. Go to the Follow-Ups tab, filter by 🟢 Conversation, and close one today.`;
+  }
+
+  if(q.includes('close') || q.includes('verified')) {
+    return `To close a Verified Business today:\n\n1. Go to Follow-Ups tab → filter 🟢 Conversation\n2. Pick the contact with the most context in their notes\n3. Send this: "Hey [Name], I am ready to get your Verified listing live today. GHS 180 setup — takes 24 hours. Shall I lock you in?"\n4. If they say the price is too much: "No problem, let me start you on the free Business Presence listing and we take it from there."\n\nYou have ${green.length} active conversations. One of them closes today if you ask directly.`;
+  }
+
+  if(q.includes('not converting') || q.includes('conversion')) {
+    const rate = total > 0 ? ((state.clients.filter(c=>c.Status==='Active').length/total)*100).toFixed(1) : 0;
+    return `Your conversion rate is ${rate}% (${state.clients.filter(c=>c.Status==='Active').length} of ${total} contacts).\n\nThe three biggest reasons you are not converting more:\n\n1. ${red.length} contacts with 1-tick — your message is not reaching them. These need a call, not another WhatsApp.\n\n2. ${orange.length} contacts read your message and did not reply — the message is not landing. Try the Google Maps drop instead of a pitch.\n\n3. You are not asking directly. The close question — "Shall I lock you in today?" — needs to be in every conversation after the second message.`;
+  }
+
+  if(q.includes('today') && q.includes('tip') || q.includes('outreach tip')) {
+    const tips = [
+      `Today's tip: Do the Google Maps drop on 3 contacts. Search their business, screenshot it, send it with one line: "This is what your customers see." No pitch. Just the mirror. It gets replies every time.`,
+      `Today's tip: Send a voice note to ${green.length > 0 ? green[0].Business : 'one of your warm contacts'} instead of text. 30 seconds. Say their name, mention something specific from your last conversation, end with one question. Voice gets 3x more replies.`,
+      `Today's tip: Check your WhatsApp status views right now. Anyone watching your status but not replying is warm. Go to Tracker tab and log them as Status Viewers. Then send them a re-entry with something new — not a follow-up on the old message.`
+    ];
+    return tips[Math.floor(Math.random() * tips.length)];
+  }
+
+  if(q.includes('follow up') || (q.includes('due') && !q.includes('why'))) {
+    return `You have ${dueToday.length} follow-ups due today.\n\nTop 3 to contact now:\n${dueToday.slice(0,3).map((c,i)=>`${i+1}. ${c.Business} (${c.Number||'—'}) — ${c.WA_Label ? c.WA_Label.substring(0,20) : '—'}`).join('\n')}\n\nGo to the Follow-Ups tab — they are sorted overdue first. Copy the message, send it, log it in the Tracker.`;
+  }
+
+  if(q.includes('revenue') || q.includes('money') || q.includes('mrr')) {
+    return `Current MRR: GHS ${mrr} from ${state.clients.filter(c=>c.Status==='Active').length} active clients.\n\nTo reach GHS 180/day (GHS 5,400/month):\n- Need ${Math.ceil((5400-mrr)/180)} more Verified closes at GHS 180 each\n- Or ${Math.ceil((5400-mrr)/500)} more Visibility Partner closes at GHS 500\n\nYou have ${blue.length} hot lead${blue.length!==1?'s':''} and ${green.length} active conversations. That is enough to move this week.`;
+  }
+
+  // No local match — fall through to API
+  return null;
+}
+
+function generatePersonalMsgFromBtn(btn) {
+  generatePersonalMsg(btn.dataset.biz||"", btn.dataset.notes||"", btn.dataset.cat||"", btn.dataset.emoji||"", btn);
+}
+
+async function generatePersonalMsg(business, notes, category, emoji, btn) {
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+
+  // Build a context-aware message from notes without needing API
+  // Parse notes to find key signals
+  const notesLower = notes.toLowerCase();
+  let msg = '';
+
+  // Detect signals in notes
+  const hasPrice = notesLower.includes('price') || notesLower.includes('ghs') || notesLower.includes('180') || notesLower.includes('cost');
+  const hasBusy = notesLower.includes('busy') || notesLower.includes('later') || notesLower.includes('next month') || notesLower.includes('next week');
+  const hasInterest = notesLower.includes('interested') || notesLower.includes('yes') || notesLower.includes('want');
+  const hasRead = notesLower.includes('read') || notesLower.includes('blue tick') || notesLower.includes('seen');
+  const hasPhysical = notesLower.includes('visit') || notesLower.includes('shop') || notesLower.includes('koforidua') || notesLower.includes('walk');
+  const name = business.split(' ')[0];
+
+  if(hasPrice) {
+    msg = `Hey ${name}, hope all is well.\n\nI know the investment came up last time we spoke.\n\nQuick reminder — GHS 180 setup works out to 6 cedis a day. If one extra customer finds you and buys, it covers the whole month.\n\nWant me to get you started today?`;
+  } else if(hasBusy) {
+    msg = `Hey ${name}, hope things have settled down since we last spoke.\n\nJust a quick check-in — not here to push anything.\n\nHow has business been this week?`;
+  } else if(hasInterest) {
+    msg = `Hey ${name} 👋🏿 Following up on our conversation.\n\nYou showed interest before — I have everything ready to get your business listed as Verified today.\n\nGHS 180 setup. Takes 24 hours to go live. Shall I lock you in?`;
+  } else if(hasRead) {
+    msg = `Hey ${name}, I know you saw the last message.\n\nNo pressure at all — just want to show you something specific.\n\nI searched ${category || 'your business type'} on Google just now. Your competitors are showing up. You're not there yet.\n\nWant me to fix that today? Free to start.`;
+  } else if(hasPhysical) {
+    msg = `Hey ${name}, good to see you in person recently.\n\nJust following up from our conversation — I am ready to get your business live on the platform whenever you are.\n\nShall we sort it this week?`;
+  } else {
+    msg = `Hey ${name}, hope all is well and business is moving.\n\nJust checking in — I have been working with ${category||'local'} businesses in your area this week on getting found online.\n\nOne question: when a customer searches for what you sell right now, does your business come up?`;
+  }
+
+  // Replace the message box above the button
+  const followupItem = btn.closest('.followup-item');
+  const msgBox = followupItem.querySelector('.message-box');
+  if(msgBox) msgBox.textContent = msg;
+
+  // Update copy button
+  const copyBtn = followupItem.querySelector('.copy-btn');
+  if(copyBtn) {
+    copyBtn.onclick = () => copyMsg(msg, copyBtn);
+  }
+
+  btn.textContent = '✓ Personalised';
+  btn.style.background = 'var(--green)';
+  btn.style.color = 'var(--black)';
+  setTimeout(()=>{ btn.textContent = '✨ PERSONALISE'; btn.style.background = ''; btn.style.color = ''; btn.disabled = false; }, 3000);
+}
+
 async function sendAI() {
   const input = document.getElementById('aiInput');
   const question = input.value.trim();
@@ -1967,6 +2145,16 @@ async function sendAI() {
   loading.style.cssText = 'color:var(--muted);font-size:11px;padding:8px;font-family:Space Mono,monospace';
   loading.textContent = 'Thinking...';
   document.getElementById('aiChat').appendChild(loading);
+
+  // Try smart local response first (no API needed)
+  const localReply = getSmartLocalReply(question);
+  if(localReply) {
+    loading.remove();
+    aiHistory.push({role:'user', content: question});
+    aiHistory.push({role:'assistant', content: localReply});
+    addAIMessage('assistant', localReply);
+    return;
+  }
 
   // Build context from live CRM data
   const mrr = getMRR();
