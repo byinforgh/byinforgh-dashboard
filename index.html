@@ -966,6 +966,22 @@
 
 </div>
 
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:500;align-items:center;justify-content:center">
+    <div style="background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:24px;width:340px;max-width:90vw">
+      <div style="font-size:14px;font-weight:800;letter-spacing:2px;margin-bottom:16px">⚙ REVENUE SETTINGS</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">Monthly Revenue Target (GHS)</div>
+      <input id="settingMonthly" type="number" value="5400" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-size:13px;width:100%;margin-bottom:12px;font-family:Syne,sans-serif">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">Working Days Per Month</div>
+      <input id="settingWorkDays" type="number" value="26" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-size:13px;width:100%;margin-bottom:16px;font-family:Syne,sans-serif">
+      <div style="display:flex;gap:8px">
+        <button onclick="saveTargetSettings()" class="refresh-btn" style="background:var(--gold);color:var(--black);flex:1;padding:10px">SAVE</button>
+        <button onclick="document.getElementById('settingsModal').style.display='none'" class="refresh-btn" style="flex:1;padding:10px">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1079,21 +1095,39 @@ async function loadData() {
   document.getElementById('lastRefresh').textContent = 'Refreshing...';
   try {
     const res = await fetch(API_URL + '?t=' + Date.now());
+    if(!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
+    if(raw.fatalError) throw new Error(raw.fatalError);
     state.raw = raw;
-    // Parse contacts from CRM
-    if(raw.masterCRM && Array.isArray(raw.masterCRM)) {
+
+    // Use allContacts (CRM + Koforidua combined) as primary contact list
+    if(raw.allContacts && Array.isArray(raw.allContacts)) {
+      state.contacts = raw.allContacts.filter(r=>r.Business);
+    } else if(raw.masterCRM && Array.isArray(raw.masterCRM)) {
       state.contacts = raw.masterCRM.filter(r=>r.ID && r.Business);
     }
+
+    // Keep CRM-only for things that need just CRM
+    if(raw.masterCRM && Array.isArray(raw.masterCRM)) {
+      state.crmContacts = raw.masterCRM.filter(r=>r.ID && r.Business);
+    }
+
     if(raw.clients && Array.isArray(raw.clients)) state.clients = raw.clients;
     if(raw.renewals && Array.isArray(raw.renewals)) state.renewals = raw.renewals;
     if(raw.outreachLog && Array.isArray(raw.outreachLog)) state.outreach = raw.outreachLog;
     if(raw.koforidua && Array.isArray(raw.koforidua)) state.koforidua = raw.koforidua;
+
+    // Store counts for front page
+    state.crmCount = raw.crmCount || (state.crmContacts||[]).length;
+    state.kofCount = raw.kofCount || (state.koforidua||[]).length;
+    state.totalCount = raw.totalContacts || state.contacts.length;
+    state.todayOutreach = raw.todayOutreachCount || 0;
+
     document.getElementById('lastRefresh').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     renderToday();
   } catch(e) {
-    document.getElementById('lastRefresh').textContent = 'Offline — using demo data';
-    loadDemoData();
+    document.getElementById('lastRefresh').textContent = 'Offline — check connection';
+    console.log('Load error:', e.message);
   }
 }
 
@@ -1173,6 +1207,10 @@ function renderToday() {
     return d.toDateString()===t.toDateString();
   }).length : 0;
 
+  const crmCount = state.crmCount || state.contacts.filter(c=>c.Sheet_Source==='Master CRM'||!c.Sheet_Source).length;
+  const kofCount = state.kofCount || state.contacts.filter(c=>c.Sheet_Source==='Koforidua Master').length;
+  const todayOut = state.todayOutreach || todayOutreach;
+
   document.getElementById('topMetrics').innerHTML = `
     <div class="metric-card gold">
       <div class="metric-label">MONTHLY REVENUE</div>
@@ -1181,8 +1219,11 @@ function renderToday() {
     </div>
     <div class="metric-card green">
       <div class="metric-label">TOTAL CONTACTS</div>
-      <div class="metric-value">${total}</div>
-      <div class="metric-sub">in pipeline</div>
+      <div class="metric-value" style="font-size:28px">${total}</div>
+      <div class="metric-sub" style="display:flex;gap:10px;margin-top:6px">
+        <span style="color:var(--gold)">CRM: ${crmCount}</span>
+        <span style="color:var(--teal)">Kof: ${kofCount}</span>
+      </div>
     </div>
     <div class="metric-card orange">
       <div class="metric-label">HOT LEADS</div>
@@ -1201,21 +1242,31 @@ function renderToday() {
     </div>
     <div class="metric-card purple">
       <div class="metric-label">TODAY'S OUTREACH</div>
-      <div class="metric-value">${todayOutreach}</div>
-      <div class="metric-sub">messages sent</div>
+      <div class="metric-value">${todayOut}</div>
+      <div class="metric-sub">from sheet + tracker</div>
     </div>
   `;
 
-  const target = 180;
-  const pct = Math.min(100, Math.round((mrr/target)*100));
+  const monthlyTarget = state.settings ? (parseInt(state.settings.monthly_target)||5400) : 5400;
+  const workingDays = state.settings ? (parseInt(state.settings.working_days)||26) : 26;
+  const dailyTarget = Math.round(monthlyTarget / workingDays);
+  const dailyActual = Math.round(mrr / workingDays);
+  const pct = Math.min(100, Math.round((mrr/monthlyTarget)*100));
   document.getElementById('targetBar').innerHTML = `
     <div class="target-header">
-      <div class="target-title">DAILY REVENUE TARGET</div>
-      <div class="target-amount">₵${mrr} / ₵${target}</div>
+      <div>
+        <div class="target-title">REVENUE TARGETS</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Monthly goal: ₵${monthlyTarget.toLocaleString()} ÷ ${workingDays} working days = ₵${dailyTarget}/day</div>
+      </div>
+      <div style="text-align:right">
+        <div class="target-amount">₵${mrr} / ₵${monthlyTarget.toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--text-dim)">Daily actual: ₵${dailyActual} | Daily target: ₵${dailyTarget}</div>
+      </div>
     </div>
-    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="progress-track" style="margin:10px 0"><div class="progress-fill" style="width:${pct}%"></div></div>
     <div class="target-stats">
-      Progress: <span>${pct}%</span> &nbsp;|&nbsp; Still needed: <span>₵${Math.max(0,target-mrr)}</span> &nbsp;|&nbsp; Next close: <span>₵${mrr+180}</span>
+      Progress: <span>${pct}%</span> &nbsp;|&nbsp; Still needed this month: <span>₵${Math.max(0,monthlyTarget-mrr).toLocaleString()}</span> &nbsp;|&nbsp; Next Verified close: <span>₵${mrr+180}</span>
+      &nbsp;|&nbsp; <button onclick="openTargetSettings()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:2px 8px;border-radius:3px;cursor:pointer;font-size:10px;font-family:Syne,sans-serif">⚙ SET TARGET</button>
     </div>
   `;
 
@@ -2103,18 +2154,20 @@ async function generatePersonalMsg(business, notes, category, emoji, btn) {
   const hasPhysical = notesLower.includes('visit') || notesLower.includes('shop') || notesLower.includes('koforidua') || notesLower.includes('walk');
   const name = business.split(' ')[0];
 
+  // Build honest message based only on what notes actually say
+  // Never claim actions not taken
   if(hasPrice) {
-    msg = `Hey ${name}, hope all is well.\n\nI know the investment came up last time we spoke.\n\nQuick reminder — GHS 180 setup works out to 6 cedis a day. If one extra customer finds you and buys, it covers the whole month.\n\nWant me to get you started today?`;
+    msg = `Hey ${name}.\n\nHope things are going well.\n\nJust checking in from our last conversation.\n\nGHS 180 setup works out to about 6 cedis a day. If one customer finds you through the listing and buys, it covers itself for months.\n\nWhen you are ready, just let me know.`;
   } else if(hasBusy) {
-    msg = `Hey ${name}, hope things have settled down since we last spoke.\n\nJust a quick check-in — not here to push anything.\n\nHow has business been this week?`;
+    msg = `Hey ${name}, hope things have settled a bit since we last spoke.\n\nNo pressure at all — just a quick check in.\n\nHow has business been this week?`;
   } else if(hasInterest) {
-    msg = `Hey ${name} 👋🏿 Following up on our conversation.\n\nYou showed interest before — I have everything ready to get your business listed as Verified today.\n\nGHS 180 setup. Takes 24 hours to go live. Shall I lock you in?`;
+    msg = `Hey ${name}.\n\nFollowing up from our conversation — I am ready to get your Verified listing live whenever you are.\n\nGHS 180 setup, done in 24 hours. Just say the word.`;
   } else if(hasRead) {
-    msg = `Hey ${name}, I know you saw the last message.\n\nNo pressure at all — just want to show you something specific.\n\nI searched ${category || 'your business type'} on Google just now. Your competitors are showing up. You're not there yet.\n\nWant me to fix that today? Free to start.`;
+    msg = `Hey ${name}.\n\nI can see my last message came through. No worries if timing is off.\n\nWhen you have a moment, I had a quick question about your business online presence.`;
   } else if(hasPhysical) {
-    msg = `Hey ${name}, good to see you in person recently.\n\nJust following up from our conversation — I am ready to get your business live on the platform whenever you are.\n\nShall we sort it this week?`;
+    msg = `Hey ${name}, good speaking when we met.\n\nJust following up — ready to get your business listed whenever suits you.\n\nShall we sort it this week?`;
   } else {
-    msg = `Hey ${name}, hope all is well and business is moving.\n\nJust checking in — I have been working with ${category||'local'} businesses in your area this week on getting found online.\n\nOne question: when a customer searches for what you sell right now, does your business come up?`;
+    msg = `Hey ${name}, hope all is well.\n\nJust checking in — how has business been this week?`;
   }
 
   // Replace the message box above the button
@@ -2358,15 +2411,28 @@ function renderOutreachCounter() {
 
 function renderStatusViewers() {
   const viewers = trackerData.statusViewers || [];
-  document.getElementById('statusViewerList').innerHTML = viewers.slice(0,10).map(v=>`
+  const topV = trackerData.topStatusViewers || [];
+  const topViewerHtml = topV.length > 0 ? `
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:8px">TOP STATUS VIEWERS — MOST FREQUENT</div>
+      ${topV.slice(0,5).map((v,i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a">
+          <div style="font-size:12px"><span style="color:var(--gold);font-weight:700;margin-right:8px">#${i+1}</span>${v.business}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--blue);font-weight:700">${v.count}x</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  document.getElementById('statusViewerList').innerHTML = topViewerHtml + (viewers.slice(0,10).map(v=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1a1a">
       <div>
-        <div style="font-size:12px;font-weight:700">${v.business||'—'}</div>
+        <div style="font-size:12px;font-weight:700">${v.business||'—'} ${v.viewCount > 1 ? '<span style="color:var(--blue);font-size:10px">'+v.viewCount+'x</span>' : ''}</div>
         <div style="font-size:11px;color:var(--text-dim)">${v.number||''} · ${v.waLabel ? v.waLabel.substring(0,25) : '—'}</div>
       </div>
       <div style="font-size:10px;color:var(--blue)">${cleanDate(v.timestamp)}</div>
     </div>
-  `).join('') || '<div class="empty">No status views logged yet. Check your WhatsApp status views and tap contacts you recognise.</div>';
+  `).join('') || '<div class="empty">No status views logged yet.</div>');
 }
 
 function renderConversions() {
@@ -2521,17 +2587,20 @@ async function logOutreachTap() {
 }
 
 async function logStatusViewTap() {
-  const sel = document.getElementById('statusViewerContact');
-  if(!sel.value) { showToast('Select a contact first'); return; }
-  const parts = sel.value.split('|');
+  const hidden = document.getElementById('statusViewerContact');
+  if(!hidden || !hidden.value) { showToast('Select a contact first'); return; }
+  const parts = hidden.value.split('|');
   const business = parts[0]; const number = parts[1]||''; const waLabel = parts[2]||'';
 
   try {
     await fetch(API_URL + '?action=logStatusView&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&waLabel='+encodeURIComponent(waLabel)+'&t='+Date.now());
   } catch(e) { console.log('logStatusView error:', e); }
 
-  trackerData.statusViewers = [{timestamp:new Date().toString(),business,number,waLabel},...(trackerData.statusViewers||[])];
+  trackerData.statusViewers = [{timestamp:new Date().toString(),business,number,waLabel,viewCount:1},...(trackerData.statusViewers||[])];
   renderStatusViewers();
+
+  // Clear after logging
+  clearContactSearch('statusViewer');
   showToast('Status view logged — ' + business);
 }
 
@@ -2560,32 +2629,74 @@ async function logConversionTap() {
 }
 
 async function logActivityTap() {
-  const sel = document.getElementById('activityContact');
-  if(!sel.value) { showToast('Select a contact first'); return; }
-  const parts = sel.value.split('|');
-  const business = parts[0]; const id = '';
+  const hidden = document.getElementById('activityContact');
+  if(!hidden || !hidden.value) { showToast('Select a contact first'); return; }
+  const parts = hidden.value.split('|');
+  const business = parts[0];
+  const source = parts[3] || 'Master CRM';
   const actionType = document.getElementById('activityType').value;
   const notes = document.getElementById('activityNote').value;
 
   try {
-    await fetch(API_URL + '?action=logActivity&business='+encodeURIComponent(business)+'&actionType='+encodeURIComponent(actionType)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now());
+    await fetch(API_URL + '?action=logActivity&business='+encodeURIComponent(business)+'&actionType='+encodeURIComponent(actionType)+'&notes='+encodeURIComponent(notes)+'&source='+encodeURIComponent(source)+'&t='+Date.now());
   } catch(e) { console.log('logActivity error:', e); }
 
-  trackerData.activities = [{timestamp:new Date().toString(),business,action:actionType,notes},...(trackerData.activities||[])];
+  trackerData.activities = [{timestamp:new Date().toString(),business,sheetSource:source,action:actionType,notes},...(trackerData.activities||[])];
   renderActivityLog();
+
+  // Clear form after logging
   document.getElementById('activityNote').value = '';
+  clearContactSearch('activity');
   showToast('Activity logged — ' + business);
+}
+
+
+function openTargetSettings() {
+  const modal = document.getElementById('settingsModal');
+  if(state.settings) {
+    document.getElementById('settingMonthly').value = state.settings.monthly_target || '5400';
+    document.getElementById('settingWorkDays').value = state.settings.working_days || '26';
+  }
+  modal.style.display = 'flex';
+}
+
+async function saveTargetSettings() {
+  const monthly = document.getElementById('settingMonthly').value || '5400';
+  const workDays = document.getElementById('settingWorkDays').value || '26';
+  const daily = Math.round(parseInt(monthly)/parseInt(workDays));
+  try {
+    await fetch(API_URL + '?action=saveSettings&monthly_target='+monthly+'&working_days='+workDays+'&daily_target='+daily+'&t='+Date.now());
+    state.settings = {monthly_target: monthly, working_days: workDays, daily_target: daily.toString()};
+    showToast('Target saved — ₵'+monthly+'/month, ₵'+daily+'/day');
+    document.getElementById('settingsModal').style.display = 'none';
+    renderToday();
+  } catch(e) {
+    showToast('Saved locally — will sync on next refresh');
+    state.settings = {monthly_target: monthly, working_days: workDays, daily_target: daily.toString()};
+    document.getElementById('settingsModal').style.display = 'none';
+    renderToday();
+  }
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch(API_URL + '?action=getSettings&t=' + Date.now());
+    const data = await res.json();
+    if(!data.error) state.settings = data;
+  } catch(e) {
+    state.settings = {monthly_target:'5400', working_days:'26', daily_target:'180'};
+  }
 }
 
 // Init
 document.addEventListener('DOMContentLoaded', ()=>{
   checkShabbat();
-  loadData();
+  loadSettings().then(()=>loadData());
   loadTrackerData();
   // Auto refresh every 5 mins
   setInterval(()=>{
     if(!isShabbat()) loadData();
-  }, 300000);
+  }, 60000);
 });
 </script>
 </body>
