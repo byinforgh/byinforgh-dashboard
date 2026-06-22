@@ -968,7 +968,22 @@
 
 
   <!-- SETTINGS MODAL -->
-  <div id="settingsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:500;align-items:center;justify-content:center">
+  
+  <!-- FULL NOTES MODAL -->
+  <div id="notesModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;width:100%;max-width:600px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div>
+          <div style="font-size:16px;font-weight:800" id="notesModalTitle">—</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px" id="notesModalMeta">—</div>
+        </div>
+        <button onclick="document.getElementById('notesModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div id="notesModalBody" style="font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;max-height:60vh;overflow-y:auto"></div>
+    </div>
+  </div>
+
+<div id="settingsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:500;align-items:center;justify-content:center">
     <div style="background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:24px;width:340px;max-width:90vw">
       <div style="font-size:14px;font-weight:800;letter-spacing:2px;margin-bottom:16px">⚙ REVENUE SETTINGS</div>
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">Monthly Revenue Target (GHS)</div>
@@ -1465,7 +1480,8 @@ function renderFollowUps() {
       <div class="followup-item" style="${daysOverdue > 0 ? 'border-color:#2a1500;border-left:3px solid var(--red)' : ''}">
         <div class="followup-header">
           <div style="flex:1">
-            <div class="followup-name">${emoji} ${c.Business}${overdueTag}${dueTodayTag}</div>
+            <div class="followup-name" style="cursor:pointer" onclick="showFullNotesBtn(this)" data-biz="${c.Business}" data-notes="${(c.Notes||''). substring(0,800)}" data-stage="${c.Stage||''}" data-number="${c.Number||''}" data-cat="${c.Category||''}">${emoji} ${c.Business}${overdueTag}${dueTodayTag} <span style="color:var(--muted);font-size:10px">▼</span></div>
+/g," ")}','${c.Stage||""}','${c.Number||""}','${c.Category||""}')"> ${emoji} ${c.Business}${overdueTag}${dueTodayTag} <span style="color:var(--muted);font-size:10px">▼ notes</span></div>
             <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)}</div>
             <div class="followup-meta" style="margin-top:4px;color:var(--text-dim);font-style:italic">${c.Notes ? c.Notes.substring(0,120) : '—'}</div>
           </div>
@@ -2133,6 +2149,55 @@ function getSmartLocalReply(question) {
   return null;
 }
 
+
+async function snoozeFollowUp(id, business, days, btn) {
+  const newDate = new Date();
+  newDate.setDate(newDate.getDate() + days);
+  const dateStr = newDate.getDate().toString().padStart(2,'0') + '/' +
+    (newDate.getMonth()+1).toString().padStart(2,'0') + '/' + newDate.getFullYear();
+
+  btn.textContent = 'Saving...';
+  try {
+    await fetch(API_URL + '?action=logActivity&business='+encodeURIComponent(business)+'&actionType=followup_change&newValue='+encodeURIComponent(dateStr)+'&notes=Snoozed+'+days+'d+via+dashboard&t='+Date.now());
+  } catch(e) {}
+
+  // Update locally so UI reflects immediately
+  const contact = state.contacts.find(c=>c.Business===business);
+  if(contact) contact.Next_Follow_Up = dateStr;
+
+  // Hide the follow-up item
+  const item = btn.closest('.followup-item');
+  if(item) {
+    item.style.opacity = '0.4';
+    item.style.transition = 'opacity 0.5s';
+    setTimeout(()=>{ item.remove(); }, 600);
+  }
+  showToast('Snoozed ' + days + ' days — ' + business + ' → ' + dateStr);
+}
+
+async function markContacted(id, business, btn) {
+  btn.textContent = 'Logging...';
+  try {
+    await fetch(API_URL + '?action=logOutreach&business='+encodeURIComponent(business)+'&messageType=WhatsApp+Message&t='+Date.now());
+    await fetch(API_URL + '?action=logActivity&business='+encodeURIComponent(business)+'&actionType=conversation&notes=Marked+contacted+via+dashboard&t='+Date.now());
+  } catch(e) {}
+
+  // Update outreach count
+  state.todayOutreach = (state.todayOutreach || 0) + 1;
+  trackerData.todayOutreachCount = (trackerData.todayOutreachCount || 0) + 1;
+
+  const item = btn.closest('.followup-item');
+  if(item) {
+    item.style.background = '#001a00';
+    item.style.borderColor = 'var(--green)';
+    btn.textContent = '✓ LOGGED';
+    btn.style.background = 'var(--green)';
+    btn.style.color = 'var(--black)';
+    setTimeout(()=>{ item.style.opacity='0.3'; setTimeout(()=>item.remove(),500); }, 1500);
+  }
+  showToast('Contacted logged — ' + business);
+}
+
 function generatePersonalMsgFromBtn(btn) {
   generatePersonalMsg(btn.dataset.biz||"", btn.dataset.notes||"", btn.dataset.cat||"", btn.dataset.emoji||"", btn);
 }
@@ -2650,6 +2715,18 @@ async function logActivityTap() {
   showToast('Activity logged — ' + business);
 }
 
+
+
+function showFullNotesBtn(el) {
+  showFullNotes(el.dataset.biz||"", el.dataset.notes||"", el.dataset.stage||"", el.dataset.number||"", el.dataset.cat||"");
+}
+
+function showFullNotes(business, notes, stage, number, category) {
+  document.getElementById('notesModalTitle').textContent = business;
+  document.getElementById('notesModalMeta').textContent = number + (category ? ' · ' + category : '') + (stage ? ' · ' + stage : '');
+  document.getElementById('notesModalBody').textContent = notes || 'No notes recorded yet.';
+  document.getElementById('notesModal').style.display = 'flex';
+}
 
 function openTargetSettings() {
   const modal = document.getElementById('settingsModal');
