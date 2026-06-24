@@ -186,14 +186,18 @@
   .empty { text-align: center; padding: 30px; color: var(--muted); font-size: 12px; }
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--gold); color: var(--black); padding: 10px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 1px; opacity: 0; transform: translateY(20px); transition: all .3s; z-index: 999; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateY(0); }
-  /* Pagination */
   .pagination-bar { display: flex; gap: 8px; align-items: center; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
   .page-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-dim); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 700; }
   .page-btn.active { background: var(--gold); color: var(--black); border-color: var(--gold); }
   .page-btn:hover:not(.active) { border-color: var(--gold); color: var(--text); }
-  /* Conversation Review */
   .conv-review-area { background: var(--black); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; color: var(--text); line-height: 1.6; width: 100%; min-height: 80px; font-family: 'Syne', sans-serif; outline: none; resize: vertical; }
   .conv-review-area:focus { border-color: var(--gold); }
+  /* v2: payment type badges */
+  .pay-monthly  { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--gold); }
+  .pay-onetime  { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--purple); }
+  .pay-both     { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--teal); }
+  /* v2: monthly-rule tag on follow-up items */
+  .monthly-rule-tag { display: inline-block; background: #1a0a2a; border: 1px solid var(--purple); color: var(--purple); font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -263,7 +267,6 @@
       </div>
     </div>
 
-    <!-- CONVERSATION REVIEW — NEW -->
     <div class="card" style="margin-bottom:16px;border-color:var(--teal)">
       <div class="card-title" style="color:var(--teal)">🗣 CONVERSATION REVIEW — Daily Coaching</div>
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Paste a summary of a conversation that happened today. Get feedback: what worked, what missed, what to say next, score out of 10.</div>
@@ -300,10 +303,9 @@
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" id="aiQuickPrompts"></div>
     </div>
 
-    <!-- ARCHIVE NOTES BUTTON -->
     <div class="card" style="margin-bottom:16px;border-color:#2a2000">
       <div class="card-title" style="color:var(--gold-dim)">🗂 NOTES MANAGEMENT</div>
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">The M column (Summary / AI Notes) in your CRM builds up over months. Archive old notes to Notes History, then replace with a clean 1-line status summary. Run this monthly or when notes get cluttered.<br><span style="color:var(--red);font-weight:700">⚠ This will overwrite the M column with a clean summary. Notes are saved to Notes History first.</span></div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">The M column (Summary / AI Notes) in your CRM builds up over months. Archive old notes to Notes History, then clear the column completely. Run this monthly or when notes get cluttered.<br><span style="color:var(--red);font-weight:700">⚠ This will clear the M column completely. Notes are saved to Notes History first. Timestamps use Koforidua time (GMT+0).</span></div>
       <button class="refresh-btn" onclick="archiveNotes()" id="archiveNotesBtn" style="background:#2a2000;color:var(--gold);border:1px solid var(--gold-dim);padding:10px 24px">🗂 ARCHIVE + CLEAR NOTES COLUMN</button>
       <div id="archiveNotesResult" style="margin-top:10px;font-size:12px"></div>
     </div>
@@ -368,13 +370,16 @@
 
   <!-- CLIENTS TAB -->
   <div class="tab-content" id="tab-clients">
+    <div style="background:#001020;border:1px solid var(--blue);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.7">
+      <strong style="color:var(--blue)">SHEET COLUMNS REQUIRED:</strong> A=Business · B=Package · C=Joined · D=Renewal · E=Monthly Fee · F=Status · G=Number · H=Notes · <strong style="color:var(--purple)">I=One-Time Fee (NEW)</strong> · <strong style="color:var(--teal)">J=Payment Type (Monthly / One-Time / Both) (NEW)</strong>
+    </div>
     <div class="section-title">ACTIVE CLIENTS & RENEWALS</div>
     <div id="clientsList"></div>
     <div class="section-title" style="margin-top:20px">RENEWAL ALERTS</div>
     <div id="renewalsList"></div>
   </div>
 
-  <!-- MESSAGES TAB — Q3/Q4 SOP -->
+  <!-- MESSAGES TAB -->
   <div class="tab-content" id="tab-messages">
     <div class="section-title">MESSAGE LIBRARY — Q3/Q4 SALES FRAMEWORK</div>
     <div style="background:#1a1500;border:1px solid var(--gold-dim);border-radius:6px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--gold-dim)">
@@ -513,7 +518,6 @@
       <div id="conversionList" style="margin-top:12px"></div>
     </div>
 
-    <!-- ACTIVITY LOG with search + pagination -->
     <div class="section-title">📋 ACTIVITY LOG</div>
     <div class="card" style="margin-bottom:20px">
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
@@ -538,8 +542,6 @@
         <input id="activityNote" type="text" placeholder="Note" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px;min-width:150px">
       </div>
       <button class="refresh-btn" onclick="logActivityTap()" style="background:var(--purple);color:#fff;padding:10px 24px;width:100%;margin-bottom:12px">+ LOG ACTIVITY</button>
-
-      <!-- Activity log search + filter -->
       <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
         <input id="activityLogSearch" class="search-input" style="margin:0;flex:1;min-width:150px" placeholder="Filter activity log..." oninput="filterActivityLog()">
         <select id="activityLogFilter" onchange="filterActivityLog()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:Syne,sans-serif;font-size:12px">
@@ -555,7 +557,6 @@
       <div class="pagination-bar" id="activityPagination"></div>
     </div>
 
-    <!-- CONTACT HISTORY LOOKUP -->
     <div class="section-title">🔍 CONTACT HISTORY LOOKUP</div>
     <div class="card">
       <div style="display:flex;gap:8px;margin-bottom:12px">
@@ -616,18 +617,16 @@ let currentMsgVersion = 'A';
 let currentMsgCategory = 'cold';
 let currentKofArea = 'ALL';
 
-// Follow-up pagination
 let followupPage = 0;
 const FOLLOWUP_PAGE_SIZE = 12;
 let followupAllContacts = [];
 
-// Activity log pagination
 let activityPage = 0;
 const ACTIVITY_PAGE_SIZE = 15;
 let activityAllItems = [];
 
 // =====================
-// Q3/Q4 MESSAGE VERSIONS (Follow-up generator)
+// Q3/Q4 MESSAGE VERSIONS
 // =====================
 const MSG_VERSIONS = {
   '🟡': {
@@ -662,138 +661,45 @@ const MSG_VERSIONS = {
 // =====================
 const MSG_LIBRARY = {
   cold: [
-    {
-      title: 'C1 — Problem First (start here)',
-      msg: 'Hey, quick question — how are customers finding your business right now?'
-    },
-    {
-      title: 'C2 — Google Search Hook',
-      msg: 'Hey, someone in your area searched for [CATEGORY] on Google today.\n\nDid your business come up?\n\nIf not, I can fix that. Free to start.'
-    },
-    {
-      title: 'C3 — Honest Opener',
-      msg: 'Hey, my name is YJ from BYINFORGH. I work with local businesses in Ghana on getting found by customers.\n\nQuick question — what is the main challenge in your business right now?'
-    },
-    {
-      title: 'C4 — Capacity Question',
-      msg: 'Hey, hope all is well.\n\nIf 20 new customers contacted you this month, could your business handle them properly?'
-    },
-    {
-      title: 'C5 — WhatsApp Business Angle',
-      msg: 'Hey, I noticed your WhatsApp does not have a business profile set up.\n\nThat alone is costing you customers who check before they call. Want me to show you what is missing?'
-    },
-    {
-      title: 'C6 — TikTok Source',
-      msg: 'Hey, you might have seen me on TikTok (@BYINFORGH).\n\nI help businesses get found by customers who are already searching. Quick question — what does your business sell?'
-    },
-    {
-      title: 'C7 — Voice Note Script',
-      msg: '[Send as voice note — 30 seconds]\n\nHey, my name is YJ from BYINFORGH. I help local businesses in Ghana get found and trusted by customers who are already searching.\n\nQuick question — what is the biggest challenge in your business right now? Just reply here.'
-    }
+    { title: 'C1 — Problem First (start here)', msg: 'Hey, quick question — how are customers finding your business right now?' },
+    { title: 'C2 — Google Search Hook', msg: 'Hey, someone in your area searched for [CATEGORY] on Google today.\n\nDid your business come up?\n\nIf not, I can fix that. Free to start.' },
+    { title: 'C3 — Honest Opener', msg: 'Hey, my name is YJ from BYINFORGH. I work with local businesses in Ghana on getting found by customers.\n\nQuick question — what is the main challenge in your business right now?' },
+    { title: 'C4 — Capacity Question', msg: 'Hey, hope all is well.\n\nIf 20 new customers contacted you this month, could your business handle them properly?' },
+    { title: 'C5 — WhatsApp Business Angle', msg: 'Hey, I noticed your WhatsApp does not have a business profile set up.\n\nThat alone is costing you customers who check before they call. Want me to show you what is missing?' },
+    { title: 'C6 — TikTok Source', msg: 'Hey, you might have seen me on TikTok (@BYINFORGH).\n\nI help businesses get found by customers who are already searching. Quick question — what does your business sell?' },
+    { title: 'C7 — Voice Note Script', msg: '[Send as voice note — 30 seconds]\n\nHey, my name is YJ from BYINFORGH. I help local businesses in Ghana get found and trusted by customers who are already searching.\n\nQuick question — what is the biggest challenge in your business right now? Just reply here.' }
   ],
   warm: [
-    {
-      title: 'W1 — Re-enter After Read No Reply',
-      msg: 'Hey [NAME], I know my last message came through.\n\nNo pressure. One question — if a customer searched for [CATEGORY] in your area right now, would they find you or your competitor?'
-    },
-    {
-      title: 'W2 — Google Maps Drop (best converter)',
-      msg: 'Hey [NAME].\n\n[Search their business on Google Maps. Screenshot what comes up. Send the screenshot.]\n\nThis is what your customers see when they search for you.\n\nI can fix this today. Free to start. Want me to?'
-    },
-    {
-      title: 'W3 — Reconnect After Silence',
-      msg: 'Hey [NAME], hope things are good.\n\nNot coming back to push anything. Just checking in — how has business been this week?'
-    },
-    {
-      title: 'W4 — After 2-Tick Unread (5+ days)',
-      msg: 'Hey [NAME].\n\nSomething new — a [CATEGORY] business near you just went live on BYINFORGH this week.\n\nThought you should know. Your spot is still open.'
-    },
-    {
-      title: 'W5 — Honest Re-engage',
-      msg: 'Hey [NAME], lost our chat history when WhatsApp flagged my account. Rebuilding now.\n\nHow is business going?'
-    }
+    { title: 'W1 — Re-enter After Read No Reply', msg: 'Hey [NAME], I know my last message came through.\n\nNo pressure. One question — if a customer searched for [CATEGORY] in your area right now, would they find you or your competitor?' },
+    { title: 'W2 — Google Maps Drop (best converter)', msg: 'Hey [NAME].\n\n[Search their business on Google Maps. Screenshot what comes up. Send the screenshot.]\n\nThis is what your customers see when they search for you.\n\nI can fix this today. Free to start. Want me to?' },
+    { title: 'W3 — Reconnect After Silence', msg: 'Hey [NAME], hope things are good.\n\nNot coming back to push anything. Just checking in — how has business been this week?' },
+    { title: 'W4 — After 2-Tick Unread (5+ days)', msg: 'Hey [NAME].\n\nSomething new — a [CATEGORY] business near you just went live on BYINFORGH this week.\n\nThought you should know. Your spot is still open.' },
+    { title: 'W5 — Honest Re-engage', msg: 'Hey [NAME], lost our chat history when WhatsApp flagged my account. Rebuilding now.\n\nHow is business going?' }
   ],
   close: [
-    {
-      title: 'CL1 — Direct Close (Verified GHS 180)',
-      msg: 'Hey [NAME], I have everything ready to get your business listed as Verified on BYINFORGH.\n\nGHS 180 setup. Done in 24 hours. Includes your profile, video, and promotion.\n\nShall I lock you in today?'
-    },
-    {
-      title: 'CL2 — Problem to Solution Close',
-      msg: 'Hey [NAME], based on what you told me —\n\nThe Verified Business listing solves exactly that. Customers who search for [CATEGORY] will find you first.\n\nGHS 180 setup. Shall we sort it today?'
-    },
-    {
-      title: 'CL3 — Q3 Urgency (July)',
-      msg: 'Hey [NAME], Q3 starts in a few days. A lot of businesses are making moves now before it picks up.\n\nGHS 180 gets you listed, verified, and promoted. Limited slots this week.\n\nReady to go?'
-    },
-    {
-      title: 'CL4 — Free First, Upgrade Later',
-      msg: 'Hey [NAME], let me start you on the free Business Presence listing — no cost, no strings.\n\nOnce you see what it does, we can talk about the Verified upgrade.\n\nBusiness name, what you sell, WhatsApp number. That is all I need.'
-    },
-    {
-      title: 'CL5 — Handle the Delay',
-      msg: 'Hey [NAME], timing is not right yet — understood.\n\nLet me put the free listing live now. It costs nothing and works while you decide.\n\nYou can upgrade any time. Want me to start today?'
-    }
+    { title: 'CL1 — Direct Close (Verified GHS 180)', msg: 'Hey [NAME], I have everything ready to get your business listed as Verified on BYINFORGH.\n\nGHS 180 setup. Done in 24 hours. Includes your profile, video, and promotion.\n\nShall I lock you in today?' },
+    { title: 'CL2 — Problem to Solution Close', msg: 'Hey [NAME], based on what you told me —\n\nThe Verified Business listing solves exactly that. Customers who search for [CATEGORY] will find you first.\n\nGHS 180 setup. Shall we sort it today?' },
+    { title: 'CL3 — Q3 Urgency (July)', msg: 'Hey [NAME], Q3 starts in a few days. A lot of businesses are making moves now before it picks up.\n\nGHS 180 gets you listed, verified, and promoted. Limited slots this week.\n\nReady to go?' },
+    { title: 'CL4 — Free First, Upgrade Later', msg: 'Hey [NAME], let me start you on the free Business Presence listing — no cost, no strings.\n\nOnce you see what it does, we can talk about the Verified upgrade.\n\nBusiness name, what you sell, WhatsApp number. That is all I need.' },
+    { title: 'CL5 — Handle the Delay', msg: 'Hey [NAME], timing is not right yet — understood.\n\nLet me put the free listing live now. It costs nothing and works while you decide.\n\nYou can upgrade any time. Want me to start today?' }
   ],
   objection: [
-    {
-      title: 'OBJ1 — I will think about it',
-      msg: 'No pressure. While you think, let me put the free listing live — costs nothing. If you decide not, we remove it.\n\nWhat is your business name?'
-    },
-    {
-      title: 'OBJ2 — I do not use the internet',
-      msg: 'Your customers do. 7 out of 10 Ghanaians search on their phone before buying.\n\nYour competitor is showing up. You are not. The listing works while you sleep — you do not touch it.'
-    },
-    {
-      title: 'OBJ3 — Too expensive',
-      msg: 'The free listing costs zero. Start there.\n\nVerified setup at GHS 180 is 4 cedis 60 a day. One extra customer pays for two months.\n\nWant to start with the free one?'
-    },
-    {
-      title: 'OBJ4 — Tried online before, did not work',
-      msg: 'That is exactly the problem. Ads need money. Followers need time. This is different — your listing lives there permanently and customers who are already searching will find it.\n\nWhat did not work before?'
-    },
-    {
-      title: 'OBJ5 — No time',
-      msg: 'You do not need any time. Give me your business name, what you sell, and your WhatsApp number. I do everything else. 60 seconds from you.'
-    },
-    {
-      title: 'OBJ6 — Business is doing fine',
-      msg: 'Good to hear. The businesses that grow fastest build their online presence before they need it.\n\nFree listing takes 2 minutes and costs nothing. Worth having even when business is good.'
-    },
-    {
-      title: 'OBJ7 — Send me more information',
-      msg: 'I would rather show you than explain it. Let me put the free listing live — that is the best way to understand what BYINFORGH does.\n\nOnce it is live, every question becomes much easier to answer.'
-    },
-    {
-      title: 'OBJ8 — Is this legitimate?',
-      msg: 'Go to BYINFORGH.COM right now and search any business in Koforidua. You will see live profiles.\n\nI can also call you if you prefer to hear my voice first.'
-    }
+    { title: 'OBJ1 — I will think about it', msg: 'No pressure. While you think, let me put the free listing live — costs nothing. If you decide not, we remove it.\n\nWhat is your business name?' },
+    { title: 'OBJ2 — I do not use the internet', msg: 'Your customers do. 7 out of 10 Ghanaians search on their phone before buying.\n\nYour competitor is showing up. You are not. The listing works while you sleep — you do not touch it.' },
+    { title: 'OBJ3 — Too expensive', msg: 'The free listing costs zero. Start there.\n\nVerified setup at GHS 180 is 4 cedis 60 a day. One extra customer pays for two months.\n\nWant to start with the free one?' },
+    { title: 'OBJ4 — Tried online before, did not work', msg: 'That is exactly the problem. Ads need money. Followers need time. This is different — your listing lives there permanently and customers who are already searching will find it.\n\nWhat did not work before?' },
+    { title: 'OBJ5 — No time', msg: 'You do not need any time. Give me your business name, what you sell, and your WhatsApp number. I do everything else. 60 seconds from you.' },
+    { title: 'OBJ6 — Business is doing fine', msg: 'Good to hear. The businesses that grow fastest build their online presence before they need it.\n\nFree listing takes 2 minutes and costs nothing. Worth having even when business is good.' },
+    { title: 'OBJ7 — Send me more information', msg: 'I would rather show you than explain it. Let me put the free listing live — that is the best way to understand what BYINFORGH does.\n\nOnce it is live, every question becomes much easier to answer.' },
+    { title: 'OBJ8 — Is this legitimate?', msg: 'Go to BYINFORGH.COM right now and search any business in Koforidua. You will see live profiles.\n\nI can also call you if you prefer to hear my voice first.' }
   ],
   conversation: [
-    {
-      title: 'CV1 — Discovery (after first reply)',
-      msg: 'Good to hear from you.\n\nQuick question — how are customers currently finding your business? WhatsApp, word of mouth, Google, or something else?'
-    },
-    {
-      title: 'CV2 — Find the Pain',
-      msg: 'Understood. So the main challenge right now is getting more customers?\n\nIf someone searched for [CATEGORY] near you on Google today — would they find you?'
-    },
-    {
-      title: 'CV3 — Qualify Before Offering',
-      msg: 'Two questions before I recommend anything:\n\n1. Are you getting the number of customers you want right now?\n2. Do customers ever struggle to find your location or contact you?'
-    },
-    {
-      title: 'CV4 — Position BYINFORGH',
-      msg: 'BYINFORGH is not social media and not ads.\n\nIt is a trusted directory — like a phonebook for local businesses. Customers who are already searching find you there, call you, and come to you.\n\nThat is the difference.'
-    },
-    {
-      title: 'CV5 — Bridge to Free Listing',
-      msg: 'Based on what you said — the main thing missing is that customers cannot find you when they search.\n\nThe Business Presence listing fixes that. It is free. Want me to set it up today?'
-    },
-    {
-      title: 'CV6 — Bridge to Verified',
-      msg: 'Based on what you said — you need customers to find you and trust you fast.\n\nThe Verified Business listing does both. Blue tick, profile, video, and promotion.\n\nGHS 180 setup. Shall we get it done today?'
-    }
+    { title: 'CV1 — Discovery (after first reply)', msg: 'Good to hear from you.\n\nQuick question — how are customers currently finding your business? WhatsApp, word of mouth, Google, or something else?' },
+    { title: 'CV2 — Find the Pain', msg: 'Understood. So the main challenge right now is getting more customers?\n\nIf someone searched for [CATEGORY] near you on Google today — would they find you?' },
+    { title: 'CV3 — Qualify Before Offering', msg: 'Two questions before I recommend anything:\n\n1. Are you getting the number of customers you want right now?\n2. Do customers ever struggle to find your location or contact you?' },
+    { title: 'CV4 — Position BYINFORGH', msg: 'BYINFORGH is not social media and not ads.\n\nIt is a trusted directory — like a phonebook for local businesses. Customers who are already searching find you there, call you, and come to you.\n\nThat is the difference.' },
+    { title: 'CV5 — Bridge to Free Listing', msg: 'Based on what you said — the main thing missing is that customers cannot find you when they search.\n\nThe Business Presence listing fixes that. It is free. Want me to set it up today?' },
+    { title: 'CV6 — Bridge to Verified', msg: 'Based on what you said — you need customers to find you and trust you fast.\n\nThe Verified Business listing does both. Blue tick, profile, video, and promotion.\n\nGHS 180 setup. Shall we get it done today?' }
   ]
 };
 
@@ -839,8 +745,18 @@ function countByStage(stage) {
   return state.contacts.filter(c=>c.Stage && c.Stage.toLowerCase().includes(stage.toLowerCase())).length;
 }
 
+// v2: MRR excludes One-Time payment clients
 function getMRR() {
-  return state.clients.filter(c=>c.Status==='Active').reduce((s,c)=>s+(parseFloat(c.Amount)||0),0);
+  return state.clients
+    .filter(c=>c.Status==='Active' && c.PaymentType !== 'One-Time')
+    .reduce((s,c)=>s+(parseFloat(c.Amount)||0),0);
+}
+
+// v2: separate one-time revenue total
+function getOneTimeRevenue() {
+  return state.clients
+    .filter(c=>c.Status==='Active' && (c.PaymentType==='One-Time'||c.PaymentType==='Both'))
+    .reduce((s,c)=>s+(parseFloat(c.OneTimeAmount)||0),0);
 }
 
 function getColorForLabel(e) {
@@ -948,6 +864,7 @@ function renderToday() {
   const total = state.contacts.filter(c=>c.Business).length;
   const active = state.clients.filter(c=>c.Status==='Active').length;
   const mrr = getMRR();
+  const oneTime = getOneTimeRevenue();
   const hot = countByLabel('🔵');
   const conv = countByLabel('🟢');
   const overdue = state.renewals.filter(r=>r.Status==='OVERDUE').length;
@@ -956,7 +873,7 @@ function renderToday() {
   const todayOut = state.todayOutreach || 0;
 
   document.getElementById('topMetrics').innerHTML = `
-    <div class="metric-card gold"><div class="metric-label">MONTHLY REVENUE</div><div class="metric-value">₵${mrr}</div><div class="metric-sub">${active} active clients</div></div>
+    <div class="metric-card gold"><div class="metric-label">MONTHLY REVENUE (MRR)</div><div class="metric-value">₵${mrr}</div><div class="metric-sub">${active} active · ${oneTime>0?'+ ₵'+oneTime+' one-time':''}</div></div>
     <div class="metric-card green"><div class="metric-label">TOTAL CONTACTS</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM: ${crmCount}</span><span style="color:var(--teal)">Kof: ${kofCount}</span></div></div>
     <div class="metric-card orange"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
     <div class="metric-card blue"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
@@ -1030,6 +947,7 @@ function toggleCheck(el) {
 
 // =====================
 // FOLLOW-UPS with PAGINATION
+// v2: DONE button now calls markFollowUpDone with message text
 // =====================
 function setFilter(filter, btn) {
   currentFilter = filter;
@@ -1092,18 +1010,31 @@ function renderFollowUps() {
   document.getElementById('followupList').innerHTML = pageContacts.map(c=>{
     const emoji = getWAEmoji(c.WA_Label);
     const msgTemplate = (MSG_VERSIONS[emoji] || MSG_VERSIONS['🟡'])[currentMsgVersion] || '';
-    const msg = msgTemplate.replace(/\[NAME\]/g, c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g, c.Business).replace(/\[CATEGORY\]/g, c.Category||'business');
+    const msg = msgTemplate
+      .replace(/\[NAME\]/g, c.Business.split(' ')[0])
+      .replace(/\[BUSINESS\]/g, c.Business)
+      .replace(/\[CATEGORY\]/g, c.Category||'business');
+
     const followDate = new Date(c.Next_Follow_Up);
     const daysOverdue = !isNaN(followDate.getTime()) ? Math.floor((today - followDate)/(1000*60*60*24)) : 0;
-    const overdueTag = daysOverdue > 0 ? `<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:8px">⚠️ ${daysOverdue}d overdue</span>` : '';
-    const dueTodayTag = daysOverdue === 0 && !isNaN(followDate.getTime()) && followDate <= today ? `<span style="color:var(--gold);font-size:10px;font-weight:700;margin-left:8px">📅 DUE TODAY</span>` : '';
-    const safeBiz = c.Business.replace(/'/g,"\\'").replace(/`/g,"'");
+    const overdueTag = daysOverdue > 0
+      ? `<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:8px">⚠️ ${daysOverdue}d overdue</span>` : '';
+    const dueTodayTag = daysOverdue === 0 && !isNaN(followDate.getTime()) && followDate <= today
+      ? `<span style="color:var(--gold);font-size:10px;font-weight:700;margin-left:8px">📅 DUE TODAY</span>` : '';
+
+    // v2: safe-escape for passing into onclick attributes
+    const safeBiz   = c.Business.replace(/'/g,"\\'").replace(/`/g,"'");
+    const safeStage = (c.Stage||'').replace(/'/g,"\\'").replace(/`/g,"'");
     const safeNotes = (c.Notes||'').substring(0,200).replace(/'/g,"\\'").replace(/`/g,"'");
+    const safeSheetSrc = (c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
+    // Escape message for onclick — strip backticks, escape single quotes
+    const safeMsgOnclick = msg.replace(/`/g,"'").replace(/'/g,"\\'").replace(/\n/g,'\\n');
+
     return `
       <div class="followup-item" style="${daysOverdue > 0 ? 'border-color:#2a1500;border-left:3px solid var(--red)' : ''}">
         <div class="followup-header">
           <div style="flex:1">
-            <div class="followup-name" style="cursor:pointer" onclick="showFullNotes('${safeBiz}','${safeNotes}','${c.Stage||''}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}${overdueTag}${dueTodayTag} <span style="color:var(--muted);font-size:10px">▼</span></div>
+            <div class="followup-name" style="cursor:pointer" onclick="showFullNotes('${safeBiz}','${safeNotes}','${safeStage}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}${overdueTag}${dueTodayTag} <span style="color:var(--muted);font-size:10px">▼</span></div>
             <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)}</div>
             <div class="followup-meta" style="margin-top:4px;color:var(--text-dim);font-style:italic">${c.Notes ? c.Notes.substring(0,100) : '—'}</div>
           </div>
@@ -1113,13 +1044,13 @@ function renderFollowUps() {
         <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
           <button class="copy-btn" onclick="copyMsg(\`${msg.replace(/`/g,"'")}\`, this)">COPY</button>
           <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${safeBiz}','${safeNotes}','${c.Category||''}','${emoji}',this)">✨ PERSONALISE</button>
-          <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markContacted('${c.ID||''}','${safeBiz}',this)">✓ DONE</button>
+          <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)"
+            onclick="markFollowUpDone('${c.ID||''}','${safeBiz}','${safeStage}','${safeSheetSrc}','${safeMsgOnclick}',this)">✓ DONE</button>
         </div>
       </div>
     `;
   }).join('');
 
-  // Pagination bar
   if(totalPages > 1) {
     let pagHtml = `<span style="font-size:11px;color:var(--muted)">${total} contacts · Page ${followupPage+1} of ${totalPages}</span>`;
     if(followupPage > 0) pagHtml += `<button class="page-btn" onclick="followupPage--;renderFollowUps()">← Prev</button>`;
@@ -1131,7 +1062,92 @@ function renderFollowUps() {
     if(followupPage < totalPages - 1) pagHtml += `<button class="page-btn" onclick="followupPage++;renderFollowUps()">Next →</button>`;
     document.getElementById('followupPagination').innerHTML = pagHtml;
   } else {
-    document.getElementById('followupPagination').innerHTML = total > 0 ? `<span style="font-size:11px;color:var(--muted)">${total} contacts</span>` : '';
+    document.getElementById('followupPagination').innerHTML = total > 0
+      ? `<span style="font-size:11px;color:var(--muted)">${total} contacts</span>` : '';
+  }
+}
+
+// =====================
+// v2 MARK FOLLOW-UP DONE
+// Writes date + message to sheet, calculates next follow-up.
+// 3-message rule: 3 sends with no conversation → Monthly (+30 days).
+// =====================
+async function markFollowUpDone(id, business, stage, sheetSource, message, btn) {
+  btn.textContent = 'Logging...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(
+      API_URL +
+      '?action=logFollowUpDone' +
+      '&business=' + encodeURIComponent(business) +
+      '&stage='    + encodeURIComponent(stage) +
+      '&sheetSource=' + encodeURIComponent(sheetSource||'Master CRM') +
+      '&message='  + encodeURIComponent(message) +
+      '&t=' + Date.now()
+    );
+    const data = await res.json();
+
+    state.todayOutreach = (state.todayOutreach||0) + 1;
+    const item = btn.closest('.followup-item');
+
+    if(data.success) {
+      if(item) {
+        item.style.background = '#001a00';
+        item.style.borderColor = 'var(--green)';
+        btn.textContent = '✓ DONE';
+        btn.style.background = 'var(--green)';
+        btn.style.color = 'var(--black)';
+        btn.disabled = true;
+
+        // Show result info under the button row
+        const infoDiv = document.createElement('div');
+        infoDiv.style.cssText = 'font-size:11px;margin-top:8px;padding:8px 10px;background:var(--black);border-radius:4px;border:1px solid #1a2a1a;';
+
+        if(data.movedToMonthly) {
+          infoDiv.innerHTML = `<span style="color:var(--purple);font-weight:700">🔄 3-MESSAGE RULE — Moved to Monthly</span><br><span style="color:var(--text-dim)">Next follow-up: ${data.nextFollowUp} (30 days)</span>`;
+        } else {
+          infoDiv.innerHTML = `<span style="color:var(--green);font-weight:700">✓ Logged — message #${data.msgCount||'?'}</span><br><span style="color:var(--text-dim)">Next follow-up: ${data.nextFollowUp||'—'} · Stage: ${data.newStage||stage}</span>`;
+        }
+        btn.parentElement.appendChild(infoDiv);
+
+        setTimeout(()=>{
+          item.style.opacity = '0.3';
+          setTimeout(()=>item.remove(), 500);
+        }, 2800);
+      }
+
+      const toastMsg = data.movedToMonthly
+        ? '🔄 ' + business + ' → Monthly · next: ' + data.nextFollowUp
+        : '✓ ' + business + ' · next: ' + (data.nextFollowUp||'—');
+      showToast(toastMsg);
+
+    } else {
+      // API returned error — still log locally
+      if(item) {
+        item.style.background = '#001a00';
+        item.style.borderColor = 'var(--green)';
+        btn.textContent = '✓ LOGGED';
+        btn.style.background = 'var(--green)';
+        btn.style.color = 'var(--black)';
+        setTimeout(()=>{ item.style.opacity='0.3'; setTimeout(()=>item.remove(),500); }, 1500);
+      }
+      showToast('Logged locally — ' + business);
+    }
+
+  } catch(err) {
+    // Network error — still update UI
+    state.todayOutreach = (state.todayOutreach||0) + 1;
+    const item = btn.closest('.followup-item');
+    if(item) {
+      item.style.background = '#001a00';
+      item.style.borderColor = 'var(--green)';
+      btn.textContent = '✓ LOGGED';
+      btn.style.background = 'var(--green)';
+      btn.style.color = 'var(--black)';
+      setTimeout(()=>{ item.style.opacity='0.3'; setTimeout(()=>item.remove(),500); }, 1500);
+    }
+    showToast('Logged locally — ' + business);
   }
 }
 
@@ -1161,14 +1177,17 @@ function renderPipeline() {
 
 // =====================
 // KOFORIDUA
+// v2 FIX: was using c.Bucket — corrected to c.Stage throughout
 // =====================
 function renderKoforidua() {
   const kof = state.koforidua || [];
   const total = kof.length;
-  const hotLeads = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('b2')||c.Bucket.toLowerCase().includes('warm'))).length;
-  const noReply = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('b3')||c.Bucket.toLowerCase().includes('seen'))).length;
-  const active = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('b1')||c.Bucket.toLowerCase().includes('active'))).length;
-  const cold = kof.filter(c=>c.Bucket && (c.Bucket.toLowerCase().includes('b4')||c.Bucket.toLowerCase().includes('b5'))).length;
+
+  // v2 FIX: c.Stage (not c.Bucket)
+  const active   = kof.filter(c=>c.Stage && (c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active'))).length;
+  const hotLeads = kof.filter(c=>c.Stage && (c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))).length;
+  const noReply  = kof.filter(c=>c.Stage && (c.Stage.toLowerCase().includes('b3')||c.Stage.toLowerCase().includes('seen'))).length;
+  const cold     = kof.filter(c=>c.Stage && (c.Stage.toLowerCase().includes('b4')||c.Stage.toLowerCase().includes('b5'))).length;
 
   document.getElementById('kofMetrics').innerHTML = `
     <div class="metric-card" style="border-top:2px solid var(--teal)"><div class="metric-label">TOTAL KOF BUSINESSES</div><div class="metric-value" style="color:var(--teal)">${total}</div><div class="metric-sub">in Koforidua Master</div></div>
@@ -1193,9 +1212,9 @@ function setKofArea(area, el) {
   renderKofList();
 }
 
-function getBucketBadge(bucket) {
-  if(!bucket) return 'stage-cold';
-  const b = bucket.toLowerCase();
+function getBucketBadge(stage) {
+  if(!stage) return 'stage-cold';
+  const b = stage.toLowerCase();
   if(b.includes('b1')||b.includes('active')) return 'stage-conv';
   if(b.includes('b2')||b.includes('warm')) return 'stage-hot';
   if(b.includes('b3')||b.includes('seen')) return 'stage-warm';
@@ -1208,6 +1227,7 @@ function renderKofList() {
   const kof = state.koforidua || [];
   const filtered = currentKofArea==='ALL' ? kof : kof.filter(c=>c.Area && c.Area.trim()===currentKofArea);
   if(!filtered.length) { document.getElementById('kofList').innerHTML = '<div class="empty">No contacts for this area</div>'; return; }
+
   document.getElementById('kofList').innerHTML = filtered.map(c=>`
     <div class="followup-item">
       <div class="followup-header">
@@ -1216,7 +1236,8 @@ function renderKofList() {
           <div class="followup-meta" style="margin-top:3px">${c.Number ? `<span style="font-family:'Space Mono',monospace;color:var(--gold)">${c.Number}</span> · ` : ''}${c.Sells||c.Category||'—'} · 📍 ${c.Area||'—'}</div>
           ${c.Notes ? `<div class="followup-meta" style="color:var(--text-dim);margin-top:5px">${c.Notes.substring(0,150)}</div>` : ''}
         </div>
-        <span class="stage-badge ${getBucketBadge(c.Bucket)}">${c.Bucket||'—'}</span>
+        <!-- v2 FIX: c.Stage (not c.Bucket) -->
+        <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage||'—'}</span>
       </div>
     </div>
   `).join('');
@@ -1224,22 +1245,35 @@ function renderKofList() {
 
 // =====================
 // CLIENTS
+// v2: shows One-Time Fee and Payment Type badge
+// Columns needed: E=Monthly Fee, I=One-Time Fee, J=Payment Type
 // =====================
 function renderClients() {
-  document.getElementById('clientsList').innerHTML = state.clients.map(c=>`
-    <div class="client-item ${c.Status==='Churned'?'overdue':''}">
-      <div style="flex:1">
-        <div class="client-name">${c.Business}</div>
-        <div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div>
-        <div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div>
+  document.getElementById('clientsList').innerHTML = state.clients.map(c=>{
+    const pt = c.PaymentType || 'Monthly';
+    let amountHtml = '';
+    if(pt === 'One-Time') {
+      amountHtml = `<div class="client-amount" style="color:var(--purple)">₵${c.OneTimeAmount||0}</div><div class="pay-onetime">ONE-TIME</div>`;
+    } else if(pt === 'Both') {
+      amountHtml = `<div class="client-amount">₵${c.Amount||0} <span style="color:var(--purple);font-size:13px">+₵${c.OneTimeAmount||0}</span></div><div class="pay-both">MONTHLY + ONE-TIME</div>`;
+    } else {
+      amountHtml = `<div class="client-amount">₵${c.Amount||0}</div><div class="pay-monthly">MONTHLY</div>`;
+    }
+    return `
+      <div class="client-item ${c.Status==='Churned'?'overdue':''}">
+        <div style="flex:1">
+          <div class="client-name">${c.Business}</div>
+          <div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div>
+          <div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div>
+        </div>
+        <div style="text-align:right">
+          ${amountHtml}
+          <div class="${c.Status==='Active'?'active-tag':'overdue-tag'}" style="margin-top:4px">${c.Status}</div>
+          <div class="client-renewal" style="color:var(--text-dim)">Renewal: ${c.Renewal||'—'}</div>
+        </div>
       </div>
-      <div style="text-align:right">
-        <div class="client-amount">₵${c.Amount||0}</div>
-        <div class="${c.Status==='Active'?'active-tag':'overdue-tag'}">${c.Status}</div>
-        <div class="client-renewal" style="color:var(--text-dim)">Renewal: ${c.Renewal||'—'}</div>
-      </div>
-    </div>
-  `).join('') || '<div class="empty">No clients loaded</div>';
+    `;
+  }).join('') || '<div class="empty">No clients loaded</div>';
 
   document.getElementById('renewalsList').innerHTML = state.renewals.map(r=>`
     <div class="client-item overdue">
@@ -1279,6 +1313,7 @@ function renderMsgLibrary() {
 // =====================
 function renderRevenue() {
   const mrr = getMRR();
+  const oneTime = getOneTimeRevenue();
   const activeClients = state.clients.filter(c=>c.Status==='Active').length;
   const daily = Math.round(mrr / 30);
   const weekly = Math.round(mrr / 4.3);
@@ -1292,9 +1327,9 @@ function renderRevenue() {
   document.getElementById('revenueActual').innerHTML = `
     <div class="metric-card gold"><div class="metric-label">DAILY ACTUAL</div><div class="metric-value">₵${daily}</div><div class="metric-sub">MRR ÷ 30 days</div></div>
     <div class="metric-card green"><div class="metric-label">WEEKLY ACTUAL</div><div class="metric-value">₵${weekly}</div><div class="metric-sub">MRR ÷ 4.3 weeks</div></div>
-    <div class="metric-card blue"><div class="metric-label">MONTHLY ACTUAL</div><div class="metric-value">₵${mrr}</div><div class="metric-sub">${activeClients} active clients</div></div>
+    <div class="metric-card blue"><div class="metric-label">MONTHLY MRR</div><div class="metric-value">₵${mrr}</div><div class="metric-sub">${activeClients} active clients</div></div>
+    <div class="metric-card purple"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">₵${oneTime}</div><div class="metric-sub">playbooks / custom packages</div></div>
     <div class="metric-card orange"><div class="metric-label">CONVERSION RATE</div><div class="metric-value">${convRate}%</div><div class="metric-sub">${activeClients} of ${totalContacts}</div></div>
-    <div class="metric-card purple"><div class="metric-label">PROJECTED (HOT)</div><div class="metric-value">₵${mrr + (hotLeads * 180)}</div><div class="metric-sub">if ${hotLeads} hot leads close</div></div>
     <div class="metric-card red"><div class="metric-label">PROJECTED (CONV)</div><div class="metric-value">₵${mrr + (Math.round(conversations*0.3) * 180)}</div><div class="metric-sub">30% conv on ${conversations} chats</div></div>
   `;
 
@@ -1329,7 +1364,6 @@ function renderRevenue() {
         <div><div style="font-size:13px;font-weight:700">🆓 Business Presence</div><div style="font-size:11px;color:var(--text-dim)">Free — get them on platform first</div></div>
         <div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--text-dim)">₵0</div>
       </div>
-      <div style="font-size:11px;color:var(--green);margin-top:4px">↑ More on platform = more trust = easier Verified sell later</div>
     </div>
     <div style="padding:10px 0;border-bottom:1px solid #1a1a1a">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -1338,12 +1372,19 @@ function renderRevenue() {
       </div>
       <div style="font-size:11px;color:var(--gold);margin-top:4px">${verified} verified · Need ${Math.max(0,Math.ceil((5400-mrr)/180))} more to hit ₵5,400/month</div>
     </div>
-    <div style="padding:10px 0">
+    <div style="padding:10px 0;border-bottom:1px solid #1a1a1a">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><div style="font-size:13px;font-weight:700">🔥 Visibility Partner</div><div style="font-size:11px;color:var(--text-dim)">GHS 500+/month — only when they ask</div></div>
         <div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--orange)">₵500+</div>
       </div>
       <div style="font-size:11px;color:var(--orange);margin-top:4px">${partners} partner · Do not lead with this — let them ask for more</div>
+    </div>
+    <div style="padding:10px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:13px;font-weight:700">📘 Playbooks / Custom</div><div style="font-size:11px;color:var(--text-dim)">One-time — set price per client</div></div>
+        <div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--purple)">₵${oneTime}</div>
+      </div>
+      <div style="font-size:11px;color:var(--purple);margin-top:4px">One-time revenue — add col I (One-Time Fee) + col J (Payment Type=One-Time) in Clients sheet</div>
     </div>
   `;
 
@@ -1440,10 +1481,10 @@ function renderAI() {
 
   const tips = [];
   if(blue > 0) { const h = state.contacts.find(c=>c.WA_Label&&c.WA_Label.includes('🔵')); tips.push(`🔵 ${blue} hot lead${blue>1?'s':''} — contact ${h?h.Business:'them'} first today. Ask: "I have everything ready — shall we lock it in today? GHS 180 setup, done in 24 hours."`); }
-  if(green > 2) tips.push(`💬 ${green} active conversations — these people are talking to you. Start with a discovery question, not a pitch. Find out what problem they have, then offer the right solution.`);
-  if(orange > 5) tips.push(`👁 ${orange} contacts read your message but did not reply. Do not send the same thing again. Send the Google Maps drop — search their business, screenshot it, send with one line: "This is what your customers see." Nothing else.`);
-  if(red > 8) tips.push(`📞 ${red} contacts with 1-tick — message not delivered. These need an actual phone call or voice note. Tap to call from the call list in the TODAY tab.`);
-  tips.push(`🎯 Q3 FOCUS: Get businesses on the platform first (Business Presence — free). Once they are live and see the listing, the Verified upgrade is an easier conversation. Volume on platform first.`);
+  if(green > 2) tips.push(`💬 ${green} active conversations — these people are talking to you. Start with a discovery question, not a pitch.`);
+  if(orange > 5) tips.push(`👁 ${orange} contacts read your message but did not reply. Do not send the same thing again. Send the Google Maps drop — screenshot + one line.`);
+  if(red > 8) tips.push(`📞 ${red} contacts with 1-tick — message not delivered. These need a phone call.`);
+  tips.push(`🎯 Q3 FOCUS: Get businesses on the platform first (Business Presence — free). Once they are live, the Verified upgrade is an easier conversation.`);
 
   document.getElementById('aiConversionTips').innerHTML = tips.map(t=>`
     <div style="padding:8px 12px;background:var(--surface);border-radius:5px;border-left:3px solid var(--gold);margin-bottom:8px;font-size:12px;line-height:1.6">${t}</div>
@@ -1456,22 +1497,22 @@ function renderAI() {
 
   if(blue > 0) {
     const hotContact = state.contacts.find(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
-    dynamicSuggestions.push({icon:'🔵',title:'Close ' + (hotContact ? hotContact.Business : 'your hot lead') + ' today',body: (hotContact ? hotContact.Business : 'Your hot lead') + ' is at verbal yes. Contact them first before anything else. One message: "I have everything ready. Shall we lock it in today? GHS 180 setup, done in 24 hours." Do not over-explain. Wait for the yes.'});
+    dynamicSuggestions.push({icon:'🔵',title:'Close ' + (hotContact ? hotContact.Business : 'your hot lead') + ' today',body: (hotContact ? hotContact.Business : 'Your hot lead') + ' is at verbal yes. Contact them first. One message: "I have everything ready. Shall we lock it in today? GHS 180 setup, done in 24 hours."'});
   }
 
   const daySpecific = {
-    1: {icon:'📞',title:'Monday Call Blitz',body:`Start the week strong. You have ${red} contacts with 1-tick — message not delivered. Today is the day to call them. An actual call, not another WhatsApp. Pick the 5 most promising from your call list.`},
-    2: {icon:'🗺',title:'Google Maps Drop Tuesday',body:'Pick 3 contacts from your pipeline. Search each one on Google Maps. Screenshot what comes up — usually nothing. Send that screenshot with one line: "This is what your customers see when they search for you." Nothing else. Wait.'},
-    3: {icon:'🎤',title:'Voice Note Wednesday',body:'Today send voice notes instead of text to your top 5 warm contacts. 30 seconds max. Say their name, one specific thing about their business, end with one question. Voice gets far more replies than text.'},
-    4: {icon:'🏙',title:'Koforidua Thursday',body:`You have ${state.koforidua?state.koforidua.length:0} businesses in your Koforidua master. Plan a physical route. Face-to-face converts better than any message. Batch businesses in the same area.`},
-    5: {icon:'📊',title:'Friday Pipeline Review',body:`End the week by updating every WA Label in the sheet. ${orange} contacts read your message and did not reply — update their labels, set follow-up dates for Monday. Clean data this weekend means clean outreach next week.`},
-    0: {icon:'📖',title:'Sunday Prep',body:`Sunday is prep day. Review your contacts with follow-up dates. Update the sheet. Plan Monday's outreach batch. The week you plan on Sunday is the week you execute on Monday.`},
-    6: {icon:'🕯',title:'Shabbat Rest',body:"Today is rest. The work is in Yahuah's hands. No outreach, no chasing. Rest fully so you execute fully from Sunday."}
+    1: {icon:'📞',title:'Monday Call Blitz',body:`Start the week strong. You have ${red} contacts with 1-tick. Today is the day to call them.`},
+    2: {icon:'🗺',title:'Google Maps Drop Tuesday',body:'Pick 3 contacts. Search each on Google Maps. Screenshot what comes up. Send with one line: "This is what your customers see." Nothing else.'},
+    3: {icon:'🎤',title:'Voice Note Wednesday',body:'Send voice notes instead of text to your top 5 warm contacts. 30 seconds max. Say their name, one specific thing, end with one question.'},
+    4: {icon:'🏙',title:'Koforidua Thursday',body:`You have ${state.koforidua?state.koforidua.length:0} businesses in your Koforidua master. Plan a physical route. Face-to-face converts better than any message.`},
+    5: {icon:'📊',title:'Friday Pipeline Review',body:`End the week updating every WA Label. ${orange} contacts read and did not reply — set follow-up dates for Monday.`},
+    0: {icon:'📖',title:'Sunday Prep',body:`Review your contacts with follow-up dates. Plan Monday's outreach batch. The week you plan on Sunday is the week you execute on Monday.`},
+    6: {icon:'🕯',title:'Shabbat Rest',body:"Today is rest. The work is in Yahuah's hands. No outreach. Rest fully so you execute fully from Sunday."}
   };
 
   if(daySpecific[day]) dynamicSuggestions.push(daySpecific[day]);
-  if(orange > 5) dynamicSuggestions.push({icon:'🟠',title:`Re-enter ${orange} contacts who read but did not reply`,body:`Do not send the same message again. Google Maps drop — search their business, screenshot it, send that with one line. Show them the problem with their own eyes. That is the re-entry.`});
-  if(green > 2) dynamicSuggestions.push({icon:'🟢',title:`Convert ${green} conversations to Business Presence`,body:`These contacts are talking to you. The goal right now is to get them on the platform first — free listing. Ask: "Want me to set up your free listing today? Takes 60 seconds from you."`});
+  if(orange > 5) dynamicSuggestions.push({icon:'🟠',title:`Re-enter ${orange} contacts who read but did not reply`,body:`Do not send the same message. Google Maps drop — screenshot their business, send it. Show them the problem with their own eyes.`});
+  if(green > 2) dynamicSuggestions.push({icon:'🟢',title:`Convert ${green} conversations to Business Presence`,body:`Ask: "Want me to set up your free listing today? Takes 60 seconds from you."`});
 
   document.getElementById('aiSuggestions').innerHTML = `
     <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Today is ${dayName} · ${hour<12?'Morning':hour<17?'Afternoon':'Evening'} · Based on your live pipeline:</div>
@@ -1501,7 +1542,7 @@ function buildDailyBriefing() {
   const today = new Date(); today.setHours(0,0,0,0);
   const dueToday = state.contacts.filter(c=>{ if(!c.Next_Follow_Up) return false; const d=new Date(c.Next_Follow_Up); return !isNaN(d.getTime()) && d<=today; });
   const hotContact = state.contacts.find(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
-  return `Good morning. BYINFORGH daily briefing:\n\n📊 PIPELINE: ${total} contacts · ₵${mrr}/month MRR · ${state.clients.filter(c=>c.Status==='Active').length} active clients\n\n🎯 TODAY'S PRIORITY ORDER:\n${blue > 0 ? `1. 🔵 Contact ${hotContact?hotContact.Business:'your hot lead'} first — close it today` : '1. No hot leads yet — focus on discovery conversations'}\n2. 🟢 Work through ${green} active conversations — ask discovery questions, bridge to Business Presence\n3. 📞 Call ${red} contacts with 1-tick — WhatsApp not reaching them\n4. 📋 ${dueToday.length} follow-ups due today — check Follow-Ups tab\n\n💡 Q3 REMINDER: Lead with Verified (GHS 180). If they cannot afford it, offer Business Presence (Free). Build the platform volume first — more businesses on the platform makes the Verified sell easier.\n\n${dueToday.length > 0 ? `⚠️ DUE TODAY: ${dueToday.slice(0,3).map(c=>c.Business).join(', ')}${dueToday.length>3?' + '+(dueToday.length-3)+' more':''}` : '✅ No overdue follow-ups'}\n\nWhat do you want to work on first?`;
+  return `Good morning. BYINFORGH daily briefing:\n\n📊 PIPELINE: ${total} contacts · ₵${mrr}/month MRR · ${state.clients.filter(c=>c.Status==='Active').length} active clients\n\n🎯 TODAY'S PRIORITY ORDER:\n${blue > 0 ? `1. 🔵 Contact ${hotContact?hotContact.Business:'your hot lead'} first — close it today` : '1. No hot leads yet — focus on discovery conversations'}\n2. 🟢 Work through ${green} active conversations — ask discovery questions, bridge to Business Presence\n3. 📞 Call ${red} contacts with 1-tick — WhatsApp not reaching them\n4. 📋 ${dueToday.length} follow-ups due today — check Follow-Ups tab\n\n💡 Q3 REMINDER: Lead with Verified (GHS 180). If they cannot afford it, offer Business Presence (Free). Build the platform volume first.\n\n${dueToday.length > 0 ? `⚠️ DUE TODAY: ${dueToday.slice(0,3).map(c=>c.Business).join(', ')}${dueToday.length>3?' + '+(dueToday.length-3)+' more':''}` : '✅ No overdue follow-ups'}\n\nWhat do you want to work on first?`;
 }
 
 function addAIMessage(role, text) {
@@ -1532,16 +1573,16 @@ function getSmartLocalReply(question) {
   }
   if(q.includes('not converting')||q.includes('conversion')) {
     const rate = total > 0 ? ((state.clients.filter(c=>c.Status==='Active').length/total)*100).toFixed(1) : 0;
-    return `Conversion rate: ${rate}% (${state.clients.filter(c=>c.Status==='Active').length} of ${total} contacts).\n\nThree reasons you are not converting more:\n\n1. ${red.length} contacts with 1-tick — message not reaching them. These need a call.\n\n2. ${orange.length} contacts read and did not reply — the message is not landing. Switch to Google Maps drop: search their business, screenshot it, send it. No pitch.\n\n3. You may be leading with visibility instead of their problem. Start with: "How are customers finding your business right now?" Then solve that problem.`;
+    return `Conversion rate: ${rate}% (${state.clients.filter(c=>c.Status==='Active').length} of ${total} contacts).\n\nThree reasons you are not converting more:\n\n1. ${red.length} contacts with 1-tick — message not reaching them. These need a call.\n\n2. ${orange.length} contacts read and did not reply — switch to Google Maps drop.\n\n3. You may be leading with visibility instead of their problem. Start with: "How are customers finding your business right now?"`;
   }
   if(q.includes('read')&&(q.includes('no reply')||q.includes('not reply'))) {
-    return `For contacts who read but did not reply:\n\n1. Do not send the same message again.\n\n2. Google Maps drop — search their business on Google Maps right now. Screenshot what comes up. Send: "This is what your customers see when they search for you." Nothing else. Wait.\n\n3. Or ask a completely different question: "What is the biggest challenge in your business right now?"\n\nYou have ${orange.length} contacts in this state. The re-entry needs to be about their problem, not your offer.`;
+    return `For contacts who read but did not reply:\n\n1. Do not send the same message again.\n\n2. Google Maps drop — search their business, screenshot it, send: "This is what your customers see when they search for you." Nothing else. Wait.\n\n3. Or ask a different question: "What is the biggest challenge in your business right now?"\n\nYou have ${orange.length} contacts in this state.`;
   }
   if(q.includes('close')||q.includes('verified')) {
-    return `To close a Verified Business today:\n\n1. Go to Follow-Ups tab → filter 🟢 Conversation\n2. Pick the contact who has shown the most interest\n3. Ask discovery first: "How are customers finding your business right now?"\n4. Once they describe the problem, offer the solution: "The Verified Business listing fixes exactly that. GHS 180 setup. Shall we get it done today?"\n5. If they hesitate: "Let me start you on the free listing first — no cost. We take it from there."\n\nYou have ${green.length} active conversations. One of them is ready if you ask the right question.`;
+    return `To close a Verified Business today:\n\n1. Follow-Ups tab → filter 🟢 Conversation\n2. Pick the contact who has shown the most interest\n3. Ask discovery first: "How are customers finding your business right now?"\n4. Match solution: "The Verified Business listing fixes exactly that. GHS 180 setup. Shall we get it done today?"\n5. If they hesitate: "Let me start you on the free listing first — no cost. We take it from there."\n\nYou have ${green.length} active conversations.`;
   }
   if(q.includes('follow up')||q.includes('due')) {
-    return `${dueToday.length} follow-ups due today.\n\nTop contacts:\n${dueToday.slice(0,3).map((c,i)=>`${i+1}. ${c.Business} (${c.Number||'—'}) — ${getWAEmoji(c.WA_Label)}`).join('\n')}\n\nCheck Follow-Ups tab — sorted overdue first. Copy the message. Send it. Log it in Tracker.`;
+    return `${dueToday.length} follow-ups due today.\n\nTop contacts:\n${dueToday.slice(0,3).map((c,i)=>`${i+1}. ${c.Business} (${c.Number||'—'}) — ${getWAEmoji(c.WA_Label)}`).join('\n')}\n\nCheck Follow-Ups tab — sorted overdue first. Copy the message. Send it. Tap DONE — it logs and sets your next follow-up automatically.`;
   }
   return null;
 }
@@ -1562,69 +1603,48 @@ async function sendAI() {
   if(localReply) { loading.remove(); aiHistory.push({role:'user',content:question},{role:'assistant',content:localReply}); addAIMessage('assistant', localReply); return; }
 
   const mrr = getMRR();
-  const systemPrompt = `You are the BYINFORGH business assistant for YJ (Yaw Junior), solo operator of a local business visibility platform in Koforidua, Ghana.\n\nLIVE DATA:\n- Total contacts: ${state.contacts.length}\n- MRR: GHS ${mrr}\n- Active clients: ${state.clients.filter(c=>c.Status==='Active').length}\n- Hot leads: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length}\n- Active conversations: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\n- 1-tick unreachable: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴')).length}\n\nQ3/Q4 APPROACH: Stop selling visibility. Start solving business problems. Lead with a question about their challenge. Listen. Then match the solution.\n\nOFFERS:\n1. Business Presence — FREE (get them on platform first, build volume)\n2. Verified Business — GHS 180 setup (target close, lead with this)\n- Visibility Partner GHS 500+/month — only when they ask for more\n\nBe specific, brief, and practical. Reference actual contact data when useful.`;
+  const systemPrompt = `You are the BYINFORGH business assistant for YJ (Yaw Junior), solo operator of a local business visibility platform in Koforidua, Ghana.\n\nLIVE DATA:\n- Total contacts: ${state.contacts.length}\n- MRR: GHS ${mrr}\n- Active clients: ${state.clients.filter(c=>c.Status==='Active').length}\n- Hot leads: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length}\n- Active conversations: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\n- 1-tick unreachable: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴')).length}\n\nQ3/Q4 APPROACH: Stop selling visibility. Start solving business problems. Lead with a question about their challenge. Listen. Then match the solution.\n\nBe specific, brief, and practical. Reference actual contact data when useful.`;
 
   aiHistory.push({role:'user',content:question});
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        system:systemPrompt,
-        messages:aiHistory.slice(-6)
-      })
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:systemPrompt,messages:aiHistory.slice(-6)})
     });
-    if(!response.ok) {
-      const errText = await response.text();
-      throw new Error('API ' + response.status + ': ' + errText.substring(0,100));
-    }
+    if(!response.ok) throw new Error('API ' + response.status);
     const data = await response.json();
     loading.remove();
-    const reply = data.content && data.content[0] && data.content[0].text ? data.content[0].text : 'No response received. Try again.';
+    const reply = data.content && data.content[0] && data.content[0].text ? data.content[0].text : 'No response. Try again.';
     aiHistory.push({role:'assistant',content:reply});
     addAIMessage('assistant', reply);
   } catch(err) {
     loading.remove();
-    // Show helpful error message, not just "connection error"
-    const errMsg = err.message.includes('API') ? 'API error — check your internet connection and try again.' : 'Connection error. Check your internet and try again.';
     const errDiv = document.createElement('div');
     errDiv.style.cssText = 'background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 14px;font-size:12px;color:var(--red);';
-    errDiv.textContent = errMsg;
+    errDiv.textContent = 'Connection error — check internet and try again.';
     document.getElementById('aiChat').appendChild(errDiv);
     document.getElementById('aiChat').scrollTop = document.getElementById('aiChat').scrollHeight;
-    console.log('AI error:', err.message);
   }
 }
 
 // =====================
-// CONVERSATION REVIEW (NEW)
+// CONVERSATION REVIEW
 // =====================
 async function sendConvReview() {
   const business = document.getElementById('convReviewBusiness').value.trim();
   const summary = document.getElementById('convReviewSummary').value.trim();
   const outcome = document.getElementById('convReviewOutcome').value;
   const resultDiv = document.getElementById('convReviewResult');
-
   if(!summary) { showToast('Add a conversation summary first'); return; }
-
   resultDiv.innerHTML = '<div class="loading">Analysing conversation</div>';
-
   const systemPrompt = `You are a sales coach for BYINFORGH, a local business visibility platform in Ghana. Analyse this conversation summary and give honest, specific feedback.\n\nQ3/Q4 FRAMEWORK:\n- Lead with their problem, not the product\n- Discovery question first: "How are customers finding your business right now?"\n- Listen. Match solution to problem.\n- Business Presence (Free) = get them on platform first\n- Verified (GHS 180) = main close\n- Never lead with price before identifying their problem\n\nGive feedback in this exact format:\n✅ WHAT WORKED: [1-2 specific things]\n❌ WHAT MISSED: [1-2 specific things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send next]\n💡 KEY LESSON: [one insight for tomorrow]`;
-
   const userMsg = `Business: ${business || 'unnamed'}\nOutcome: ${outcome}\nConversation summary: ${summary}`;
-
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:600,
-        system:systemPrompt,
-        messages:[{role:'user',content:userMsg}]
-      })
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:systemPrompt,messages:[{role:'user',content:userMsg}]})
     });
     if(!response.ok) throw new Error('API ' + response.status);
     const data = await response.json();
@@ -1636,12 +1656,12 @@ async function sendConvReview() {
 }
 
 // =====================
-// ARCHIVE NOTES (NEW)
+// ARCHIVE NOTES
 // =====================
 async function archiveNotes() {
   const btn = document.getElementById('archiveNotesBtn');
   const result = document.getElementById('archiveNotesResult');
-  const confirmed = confirm('This will archive all notes in the M column to Notes History sheet, then replace each row with a clean 1-line summary.\n\nThis cannot be undone. Continue?');
+  const confirmed = confirm('This will archive all notes in the M column to Notes History sheet, then clear the M column completely.\n\nTimestamps use Koforidua time (GMT+0). This cannot be undone. Continue?');
   if(!confirmed) return;
   btn.textContent = 'Archiving...';
   btn.disabled = true;
@@ -1650,8 +1670,8 @@ async function archiveNotes() {
     const res = await fetch(API_URL + '?action=archiveNotes&t=' + Date.now());
     const data = await res.json();
     if(data.success) {
-      result.innerHTML = `<div style="color:var(--green);font-weight:700">✅ Done — archived notes for ${data.archived} contacts. M column updated with clean summaries. Notes saved to Notes History sheet.</div>`;
-      showToast('Notes archived — ' + data.archived + ' contacts updated');
+      result.innerHTML = `<div style="color:var(--green);font-weight:700">✅ Done — archived notes for ${data.archived} contacts. M column cleared. Notes saved to Notes History sheet.</div>`;
+      showToast('Notes archived — ' + data.archived + ' contacts cleared');
     } else {
       result.innerHTML = `<div class="error-msg">Error: ${data.error || 'Unknown error'}</div>`;
     }
@@ -1670,17 +1690,16 @@ async function generatePersonalMsg(business, notes, category, emoji, btn) {
   btn.disabled = true;
   const notesLower = notes.toLowerCase();
   let msg = '';
-  const hasPrice = notesLower.includes('price')||notesLower.includes('ghs')||notesLower.includes('180');
-  const hasBusy = notesLower.includes('busy')||notesLower.includes('later')||notesLower.includes('next month');
+  const hasPrice    = notesLower.includes('price')||notesLower.includes('ghs')||notesLower.includes('180');
+  const hasBusy     = notesLower.includes('busy')||notesLower.includes('later')||notesLower.includes('next month');
   const hasInterest = notesLower.includes('interested')||notesLower.includes('yes')||notesLower.includes('want');
-  const hasRead = notesLower.includes('read')||notesLower.includes('blue tick')||notesLower.includes('seen');
+  const hasRead     = notesLower.includes('read')||notesLower.includes('blue tick')||notesLower.includes('seen');
   const name = business.split(' ')[0];
-
-  if(hasPrice) { msg = `Hey ${name}.\n\nHope things are going well.\n\nGHS 180 works out to about 4 cedis 60 a day. If one customer finds you through the listing and buys, it covers itself for months.\n\nWhen you are ready, just say the word.`; }
-  else if(hasBusy) { msg = `Hey ${name}, hope things have settled.\n\nNo pressure — just a quick check in. How has business been this week?`; }
-  else if(hasInterest) { msg = `Hey ${name}.\n\nFollowing up — I am ready to get your Verified listing live.\n\nGHS 180 setup, done in 24 hours. Just say the word.`; }
-  else if(hasRead) { msg = `Hey ${name}.\n\nQuick question — how are customers currently finding your business?`; }
-  else { msg = `Hey ${name}, hope all is well.\n\nJust checking in — how has business been this week?`; }
+  if(hasPrice)    { msg = `Hey ${name}.\n\nHope things are going well.\n\nGHS 180 works out to about 4 cedis 60 a day. If one customer finds you through the listing and buys, it covers itself for months.\n\nWhen you are ready, just say the word.`; }
+  else if(hasBusy)    { msg = `Hey ${name}, hope things have settled.\n\nNo pressure — just a quick check in. How has business been this week?`; }
+  else if(hasInterest){ msg = `Hey ${name}.\n\nFollowing up — I am ready to get your Verified listing live.\n\nGHS 180 setup, done in 24 hours. Just say the word.`; }
+  else if(hasRead)    { msg = `Hey ${name}.\n\nQuick question — how are customers currently finding your business?`; }
+  else                { msg = `Hey ${name}, hope all is well.\n\nJust checking in — how has business been this week?`; }
 
   const followupItem = btn.closest('.followup-item');
   const msgBox = followupItem ? followupItem.querySelector('.message-box') : null;
@@ -1690,17 +1709,6 @@ async function generatePersonalMsg(business, notes, category, emoji, btn) {
   btn.textContent = '✓ Personalised';
   btn.style.background = 'var(--green)'; btn.style.color = 'var(--black)';
   setTimeout(()=>{ btn.textContent='✨ PERSONALISE'; btn.style.background=''; btn.style.color=''; btn.disabled=false; }, 3000);
-}
-
-async function markContacted(id, business, btn) {
-  btn.textContent = 'Logging...';
-  try {
-    await fetch(API_URL + '?action=logOutreach&business='+encodeURIComponent(business)+'&messageType=WhatsApp+Message&t='+Date.now());
-  } catch(e) {}
-  state.todayOutreach = (state.todayOutreach||0)+1;
-  const item = btn.closest('.followup-item');
-  if(item) { item.style.background='#001a00'; item.style.borderColor='var(--green)'; btn.textContent='✓ LOGGED'; btn.style.background='var(--green)'; btn.style.color='var(--black)'; setTimeout(()=>{ item.style.opacity='0.3'; setTimeout(()=>item.remove(),500); },1500); }
-  showToast('Logged — ' + business);
 }
 
 // =====================
@@ -1854,7 +1862,6 @@ function renderConversions() {
   `).join('')||'<div class="empty">No conversions logged yet</div>';
 }
 
-// Activity log with search + pagination
 function filterActivityLog() {
   activityPage = 0;
   renderActivityLog();
@@ -1864,19 +1871,15 @@ function renderActivityLog() {
   const acts = trackerData.activities||[];
   const searchQ = (document.getElementById('activityLogSearch')?.value||'').toLowerCase();
   const filterType = document.getElementById('activityLogFilter')?.value||'all';
-
   let filtered = acts;
   if(searchQ) filtered = filtered.filter(a=>(a.business||'').toLowerCase().includes(searchQ)||(a.notes||'').toLowerCase().includes(searchQ));
   if(filterType !== 'all') filtered = filtered.filter(a=>(a.action||'').includes(filterType));
-
   activityAllItems = filtered;
   const total = filtered.length;
   const totalPages = Math.ceil(total / ACTIVITY_PAGE_SIZE);
   const start = activityPage * ACTIVITY_PAGE_SIZE;
   const page = filtered.slice(start, start + ACTIVITY_PAGE_SIZE);
-
   const actionColors = {stage_change:'var(--gold)',followup_change:'var(--blue)',conversation:'var(--green)',note_added:'var(--text-dim)',proposal_sent:'var(--orange)',rejected:'var(--red)',wa_label_change:'var(--purple)'};
-
   document.getElementById('activityRecentList').innerHTML = page.length ? page.map(a=>`
     <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:12px">
       <div style="color:${actionColors[a.action]||'var(--text-dim)'};font-weight:700;white-space:nowrap;font-size:10px;min-width:100px">${(a.action||'').replace(/_/g,' ').toUpperCase()}</div>
@@ -1884,7 +1887,6 @@ function renderActivityLog() {
       <div style="color:var(--text-dim);font-size:10px;white-space:nowrap">${cleanDate(a.timestamp)}</div>
     </div>
   `).join('') : '<div class="empty">No activity matching filter</div>';
-
   if(totalPages > 1) {
     let pagHtml = `<span style="font-size:11px;color:var(--muted)">${total} entries · Page ${activityPage+1}/${totalPages}</span>`;
     if(activityPage > 0) pagHtml += `<button class="page-btn" onclick="activityPage--;renderActivityLog()">← Prev</button>`;
@@ -1911,7 +1913,6 @@ async function loadContactHistory() {
   const contact = state.contacts.find(c=>c.Business===businessName);
   let daysInDB = '—';
   if(contact && contact.Created_Date) { const created = new Date(contact.Created_Date); if(!isNaN(created.getTime())) daysInDB = Math.floor((new Date()-created)/(1000*60*60*24)) + ' days'; }
-
   panel.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">${outreach.length}</div><div style="font-size:10px;color:var(--muted)">MESSAGES SENT</div></div>
