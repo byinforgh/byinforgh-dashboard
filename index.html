@@ -609,7 +609,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwcC0He3P9ySPrhTW26dX3WVk1sNbg3K5vDrh-hgIp1BmHzEVZIQYQymyd6aHZYH2c/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbz7aopK7LymbyIZZRdAMuBsU7zDv4I_Wj3ZHyoMZ1RQg75ey1JU1PaM1L8RSNtbu3If/exec';
 
 let state = { contacts:[], clients:[], renewals:[], outreach:[], koforidua:[], raw:{} };
 let currentFilter = 'all';
@@ -1555,36 +1555,109 @@ function addAIMessage(role, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+// =====================
+// LOCAL INTELLIGENCE — handles all queries from live pipeline data
+// No API key needed. Falls back here when network unavailable.
+// =====================
 function getSmartLocalReply(question) {
+  const q = question.toLowerCase().trim();
+  const mrr = getMRR();
+  const oneTime = getOneTimeRevenue();
+  const total = state.contacts.length;
+  const activeClients = state.clients.filter(c=>c.Status==='Active').length;
+  const blue = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
+  const green = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢'));
+  const red = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
+  const orange = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟠'));
+  const yellow = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟡'));
+  const kof = state.koforidua || [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dueToday = state.contacts.filter(c=>{ if(!c.Next_Follow_Up) return false; const d=new Date(c.Next_Follow_Up); return !isNaN(d.getTime())&&d<=today; });
+
+  // --- WHO TO CONTACT ---
+  if(q.includes('contact first')||q.includes('who should i')||q.includes('start with')) {
+    if(blue.length>0) return `Contact ${blue[0].Business} first.\n\nNumber: ${blue[0].Number||'—'}\nNotes: ${blue[0].Notes?blue[0].Notes.substring(0,120):'Verbal yes / proposal sent'}\n\nMessage: "Hey, I have everything ready to get you listed today. Shall we lock it in? GHS 180 setup, done in 24 hours."\n\nOne question. Wait for the yes.`;
+    if(green.length>0) return `Your hottest active conversation is ${green[0].Business}.\n\nNumber: ${green[0].Number||'—'}\n\nAsk a discovery question: "How are customers currently finding your business?" Then bridge to Business Presence once you know their problem.`;
+    return `No hot leads right now. Focus on Follow-Ups tab → 🟢 Conversation filter. Ask a discovery question to each one today.`;
+  }
+
+  // --- CONVERSION / WHY NOT CONVERTING ---
+  if(q.includes('not converting')||q.includes('conversion rate')||q.includes('why am i')) {
+    const rate = total > 0 ? ((activeClients/total)*100).toFixed(1) : 0;
+    return `Conversion rate: ${rate}% (${activeClients} clients of ${total} contacts).\n\nThree reasons:\n\n1. ${red.length} contacts with 1-tick — message not reaching them. Call these.\n\n2. ${orange.length} contacts read and did not reply — do not repeat the pitch. Send Google Maps screenshot of their business.\n\n3. Likely leading with visibility instead of their problem. Start every outreach: "How are customers finding your business right now?"`;
+  }
+
+  // --- READ NO REPLY ---
+  if(q.includes('read')&&(q.includes('no reply')||q.includes('not reply')||q.includes('not respond'))) {
+    return `For ${orange.length} contacts who read but did not reply:\n\n1. Do NOT send the same message again.\n2. Google Maps drop — search their business, screenshot it, send that with one line: "This is what your customers see when they search for you." Nothing else. Wait.\n3. Or pivot the angle: "What is the biggest challenge in your business right now?"\n\nRe-entry must be about their problem, not your offer.`;
+  }
+
+  // --- CLOSE / VERIFIED ---
+  if(q.includes('close')||q.includes('verified')||(q.includes('ghs')&&q.includes('180'))) {
+    return `To close a Verified Business today:\n\n1. Follow-Ups → filter 🟢 Conversation\n2. Pick the one with most recent notes\n3. Discovery first: "How are customers finding your business right now?"\n4. Bridge: "The Verified Business listing fixes exactly that. GHS 180 setup, done in 24 hours. Shall we get it done today?"\n5. If hesitation: "Let me start you on the free listing first — no cost. You upgrade any time."\n\nYou have ${green.length} active conversations right now.`;
+  }
+
+  // --- FOLLOW-UPS / DUE ---
+  if(q.includes('follow up')||q.includes('due today')||q.includes('overdue')) {
+    return `${dueToday.length} follow-ups due today.\n\nTop:\n${dueToday.slice(0,5).map((c,i)=>`${i+1}. ${c.Business} | ${c.Number||'—'} — ${getWAEmoji(c.WA_Label)}`).join('\n')}\n\nCheck Follow-Ups tab — sorted overdue first. Tap DONE after sending — it writes the date and calculates your next follow-up automatically.`;
+  }
+
+  // --- KOFORIDUA ---
+  if(q.includes('kof')||q.includes('kofor')) {
+    const b1 = kof.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active')));
+    const b2 = kof.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm')));
+    return `KOFORIDUA SUMMARY:\n\nTotal: ${kof.length} businesses in Koforidua Master\nB1 Active: ${b1.length} · B2 Warm: ${b2.length}\n\nPriority visits today:\n${[...b2,...b1].slice(0,4).map(c=>`→ ${c.Business} | ${c.Number||'—'} · ${c.Area||'—'}`).join('\n')||'None flagged — check Koforidua tab for full list'}\n\nFace-to-face converts better than WhatsApp. Batch visits by area.`;
+  }
+
+  // --- HOT LEADS ---
+  if(q.includes('hot lead')||q.includes('hotlead')||(q.includes('hot')&&q.includes('lead'))) {
+    if(blue.length===0) return `No hot leads currently. To create one: move a 🟢 conversation contact to 🔵 Hot Lead in the sheet when they show clear buying intent.\n\nFocus on Follow-Ups → 🟢 Conversation to find your closest ones.`;
+    return `HOT LEADS (${blue.length}):\n\n${blue.slice(0,5).map((c,i)=>`${i+1}. ${c.Business}\n   ${c.Number||'—'} · ${c.Category||'—'}\n   ${c.Notes?c.Notes.substring(0,80):'No notes'}`).join('\n\n')}\n\nContact these first. One message each: "Shall we lock it in today? GHS 180 setup, done in 24 hours."`;
+  }
+
+  // --- PIPELINE OVERVIEW ---
+  if(q.includes('pipeline')||q.includes('overview')||(q.includes('what')&&q.includes('pipeline'))) {
+    return `PIPELINE OVERVIEW:\n\n🔴 Call only (1-tick): ${red.length}\n🟡 2-tick unread: ${yellow.length}\n🟠 Read no reply: ${orange.length}\n🟢 Conversation: ${green.length}\n🔵 Hot lead: ${blue.length}\n✅ Active clients: ${activeClients}\n⬛ Rejected: ${countByLabel('⬛')}\n📍 Koforidua physical: ${kof.length}\n\nTotal: ${total} contacts\n\nBiggest lever: ${blue.length>0?blue.length+' hot leads — close today':orange.length>5?orange.length+' read-no-reply — try Google Maps drop':green.length+' conversations — push one to Verified'}\nMRR: ₵${mrr}`;
+  }
+
+  // --- REVENUE / MONEY ---
+  if(q.includes('revenue')||q.includes('money')||q.includes('mrr')||(q.includes('how much')&&q.includes('mak'))) {
+    return `REVENUE STATUS:\n\nMRR: ₵${mrr} (${activeClients} active clients)\nOne-time revenue: ₵${oneTime}\nDaily rate: ₵${Math.round(mrr/30)}\nMonthly target: ₵5,400\nGap to target: ₵${Math.max(0,5400-mrr)}\n\nTo close the gap: ${Math.ceil(Math.max(0,5400-mrr)/180)} more Verified closes at GHS 180.\nNext close brings MRR to: ₵${mrr+180}`;
+  }
+
+  // --- CALL LIST ---
+  if(q.includes('call list')||q.includes('1-tick')||q.includes('1 tick')||(q.includes('not delivered'))) {
+    return `CALL LIST — ${red.length} contacts with 1-tick (message not delivered):\n\n${red.slice(0,6).map((c,i)=>`${i+1}. ${c.Business} | ${c.Number||'—'}`).join('\n')||'None right now'}\n\nThese contacts require a phone call — WhatsApp is not reaching them. Call from your WhatsApp number to establish delivery, then follow up by message.`;
+  }
+
+  // --- CLIENT SPECIFIC LOOKUP (business name in query) ---
+  const words = q.replace(/[^a-z0-9 ]/g,'').split(' ').filter(w=>w.length>2);
+  for(const word of words) {
+    const match = state.contacts.find(c=>c.Business&&c.Business.toLowerCase().includes(word));
+    if(match) {
+      return `CONTACT: ${match.Business}\n\nNumber: ${match.Number||'—'}\nCategory: ${match.Category||'—'}\nTown: ${match.Town||'—'}\nStage: ${match.Stage||'—'}\nWA: ${match.WA_Label||'—'}\nLast Contact: ${cleanDate(match.Last_Contact)}\nNext Follow-Up: ${cleanDate(match.Next_Follow_Up)}\nSource: ${match.Sheet_Source||'—'}\nNotes: ${match.Notes?match.Notes.substring(0,200):'No notes recorded'}\n\nFull history → Tracker → Contact History Lookup.`;
+    }
+  }
+
+  // --- TODAY SUMMARY ---
+  if(q.includes('today')||q.includes('this morning')||q.includes('briefing')) {
+    return buildDailyBriefing();
+  }
+
+  return null;
+}
+
+// =====================
+// SMART FALLBACK — when no local pattern matches and API is unavailable
+// =====================
+function generateSmartFallback(question) {
   const q = question.toLowerCase();
   const mrr = getMRR();
   const total = state.contacts.length;
   const blue = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
   const green = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢'));
-  const red = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
-  const orange = state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟠'));
-  const today = new Date(); today.setHours(0,0,0,0);
-  const dueToday = state.contacts.filter(c=>{ if(!c.Next_Follow_Up) return false; const d=new Date(c.Next_Follow_Up); return !isNaN(d.getTime())&&d<=today; });
 
-  if(q.includes('contact first')||q.includes('who should i')) {
-    if(blue.length>0) return `Contact ${blue[0].Business} first.\n\nNumber: ${blue[0].Number}\nNotes: ${blue[0].Notes?blue[0].Notes.substring(0,120):'Verbal yes / proposal sent'}\n\nMessage: "Hey, I have everything ready to get you listed today. Shall we lock it in? GHS 180 setup, done in 24 hours." One question. Wait.`;
-    if(green.length>0) return `Your hottest active conversation is ${green[0].Business}.\n\nNumber: ${green[0].Number}\n\nNext step: Ask a discovery question — "How are customers currently finding your business?" Then bridge to Business Presence (free) once you know their problem.`;
-    return `No hot leads right now. Go to Follow-Ups tab, filter by 🟢 Conversation. Pick the contact with the most recent notes and ask a discovery question today.`;
-  }
-  if(q.includes('not converting')||q.includes('conversion')) {
-    const rate = total > 0 ? ((state.clients.filter(c=>c.Status==='Active').length/total)*100).toFixed(1) : 0;
-    return `Conversion rate: ${rate}% (${state.clients.filter(c=>c.Status==='Active').length} of ${total} contacts).\n\nThree reasons you are not converting more:\n\n1. ${red.length} contacts with 1-tick — message not reaching them. These need a call.\n\n2. ${orange.length} contacts read and did not reply — switch to Google Maps drop.\n\n3. You may be leading with visibility instead of their problem. Start with: "How are customers finding your business right now?"`;
-  }
-  if(q.includes('read')&&(q.includes('no reply')||q.includes('not reply'))) {
-    return `For contacts who read but did not reply:\n\n1. Do not send the same message again.\n\n2. Google Maps drop — search their business, screenshot it, send: "This is what your customers see when they search for you." Nothing else. Wait.\n\n3. Or ask a different question: "What is the biggest challenge in your business right now?"\n\nYou have ${orange.length} contacts in this state.`;
-  }
-  if(q.includes('close')||q.includes('verified')) {
-    return `To close a Verified Business today:\n\n1. Follow-Ups tab → filter 🟢 Conversation\n2. Pick the contact who has shown the most interest\n3. Ask discovery first: "How are customers finding your business right now?"\n4. Match solution: "The Verified Business listing fixes exactly that. GHS 180 setup. Shall we get it done today?"\n5. If they hesitate: "Let me start you on the free listing first — no cost. We take it from there."\n\nYou have ${green.length} active conversations.`;
-  }
-  if(q.includes('follow up')||q.includes('due')) {
-    return `${dueToday.length} follow-ups due today.\n\nTop contacts:\n${dueToday.slice(0,3).map((c,i)=>`${i+1}. ${c.Business} (${c.Number||'—'}) — ${getWAEmoji(c.WA_Label)}`).join('\n')}\n\nCheck Follow-Ups tab — sorted overdue first. Copy the message. Send it. Tap DONE — it logs and sets your next follow-up automatically.`;
-  }
-  return null;
+  return `Based on your pipeline right now:\n\n📊 ${total} contacts · ₵${mrr}/month MRR · ${state.clients.filter(c=>c.Status==='Active').length} active clients\n🔵 ${blue.length} hot leads · 🟢 ${green.length} conversations\n\nI can answer questions using your live data. Try:\n\n• "Who should I contact first today?"\n• "Koforidua summary"\n• "Hot leads"\n• "Pipeline overview"\n• "Revenue status"\n• "Call list"\n• Type a business name to look them up\n\nFor complex questions, the AI routes through Apps Script. To enable it, store your Anthropic API key in Apps Script → Project Settings → Script Properties → key: ANTHROPIC_KEY.`;
 }
 
 async function sendAI() {
@@ -1599,32 +1672,42 @@ async function sendAI() {
   loading.textContent = 'Thinking...';
   document.getElementById('aiChat').appendChild(loading);
 
+  // Always try local intelligence first
   const localReply = getSmartLocalReply(question);
-  if(localReply) { loading.remove(); aiHistory.push({role:'user',content:question},{role:'assistant',content:localReply}); addAIMessage('assistant', localReply); return; }
+  if(localReply) {
+    loading.remove();
+    aiHistory.push({role:'user',content:question},{role:'assistant',content:localReply});
+    addAIMessage('assistant', localReply);
+    return;
+  }
 
+  // Try API — but use smart fallback if unavailable (no key / CORS)
   const mrr = getMRR();
-  const systemPrompt = `You are the BYINFORGH business assistant for YJ (Yaw Junior), solo operator of a local business visibility platform in Koforidua, Ghana.\n\nLIVE DATA:\n- Total contacts: ${state.contacts.length}\n- MRR: GHS ${mrr}\n- Active clients: ${state.clients.filter(c=>c.Status==='Active').length}\n- Hot leads: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length}\n- Active conversations: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\n- 1-tick unreachable: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴')).length}\n\nQ3/Q4 APPROACH: Stop selling visibility. Start solving business problems. Lead with a question about their challenge. Listen. Then match the solution.\n\nBe specific, brief, and practical. Reference actual contact data when useful.`;
+  const systemPrompt = `You are the BYINFORGH business assistant for YJ, solo operator in Koforidua, Ghana.\n\nLIVE DATA: ${state.contacts.length} contacts · GHS ${mrr} MRR · ${state.clients.filter(c=>c.Status==='Active').length} active clients · Hot leads: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} · Conversations: ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\n\nQ3/Q4: Lead with problem not product. Verified = GHS 180. Business Presence = Free. Be specific and brief.`;
 
   aiHistory.push({role:'user',content:question});
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 8000);
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:systemPrompt,messages:aiHistory.slice(-6)})
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:systemPrompt,messages:aiHistory.slice(-6)}),
+      signal: controller.signal
     });
+    clearTimeout(timeout);
+    if(response.status===401||response.status===403) throw new Error('no_key');
     if(!response.ok) throw new Error('API ' + response.status);
     const data = await response.json();
     loading.remove();
-    const reply = data.content && data.content[0] && data.content[0].text ? data.content[0].text : 'No response. Try again.';
+    const reply = data.content&&data.content[0]&&data.content[0].text ? data.content[0].text : generateSmartFallback(question);
     aiHistory.push({role:'assistant',content:reply});
     addAIMessage('assistant', reply);
   } catch(err) {
     loading.remove();
-    const errDiv = document.createElement('div');
-    errDiv.style.cssText = 'background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 14px;font-size:12px;color:var(--red);';
-    errDiv.textContent = 'Connection error — check internet and try again.';
-    document.getElementById('aiChat').appendChild(errDiv);
-    document.getElementById('aiChat').scrollTop = document.getElementById('aiChat').scrollHeight;
+    const fallback = generateSmartFallback(question);
+    aiHistory.push({role:'assistant',content:fallback});
+    addAIMessage('assistant', fallback);
   }
 }
 
@@ -1821,10 +1904,10 @@ function renderOutreachCounter() {
   if(todayEl) todayEl.textContent = trackerData.todayOutreachCount||0;
   if(totalEl) totalEl.textContent = trackerData.totalOutreachCount||0;
   const recent = trackerData.outreachLog||[];
-  document.getElementById('outreachRecentList').innerHTML = recent.slice(0,8).map(o=>`
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:12px">
-      <div><strong>${o.business||'—'}</strong> <span style="color:var(--text-dim)">${o.number||''}</span></div>
-      <div style="color:var(--text-dim);font-size:11px">${o.type||'WhatsApp'} · ${o.date||''}</div>
+  document.getElementById('outreachRecentList').innerHTML = recent.slice(0,5).map(o=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:12px">
+      <div style="font-weight:700">${o.business||'—'}</div>
+      <div style="color:var(--text-dim);font-size:11px;text-align:right">${o.type||'WhatsApp'} · ${cleanDate(o.timestamp||o.date)}</div>
     </div>
   `).join('')||'<div class="empty">No outreach logged yet</div>';
 }
@@ -1832,18 +1915,23 @@ function renderOutreachCounter() {
 function renderStatusViewers() {
   const viewers = trackerData.statusViewers||[];
   const topV = trackerData.topStatusViewers||[];
-  const topHtml = topV.length ? `
-    <div style="margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:8px">TOP STATUS VIEWERS — MOST FREQUENT</div>
-      ${topV.slice(0,5).map((v,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a"><div style="font-size:12px"><span style="color:var(--gold);font-weight:700;margin-right:8px">#${i+1}</span>${v.business}</div><div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--blue);font-weight:700">${v.count}x</div></div>`).join('')}
+  // Top 5 most frequent
+  const topHtml = topV.length ? topV.slice(0,5).map((v,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a">
+      <div style="font-size:12px"><span style="color:var(--gold);font-weight:700;min-width:22px;display:inline-block">#${i+1}</span> ${v.business}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--blue);font-weight:700">${v.count}x</div>
     </div>
-  ` : '';
-  document.getElementById('statusViewerList').innerHTML = topHtml + (viewers.slice(0,10).map(v=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1a1a">
-      <div><div style="font-size:12px;font-weight:700">${v.business||'—'} ${v.viewCount>1?`<span style="color:var(--blue);font-size:10px">${v.viewCount}x</span>`:''}</div><div style="font-size:11px;color:var(--text-dim)">${v.number||''} · ${v.waLabel?v.waLabel.substring(0,25):'—'}</div></div>
-      <div style="font-size:10px;color:var(--blue)">${cleanDate(v.timestamp)}</div>
+  `).join('') : '';
+  // Recent 5 only (no number/waLabel to keep it tight)
+  const recentHtml = viewers.slice(0,5).map(v=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a1a1a">
+      <div style="font-size:12px;font-weight:700">${v.business||'—'} ${v.viewCount>1?`<span style="color:var(--blue);font-size:10px">${v.viewCount}x</span>`:''}</div>
+      <div style="font-size:10px;color:var(--blue);font-family:'Space Mono',monospace">${cleanDate(v.timestamp)}</div>
     </div>
-  `).join('')||'<div class="empty">No status views logged yet</div>');
+  `).join('');
+  document.getElementById('statusViewerList').innerHTML =
+    (topHtml ? `<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:6px">MOST FREQUENT</div>${topHtml}<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin:10px 0 6px">RECENT</div>` : '') +
+    (recentHtml || '<div class="empty">No status views logged yet</div>');
 }
 
 function renderConversions() {
