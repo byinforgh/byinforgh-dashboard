@@ -683,6 +683,7 @@ function renderFollowUps(){
         <button class="copy-btn" onclick="copyMsg(document.getElementById('msgbox-${idx}').textContent,this)">COPY</button>
         <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${sb}','${sn}','${c.Category||''}','${emoji}','${ss}',this,${idx})">✨ PERSONALISE</button>
         <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
+        <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}',this)">✕ REJECT</button>
       </div></div>`;
   }).join('');
   let pagHtml='';
@@ -693,6 +694,28 @@ function renderFollowUps(){
     if(followupPage<totalPages-1)pagHtml+=`<button class="page-btn" onclick="followupPage++;renderFollowUps()">Next →</button>`;
   }else if(total>0)pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} contacts due today</span>`;
   document.getElementById('followupPagination').innerHTML=pagHtml;
+}
+
+async function rejectContact(business,btn){
+  if(!confirm('Reject '+business+'? This archives them and removes from active pipeline.'))return;
+  btn.textContent='Rejecting...';btn.disabled=true;
+  const item=btn.closest('.followup-item');
+  try{
+    const res=await fetch(API_URL+'?action=archiveRejected&business='+encodeURIComponent(business)+'&reason='+encodeURIComponent('Rejected from dashboard')+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      state.contacts=state.contacts.filter(c=>c.Business!==business);
+      followupAllContacts=followupAllContacts.filter(c=>c.Business!==business);
+      if(item){item.style.background='#1a0000';item.style.borderColor='var(--red)';item.style.opacity='0.3';setTimeout(()=>item.remove(),500);}
+      showToast('Rejected — '+business);
+    }else{
+      showToast('Error: '+(data.error||'could not reject'));
+      btn.textContent='✕ REJECT';btn.disabled=false;
+    }
+  }catch(e){
+    showToast('Connection error');
+    btn.textContent='✕ REJECT';btn.disabled=false;
+  }
 }
 
 async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
@@ -1006,6 +1029,27 @@ function getSmartLocalReply(question){
   const kof=state.koforidua||[];
   const today=new Date();today.setHours(0,0,0,0);
   const due=state.contacts.filter(c=>{const d=parseFollowUpDate(c.Next_Follow_Up);return d&&d<=today;});
+  const STOPWORDS=new Set(['top','best','show','list','give','tell','who','what','which','contact','business','businesses','lead','leads','priority','today','now','me','my','please','should','need','to','the','a','an','for','of','and','or','in','on','at']);
+  if(q.match(/top\s*\d*|best\s+leads?|priority\s+contacts?|who\s+to\s+contact|ranked\s+list/)){
+    const numMatch=q.match(/\d+/);
+    const n=numMatch?parseInt(numMatch[0]):10;
+    const priorityOrder=c=>{
+      const l=c.WA_Label||'';
+      if(l.includes('🔵'))return 0;
+      if(l.includes('🟢'))return 1;
+      if(l.includes('🟠'))return 2;
+      if(l.includes('🟡'))return 3;
+      if(l.includes('🔄'))return 4;
+      if(l.includes('🔴'))return 5;
+      return 6;
+    };
+    const ranked=[...state.contacts]
+      .filter(c=>c.Business&&c.WA_Label&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅'))
+      .sort((a,b)=>priorityOrder(a)-priorityOrder(b))
+      .slice(0,n);
+    if(ranked.length===0)return `No active contacts to rank right now.`;
+    return `TOP ${ranked.length} TO CONTACT:\n\n`+ranked.map((c,i)=>`${i+1}. ${getWAEmoji(c.WA_Label)} ${c.Business} — ${c.Number||'—'} (${c.Stage||'—'})`).join('\n');
+  }
   if(q.includes('contact first')||q.includes('who should i')||q.includes('start with')){if(blue.length>0)return`Contact ${blue[0].Business} first.\n\nNumber: ${blue[0].Number||'—'}\nNotes: ${blue[0].Notes?blue[0].Notes.substring(0,120):'Verbal yes'}\n\nMessage: "Hey, I have everything ready to get you listed today. GHS 180, done in 24 hours. Shall we?"`;if(green.length>0)return`Hottest conversation: ${green[0].Business}\n\nNumber: ${green[0].Number||'—'}\n\nAsk: "How are customers finding your business?" Then bridge to Business Presence.`;return`No hot leads right now. Follow-Ups tab → 🟢 Conversation filter.`;}
   if(q.includes('not converting')||q.includes('conversion rate')||q.includes('why am i')){const rate=total>0?((active/total)*100).toFixed(1):0;return`Conversion rate: ${rate}% (${active} clients of ${total})\n\n1. ${red.length} 1-tick — call these (Calls tab)\n2. ${orange.length} read-no-reply — Google Maps drop, not same message\n3. Leading with visibility not their problem — start: "How are customers finding you?"`;}
   if(q.includes('read')&&q.includes('no reply')){return`For ${orange.length} read-no-reply:\n\n1. Do NOT send the same message\n2. Google Maps drop — screenshot their business, send it\n3. Or: "What is the biggest challenge in your business right now?"`;}
@@ -1016,7 +1060,7 @@ function getSmartLocalReply(question){
   if(q.includes('call')){return`CALL LIST — ${red.length} contacts:\n\n${red.slice(0,6).map((c,i)=>`${i+1}. ${c.Business} | ${c.Number||'—'}`).join('\n')||'None right now'}\n\nCalls tab to log notes after each call.`;}
   if(q.includes('today')||q.includes('morning')||q.includes('briefing'))return buildDailyBriefing();
   // Business name lookup
-  const words=q.replace(/[^a-z0-9 ]/g,'').split(' ').filter(w=>w.length>2);
+  const words=q.replace(/[^a-z0-9 ]/g,'').split(' ').filter(w=>w.length>2&&!STOPWORDS.has(w));
   for(const w of words){const m=state.contacts.find(c=>c.Business&&c.Business.toLowerCase().includes(w));if(m){const d=parseFollowUpDate(m.Next_Follow_Up);const ds=d?(d<=today?'OVERDUE/DUE TODAY':cleanDate(m.Next_Follow_Up)):'—';const mc=state.messageCounts[m.Business]||0;return`CONTACT: ${m.Business}\n\nNumber: ${m.Number||'—'}\nCategory: ${m.Category||'—'}\nStage: ${m.Stage||'—'}\nWA: ${m.WA_Label||'—'}\nMessages sent: ${mc}${mc>=3?' [→Monthly rule applies]':''}\nLast Contact: ${cleanDate(m.Last_Contact)}\nNext Follow-Up: ${ds}\nNotes: ${m.Notes?m.Notes.substring(0,200):'No notes recorded'}`;}}
   return null;
 }
@@ -1119,7 +1163,16 @@ function filterContactSearch(field,query){
   const dd=document.getElementById(field+'ContactDropdown');if(!dd)return;
   const q=query.toLowerCase().trim();
   const f=q.length===0?state.contacts.slice(0,20):state.contacts.filter(c=>(c.Business||'').toLowerCase().includes(q)||(c.Number||'').includes(q)||(c.Category||'').toLowerCase().includes(q)).slice(0,20);
-  dd.innerHTML=f.map(c=>`<div class="contact-search-option" onmousedown="selectContact('${field}','${c.Business.replace(/'/g,"\\'")}','${c.Number||''}','${c.WA_Label?c.WA_Label.substring(0,10).replace(/'/g,"\\'"):''}')"><div><div style="font-weight:700">${c.Business}</div><div style="font-size:10px;color:var(--gold);font-family:'Space Mono',monospace">${c.Number||'—'} · ${c.Category||'—'}</div></div><div>${getWAEmoji(c.WA_Label)}</div></div>`).join('');
+  dd.innerHTML=f.map(c=>`<div class="contact-search-option" data-biz="${encodeURIComponent(c.Business||'')}" data-num="${encodeURIComponent(c.Number||'')}" data-wa="${encodeURIComponent(c.WA_Label?c.WA_Label.substring(0,10):'')}"><div><div style="font-weight:700">${c.Business}</div><div style="font-size:10px;color:var(--gold);font-family:'Space Mono',monospace">${c.Number||'—'} · ${c.Category||'—'}</div></div><div>${getWAEmoji(c.WA_Label)}</div></div>`).join('');
+  dd.querySelectorAll('.contact-search-option').forEach(opt=>{
+    opt.addEventListener('mousedown',function(e){
+      e.preventDefault();
+      const business=decodeURIComponent(this.getAttribute('data-biz'));
+      const number=decodeURIComponent(this.getAttribute('data-num'));
+      const waLabel=decodeURIComponent(this.getAttribute('data-wa'));
+      selectContact(field,business,number,waLabel);
+    });
+  });
   dd.classList.add('open');
 }
 function openContactSearch(field){filterContactSearch(field,document.getElementById(field+'ContactInput')?.value||'');}
