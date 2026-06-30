@@ -112,11 +112,29 @@
 .freq-quarterly{background:#0a0a1a;color:#6366f1;border:1px solid #6366f1;}
 select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:'Syne',sans-serif;font-size:12px;width:100%;outline:none;margin-bottom:0;}
 select:focus{border-color:var(--gold);}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.cal-nav{display:flex;align-items:center;gap:10px}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:5px;cursor:pointer;font-size:14px;font-weight:700}
+.cal-nav-btn:hover{border-color:var(--gold);color:var(--gold)}
+.cal-month-label{font-size:16px;font-weight:800;letter-spacing:1px;min-width:160px;text-align:center}
+.cal-today-btn{background:var(--gold);color:var(--black);border:none;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Syne',sans-serif}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-dow{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-align:center;padding:4px 0}
+.cal-cell{background:var(--surface);border:1px solid var(--border);border-radius:6px;min-height:90px;padding:6px;display:flex;flex-direction:column;gap:3px}
+.cal-cell.empty{background:transparent;border:none}
+.cal-cell.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.cal-cell.has-overdue{border-color:var(--red)}
+.cal-daynum{font-size:11px;font-weight:700;color:var(--text-dim);font-family:'Space Mono',monospace}
+.cal-cell.today .cal-daynum{color:var(--gold)}
+.cal-pill{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--black);border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.5}
+.cal-pill:hover{border-color:var(--gold)}
+.cal-more{font-size:9px;color:var(--gold);cursor:pointer;font-weight:700;padding:1px 5px}
+@media(max-width:768px){.cal-grid{grid-template-columns:repeat(7,1fr);gap:3px}.cal-cell{min-height:60px;padding:3px}.cal-pill{font-size:8px}.cal-dow{font-size:8px}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v9</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v11</span></div>
   <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
 </div>
 <div class="shabbat-banner" id="shabbatBanner">
@@ -128,6 +146,7 @@ select:focus{border-color:var(--gold);}
   <button class="tab active" onclick="switchTab('today',event)">TODAY</button>
   <button class="tab" onclick="switchTab('ai',event)">AI ASSIST</button>
   <button class="tab" onclick="switchTab('followup',event)">FOLLOW-UPS</button>
+  <button class="tab" onclick="switchTab('calendar',event)">&#128197; CALENDAR</button>
   <button class="tab" onclick="switchTab('pipeline',event)">PIPELINE</button>
   <button class="tab" onclick="switchTab('calls',event)">&#128222; CALLS</button>
   <button class="tab" onclick="switchTab('koforidua',event)">KOFORIDUA</button>
@@ -244,6 +263,20 @@ select:focus{border-color:var(--gold);}
   </div>
   <div id="followupList"></div>
   <div class="pagination-bar" id="followupPagination"></div>
+</div>
+
+<!-- CALENDAR -->
+<div class="tab-content" id="tab-calendar">
+  <div class="cal-header">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calNavMonth(-1)">&#8249;</button>
+      <div class="cal-month-label" id="calMonthLabel">—</div>
+      <button class="cal-nav-btn" onclick="calNavMonth(1)">&#8250;</button>
+    </div>
+    <button class="cal-today-btn" onclick="calGoToday()">TODAY</button>
+  </div>
+  <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Tap a contact to view full notes · Red border = overdue follow-ups present</div>
+  <div class="cal-grid" id="calGrid"></div>
 </div>
 
 <!-- PIPELINE -->
@@ -551,7 +584,7 @@ function isShabbat(){return new Date().getDay()===6;}
 function toggleCheck(el){el.classList.toggle('done');const txt=el.parentElement.querySelector('.action-text');if(txt)txt.classList.toggle('done-text');}
 function handleConversionOfferChange(){const val=document.getElementById('conversionOffer').value;const cf=document.getElementById('conversionCustomPackageName');if(val==='Custom Package'){cf.style.display='block';}else{cf.style.display='none';if(val==='Business Presence')document.getElementById('conversionAmount').value='0';}}
 function setDeployment(dep,btn){currentDeployment=dep;document.querySelectorAll('[id^="dep"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-function switchTab(name,evt){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));if(evt&&evt.target)evt.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='followup')renderFollowUps();if(name==='contacts')renderAllContacts();if(name==='messages')renderMsgLibrary();if(name==='koforidua')renderKoforidua();if(name==='revenue')renderRevenue();if(name==='pipeline')renderPipeline();if(name==='clients')renderClients();if(name==='ai')renderAI();if(name==='tracker')renderTracker();if(name==='calls')renderCallTab();if(name==='sme')renderSME();if(name==='archive')renderArchive();}
+function switchTab(name,evt){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));if(evt&&evt.target)evt.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='followup')renderFollowUps();if(name==='contacts')renderAllContacts();if(name==='messages')renderMsgLibrary();if(name==='koforidua')renderKoforidua();if(name==='revenue')renderRevenue();if(name==='pipeline')renderPipeline();if(name==='clients')renderClients();if(name==='ai')renderAI();if(name==='tracker')renderTracker();if(name==='calls')renderCallTab();if(name==='sme')renderSME();if(name==='archive')renderArchive();if(name==='calendar')renderCalendar();}
 
 async function loadData(){
   document.getElementById('lastRefresh').textContent='Refreshing...';
@@ -744,6 +777,64 @@ async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
     if(item){item.style.background='#001a00';item.style.borderColor='var(--green)';btn.textContent='✓ LOGGED';btn.style.background='var(--green)';btn.style.color='var(--black)';setTimeout(()=>{item.style.opacity='0.3';setTimeout(()=>item.remove(),500);},1500);}
     showToast('Logged locally — '+business);
   }
+}
+
+let calMonth=new Date().getMonth(), calYear=new Date().getFullYear();
+function calNavMonth(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+function calGoToday(){const d=new Date();calMonth=d.getMonth();calYear=d.getFullYear();renderCalendar();}
+function calDateKey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function calPriority(c){const l=c.WA_Label||'';if(l.includes('🔵'))return 0;if(l.includes('🟢'))return 1;if(l.includes('🟠'))return 2;if(l.includes('🟡'))return 3;if(l.includes('🔄'))return 4;if(l.includes('🔴'))return 5;return 6;}
+function renderCalendar(){
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent=MONTHS[calMonth]+' '+calYear;
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayKey=calDateKey(today);
+  // Build map of date -> contacts due that day (active contacts only, excludes rejected/clients)
+  const dueMap={};
+  state.contacts.filter(c=>c.Business&&c.WA_Label&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')).forEach(c=>{
+    const d=parseFollowUpDate(c.Next_Follow_Up);
+    if(!d)return;
+    const key=calDateKey(d);
+    if(!dueMap[key])dueMap[key]=[];
+    dueMap[key].push(c);
+  });
+  Object.keys(dueMap).forEach(k=>dueMap[k].sort((a,b)=>calPriority(a)-calPriority(b)));
+
+  const firstOfMonth=new Date(calYear,calMonth,1);
+  const startDow=firstOfMonth.getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const dowLabels=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  let html=dowLabels.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<startDow;i++)html+='<div class="cal-cell empty"></div>';
+  for(let day=1;day<=daysInMonth;day++){
+    const cellDate=new Date(calYear,calMonth,day);
+    const key=calDateKey(cellDate);
+    const items=dueMap[key]||[];
+    const isToday=key===todayKey;
+    const isOverdueCell=cellDate<today&&items.length>0;
+    const shown=items.slice(0,3);
+    const more=items.length-shown.length;
+    html+=`<div class="cal-cell ${isToday?'today':''} ${isOverdueCell?'has-overdue':''}">
+      <div class="cal-daynum">${day}</div>
+      ${shown.map(c=>{
+        const sb=c.Business.replace(/'/g,"\\'");
+        const sn=(c.Notes||'').substring(0,200).replace(/'/g,"\\'");
+        const ss=(c.Stage||'').replace(/'/g,"\\'");
+        return `<div class="cal-pill" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${getWAEmoji(c.WA_Label)} ${c.Business}</div>`;
+      }).join('')}
+      ${more>0?`<div class="cal-more" onclick="calShowDayList('${key}')">+${more} more</div>`:''}
+    </div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+  window._calDueMap=dueMap;
+}
+function calShowDayList(key){
+  const items=(window._calDueMap||{})[key]||[];
+  if(!items.length)return;
+  document.getElementById('notesModalTitle').textContent=items.length+' contacts due';
+  document.getElementById('notesModalMeta').textContent='Tap a name in the list below to view its notes separately';
+  document.getElementById('notesModalBody').innerHTML=items.map(c=>`<div style="padding:8px 0;border-bottom:1px solid #1a1a1a;cursor:pointer" onclick="showFullNotes('${c.Business.replace(/'/g,"\\'")}','${(c.Notes||'').substring(0,200).replace(/'/g,"\\'")}','${(c.Stage||'').replace(/'/g,"\\'")}','${c.Number||''}','${c.Category||''}')"><strong>${getWAEmoji(c.WA_Label)} ${c.Business}</strong><br><span style="font-size:11px;color:var(--text-dim)">${c.Number||'—'} · ${c.Stage||'—'}</span></div>`).join('');
+  document.getElementById('notesModal').style.display='flex';
 }
 
 function renderPipeline(){
