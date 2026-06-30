@@ -709,8 +709,31 @@ function renderFollowUps(){
       <div class="followup-header"><div style="flex:1">
         <div class="followup-name" style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}${ovTag}${dtTag}${freqBadge}${depInfo} <span style="color:var(--muted);font-size:10px">▼</span></div>
         <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgCount}</div>
-        <div class="followup-meta" style="color:var(--text-dim);font-style:italic;margin-top:3px">${c.Notes?c.Notes.substring(0,100):'—'}</div>
-      </div><div class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</div></div>
+        <textarea
+          data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
+          oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,1500,'${src}')"
+          placeholder="No notes — tap to add"
+          style="width:100%;min-height:34px;max-height:120px;background:transparent;border:1px solid transparent;color:var(--text-dim);font-style:italic;font-family:Syne,sans-serif;font-size:11px;margin-top:3px;padding:3px 4px;border-radius:3px;resize:vertical;outline:none"
+          onfocus="this.style.background='var(--black)';this.style.borderColor='var(--border)'"
+          onblur="this.style.background='transparent';this.style.borderColor='transparent'"
+        >${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
+      </div>
+      <select
+        data-orig="${c.Stage||''}"
+        onchange="updateContactField('${sb}','Stage',this.value,this,'${src}')"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:170px;outline:none"
+      >${buildStageOptionsHtml(c.Stage||'')}</select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid #1a1a1a">
+        ${src==='Koforidua Master'?'':`<div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px">OFFER</span>
+          <select data-orig="${c.Offer||''}" onchange="updateContactField('${sb}','Offer',this.value,this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;max-width:160px;outline:none">${OFFER_OPTIONS.map(opt=>`<option value="${opt}"${opt===(c.Offer||'')?' selected':''}>${opt||'— none —'}</option>`).join('')}</select>
+        </div>`}
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px">NEXT FOLLOW-UP</span>
+          <input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-family:'Space Mono',monospace;outline:none">
+        </div>
+      </div>
       <div class="message-box" id="msgbox-${idx}">${msg}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="copy-btn" onclick="copyMsg(document.getElementById('msgbox-${idx}').textContent,this)">COPY</button>
@@ -727,6 +750,110 @@ function renderFollowUps(){
     if(followupPage<totalPages-1)pagHtml+=`<button class="page-btn" onclick="followupPage++;renderFollowUps()">Next →</button>`;
   }else if(total>0)pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} contacts due today</span>`;
   document.getElementById('followupPagination').innerHTML=pagHtml;
+}
+
+// v11: Stage options matching Master CRM data validation — verify against your sheet dropdown
+const STAGE_OPTIONS = [
+  'First Message',
+  'Follow up',
+  'Warm Message',
+  'Conversation Active',
+  'Hot Lead — Close Today',
+  'Proposal Sent',
+  'Interested',
+  'Business Presence Listed',
+  'Verified Business',
+  'Visibility Partner',
+  'Monthly',
+  'Quarterly',
+  'Not Interested',
+  'Rejected'
+];
+
+// v11: Offer options — mirrors the values already used in the conversionOffer dropdown.
+// Verify these exactly match Master CRM column J data validation before relying on them.
+const OFFER_OPTIONS = [
+  '',
+  'Business Presence',
+  'Verified Business',
+  'Visibility Partner',
+  'SME Systems',
+  'BBCS Consulting',
+  'Custom Package'
+];
+
+// v11 finish: builds <option> list for a Stage <select>, guaranteeing the
+// contact's current stage is always present even if it's a Koforidua bucket
+// value (e.g. "B1 Active") not in STAGE_OPTIONS — otherwise opening the
+// dropdown and changing nothing would silently overwrite it on blur.
+function buildStageOptionsHtml(currentStage){
+  const opts=[...STAGE_OPTIONS];
+  if(currentStage && opts.indexOf(currentStage)===-1) opts.unshift(currentStage);
+  return opts.map(opt=>`<option value="${(opt||'').replace(/"/g,'&quot;')}"${opt===currentStage?' selected':''}>${opt||'— none —'}</option>`).join('');
+}
+
+// v11: convert <input type="date"> value (yyyy-mm-dd) to sheet format (dd/MM/yyyy)
+function dateInputToSheetFormat(isoStr) {
+  if (!isoStr) return '';
+  const p = isoStr.split('-');
+  if (p.length !== 3) return isoStr;
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+// v11: convert sheet format (dd/MM/yyyy) to <input type="date"> value (yyyy-mm-dd)
+function sheetDateToInputFormat(sheetStr) {
+  if (!sheetStr) return '';
+  const p = sheetStr.split('/');
+  if (p.length !== 3) return '';
+  const dd = p[0].padStart(2,'0'), mm = p[1].padStart(2,'0'), yyyy = p[2];
+  if (yyyy.length !== 4) return '';
+  return yyyy + '-' + mm + '-' + dd;
+}
+
+// v11: debounce helper — Notes textarea fires this instead of updateContactField directly,
+// so it only saves 1.5s after the person stops typing instead of on every keystroke.
+const debounceTimers = {};
+function debouncedUpdateContactField(business, field, value, el, delay, sheetSource) {
+  const key = business + '|' + field;
+  if (debounceTimers[key]) clearTimeout(debounceTimers[key]);
+  debounceTimers[key] = setTimeout(() => {
+    updateContactField(business, field, value, el, sheetSource);
+    delete debounceTimers[key];
+  }, delay || 1500);
+}
+
+// v11: INLINE FIELD UPDATE — calls updateContactField endpoint, updates local state
+async function updateContactField(business, field, value, el, sheetSource) {
+  const orig = el ? el.dataset.orig : '';
+  if (el) { el.disabled = true; el.style.opacity = '0.6'; }
+  try {
+    const res  = await fetch(API_URL + '?action=updateContactField'
+      + '&business=' + encodeURIComponent(business)
+      + '&field='    + encodeURIComponent(field)
+      + '&value='    + encodeURIComponent(value)
+      + '&sheetSource=' + encodeURIComponent(sheetSource||'Master CRM')
+      + '&t='        + Date.now()
+    );
+    const data = await res.json();
+    if (data.success) {
+      // Mirror change into local state so the page stays consistent without a full refresh
+      const c = state.contacts.find(x => x.Business === business);
+      if (c) c[field] = value;
+      if (el) {
+        el.dataset.orig  = value; // update baseline for future reverts
+        el.style.opacity = '1';
+        el.style.outline = '2px solid var(--green)';
+        setTimeout(() => { if (el) el.style.outline = ''; }, 1800);
+        el.disabled = false;
+      }
+      showToast('\u2713 ' + business + ' \u2014 ' + field + ' updated');
+    } else {
+      showToast('Error: ' + (data.error || 'could not update'));
+      if (el) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
+    }
+  } catch(err) {
+    showToast('Connection error \u2014 change not saved');
+    if (el) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
+  }
 }
 
 async function rejectContact(business,btn){
@@ -845,7 +972,9 @@ function renderPipeline(){
     let freqBadge='';
     if(c.Stage&&c.Stage.toLowerCase().includes('quarterly'))freqBadge=' <span class="freq-badge freq-quarterly">Q</span>';
     else if(c.Stage&&c.Stage.toLowerCase().includes('monthly'))freqBadge=' <span class="freq-badge freq-monthly">M</span>';
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><strong>${c.Business}</strong>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number}</span></td><td><span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span></td><td>${getWAEmoji(c.WA_Label)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td style="font-size:11px;max-width:180px;color:var(--text-dim)">${c.Notes?c.Notes.substring(0,70):'—'}</td></tr>`;
+    const sb=c.Business.replace(/'/g,"\\'");
+    const src=(c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><strong>${c.Business}</strong>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateContactField('${sb}','Stage',this.value,this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td>${getWAEmoji(c.WA_Label)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td style="font-size:11px;max-width:180px;color:var(--text-dim)">${c.Notes?c.Notes.substring(0,70):'—'}</td></tr>`;
   }).join('');
 }
 function openPipelineStage(key,name){
@@ -1054,7 +1183,9 @@ function filterContacts(){
     let freqTag='';
     if(c.Stage&&c.Stage.toLowerCase().includes('quarterly'))freqTag='<span class="freq-badge freq-quarterly">Q</span>';
     else if(c.Stage&&c.Stage.toLowerCase().includes('monthly'))freqTag='<span class="freq-badge freq-monthly">M</span>';
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><strong style="font-size:12px">${c.Business}</strong>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span></td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><span class="stage-badge ${getStageBadge(c.Stage)}">${c.Stage||'—'}</span></td><td style="font-size:16px;text-align:center">${getWAEmoji(c.WA_Label)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:10px;white-space:nowrap;color:var(--text-dim)">${cleanDate(c.Last_Contact)}</td><td style="font-size:10px;white-space:nowrap;color:${ov?'var(--red)':'var(--text-dim)'};font-weight:${ov?'700':'400'}">${cleanDate(c.Next_Follow_Up)}</td><td style="font-size:10px;max-width:150px;color:var(--text-dim)">${c.Notes?c.Notes.substring(0,70):'—'}</td></tr>`;
+    const sb=c.Business.replace(/'/g,"\\'");
+    const src=(c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><strong style="font-size:12px">${c.Business}</strong>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span></td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateContactField('${sb}','Stage',this.value,this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td style="font-size:16px;text-align:center">${getWAEmoji(c.WA_Label)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:10px;white-space:nowrap;color:var(--text-dim)">${cleanDate(c.Last_Contact)}</td><td style="font-size:10px;white-space:nowrap;color:${ov?'var(--red)':'var(--text-dim)'};font-weight:${ov?'700':'400'}">${cleanDate(c.Next_Follow_Up)}</td><td style="font-size:10px;max-width:150px;color:var(--text-dim)">${c.Notes?c.Notes.substring(0,70):'—'}</td></tr>`;
   }).join('');
 }
 
