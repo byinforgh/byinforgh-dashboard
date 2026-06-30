@@ -137,6 +137,7 @@ select:focus{border-color:var(--gold);}
   <button class="tab" onclick="switchTab('revenue',event)">REVENUE</button>
   <button class="tab" onclick="switchTab('contacts',event)">ALL CONTACTS</button>
   <button class="tab" onclick="switchTab('tracker',event)">TRACKER</button>
+  <button class="tab" onclick="switchTab('archive',event)">&#128465; ARCHIVE</button>
 </div>
 
 <!-- TODAY -->
@@ -190,7 +191,23 @@ select:focus{border-color:var(--gold);}
     <button class="refresh-btn" onclick="archiveNotes()" id="archiveNotesBtn" style="background:#2a2000;color:var(--gold);border:1px solid var(--gold-dim);padding:10px 24px">&#128450; ARCHIVE + CLEAR NOTES</button>
     <div id="archiveNotesResult" style="margin-top:10px;font-size:12px"></div>
   </div>
+  <div class="card" style="margin-bottom:16px;border-color:var(--red)">
+    <div class="card-title" style="color:var(--red)">&#128465; SWEEP ARCHIVE REJECTED CONTACTS</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">Finds every contact currently marked Rejected / Not Interested in Master CRM and Koforidua Master — including ones rejected before today — and archives them in one pass. Safe to run anytime, never creates duplicates. Nothing is deleted; full record stays in the Archived sheet and can be restored later.</div>
+    <button class="refresh-btn" onclick="sweepArchive()" id="sweepArchiveBtn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);padding:10px 24px">&#128465; SWEEP &amp; ARCHIVE ALL REJECTED</button>
+    <div id="sweepArchiveResult" style="margin-top:10px;font-size:12px"></div>
+  </div>
   <div class="card"><div class="card-title">&#128161; DAILY IMPROVEMENT SUGGESTIONS</div><div id="aiSuggestions"></div></div>
+</div>
+
+<!-- ARCHIVE -->
+<div class="tab-content" id="tab-archive">
+  <div style="background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
+    <strong style="color:var(--red)">ARCHIVED CONTACTS</strong> · Rejected, expired proposals, 3x-no-reply, and dead leads live here. Nothing is ever deleted. Search and tap RESTORE to bring a business back into the active pipeline as a fresh contact.
+  </div>
+  <input class="search-input" type="text" id="archiveSearch" placeholder="Search archived business name, number, category..." oninput="filterArchiveList()">
+  <div class="metrics-grid" id="archiveMetrics" style="margin-bottom:20px"></div>
+  <div id="archiveList"></div>
 </div>
 
 <!-- FOLLOW-UPS -->
@@ -534,7 +551,7 @@ function isShabbat(){return new Date().getDay()===6;}
 function toggleCheck(el){el.classList.toggle('done');const txt=el.parentElement.querySelector('.action-text');if(txt)txt.classList.toggle('done-text');}
 function handleConversionOfferChange(){const val=document.getElementById('conversionOffer').value;const cf=document.getElementById('conversionCustomPackageName');if(val==='Custom Package'){cf.style.display='block';}else{cf.style.display='none';if(val==='Business Presence')document.getElementById('conversionAmount').value='0';}}
 function setDeployment(dep,btn){currentDeployment=dep;document.querySelectorAll('[id^="dep"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-function switchTab(name,evt){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));if(evt&&evt.target)evt.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='followup')renderFollowUps();if(name==='contacts')renderAllContacts();if(name==='messages')renderMsgLibrary();if(name==='koforidua')renderKoforidua();if(name==='revenue')renderRevenue();if(name==='pipeline')renderPipeline();if(name==='clients')renderClients();if(name==='ai')renderAI();if(name==='tracker')renderTracker();if(name==='calls')renderCallTab();if(name==='sme')renderSME();}
+function switchTab(name,evt){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));if(evt&&evt.target)evt.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='followup')renderFollowUps();if(name==='contacts')renderAllContacts();if(name==='messages')renderMsgLibrary();if(name==='koforidua')renderKoforidua();if(name==='revenue')renderRevenue();if(name==='pipeline')renderPipeline();if(name==='clients')renderClients();if(name==='ai')renderAI();if(name==='tracker')renderTracker();if(name==='calls')renderCallTab();if(name==='sme')renderSME();if(name==='archive')renderArchive();}
 
 async function loadData(){
   document.getElementById('lastRefresh').textContent='Refreshing...';
@@ -806,11 +823,78 @@ function renderSME(){
     <div class="metric-card gold"><div class="metric-label">SME MRR</div><div class="metric-value">&#8373;${smeMRR}</div><div class="metric-sub">monthly recurring</div></div>
     <div class="metric-card green"><div class="metric-label">ACTIVE DEPLOYMENTS</div><div class="metric-value">${active.length}</div><div class="metric-sub">live BBCS systems</div></div>
     <div class="metric-card purple"><div class="metric-label">AVG FEE</div><div class="metric-value" style="font-size:22px">&#8373;${active.length>0?Math.round(smeMRR/active.length):0}</div><div class="metric-sub">per member/month</div></div>`;
-  if(members.length===0){document.getElementById('smeMembersList').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px;text-align:center"><div style="font-size:14px;color:var(--text-dim);margin-bottom:10px">No SME Systems Members found</div><div style="font-size:12px;color:var(--muted)">Create sheet tab <strong style="color:var(--teal)">SME Systems Members</strong> with columns:<br>A=Business · B=Owner · C=Package · D=Joined · E=Monthly Amount · F=Status · G=Number · H=Notes</div></div>`;return;}
-  document.getElementById('smeMembersList').innerHTML=members.map(m=>{const isAct=(m.Status||'').toLowerCase()==='active';return`<div class="sme-item" style="${!isAct?'border-color:var(--border);opacity:0.7':''}"><div style="flex:1"><div class="client-name">&#128295; ${m.Business}</div><div class="client-pkg">Owner: ${m.Owner||'—'} · ${m.Package||'—'} · Joined: ${m.Joined||'—'}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${m.Notes||'—'}</div></div><div style="text-align:right"><div class="client-amount" style="color:var(--teal)">&#8373;${m.Amount||0}</div><div class="pay-monthly" style="color:var(--teal)">MONTHLY</div><div class="${isAct?'active-tag':'overdue-tag'}" style="margin-top:4px">${m.Status||'—'}</div><div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;margin-top:2px">${m.Number||'—'}</div></div></div>`;}).join('');
+  if(members.length===0){document.getElementById('smeMembersList').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px;text-align:center"><div style="font-size:14px;color:var(--text-dim);margin-bottom:10px">No SME Systems Members found</div><div style="font-size:12px;color:var(--muted)">Check the <strong style="color:var(--teal)">SME Systems Members</strong> sheet tab has data starting row 2, and that columns N (Monthly Amount) and O (Status) are filled in. These two columns are auto-created — set Status to Active for each live member.</div></div>`;return;}
+  document.getElementById('smeMembersList').innerHTML=members.map(m=>{const isAct=(m.Status||'').toLowerCase()==='active';return`<div class="sme-item" style="${!isAct?'border-color:var(--border);opacity:0.7':''}"><div style="flex:1"><div class="client-name">&#128295; ${m.Business}</div><div class="client-pkg">${m.ContactName?'Contact: '+m.ContactName+' · ':''}${m.Package||'—'}${m.Location?' · '+m.Location:''}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${m.Notes||'—'}</div></div><div style="text-align:right"><div class="client-amount" style="color:var(--teal)">&#8373;${m.Amount||0}</div><div class="pay-monthly" style="color:var(--teal)">MONTHLY</div><div class="${isAct?'active-tag':'overdue-tag'}" style="margin-top:4px">${m.Status||'—'}</div><div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;margin-top:2px">${m.Number||'—'}</div></div></div>`;}).join('');
 }
 
-function renderClients(){
+// ===== v10: SWEEP ARCHIVE =====
+async function sweepArchive(){
+  const btn=document.getElementById('sweepArchiveBtn'),result=document.getElementById('sweepArchiveResult');
+  if(!confirm('Sweep Master CRM and Koforidua Master for every contact already marked Rejected or Not Interested, and archive them?\n\nThis is safe to run repeatedly — already-archived contacts are skipped, never duplicated.'))return;
+  btn.textContent='Sweeping...';btn.disabled=true;
+  result.innerHTML='<div style="color:var(--muted)">Scanning both sheets — may take 10-20 seconds...</div>';
+  try{
+    const res=await fetch(API_URL+'?action=sweepArchiveRejected&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      result.innerHTML=`<div style="color:var(--green);font-weight:700">Done — archived ${data.archived} contact${data.archived!==1?'s':''}${data.skipped>0?' · '+data.skipped+' already archived (skipped, no duplicates)':''}.</div>${data.details&&data.details.length?`<div style="font-size:11px;color:var(--text-dim);margin-top:6px;max-height:120px;overflow-y:auto">${data.details.join(', ')}</div>`:''}`;
+      showToast('Swept '+data.archived+' rejected contacts');
+      setTimeout(()=>loadData(),1500);
+    }else{
+      result.innerHTML=`<div class="error-msg">Error: ${data.error||'Unknown'}</div>`;
+    }
+  }catch(e){result.innerHTML='<div class="error-msg">Connection error. Try again.</div>';}
+  btn.textContent='&#128465; SWEEP & ARCHIVE ALL REJECTED';btn.disabled=false;
+}
+
+// ===== v10: ARCHIVE TAB =====
+let archiveData=[];
+async function renderArchive(){
+  document.getElementById('archiveList').innerHTML='<div class="loading">Loading archived contacts</div>';
+  try{
+    const res=await fetch(API_URL+'?action=getArchivedList&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      archiveData=data.archived||[];
+      document.getElementById('archiveMetrics').innerHTML=`<div class="metric-card red"><div class="metric-label">TOTAL ARCHIVED</div><div class="metric-value">${archiveData.length}</div><div class="metric-sub">rejected / expired / dead leads</div></div>`;
+      filterArchiveList();
+    }else{
+      document.getElementById('archiveList').innerHTML='<div class="error-msg">Could not load archive: '+(data.error||'unknown error')+'</div>';
+    }
+  }catch(e){document.getElementById('archiveList').innerHTML='<div class="error-msg">Connection error loading archive.</div>';}
+}
+function filterArchiveList(){
+  const q=(document.getElementById('archiveSearch').value||'').toLowerCase();
+  const filtered=archiveData.filter(a=>!q||(a.business||'').toLowerCase().includes(q)||(a.number||'').includes(q)||(a.category||'').toLowerCase().includes(q)||(a.town||'').toLowerCase().includes(q));
+  if(filtered.length===0){document.getElementById('archiveList').innerHTML='<div class="empty">No archived contacts match this search</div>';return;}
+  document.getElementById('archiveList').innerHTML=filtered.map((a,i)=>`<div class="followup-item">
+    <div class="followup-header"><div style="flex:1">
+      <div class="followup-name">${a.business}</div>
+      <div class="followup-meta">${a.number||'—'} · ${a.category||'—'} · ${a.town||'—'} · archived ${a.archivedDate||'—'}</div>
+      <div class="followup-meta" style="color:var(--text-dim);margin-top:4px">Reason: ${a.reason||'—'}</div>
+      ${a.notes?`<div class="followup-meta" style="color:var(--text-dim);margin-top:3px;font-style:italic">${a.notes.substring(0,150)}</div>`:''}
+    </div><span class="stage-badge stage-reject">${a.stage||'Rejected'}</span></div>
+    <button class="copy-btn" style="background:var(--green);color:var(--black)" onclick="restoreContact('${a.business.replace(/'/g,"\\'")}','${a.number||''}',this)">&#8634; RESTORE TO ACTIVE PIPELINE</button>
+  </div>`).join('');
+}
+async function restoreContact(business,number,btn){
+  if(!confirm('Restore '+business+' to the active pipeline as a new contact?\n\nThe archived record stays in place for history. Outreach starts fresh.'))return;
+  btn.textContent='Restoring...';btn.disabled=true;
+  try{
+    const res=await fetch(API_URL+'?action=restoreFromArchive&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      btn.textContent='✓ RESTORED';btn.style.background='var(--gold)';
+      showToast(business+' restored — '+data.newId);
+      setTimeout(()=>loadData(),1000);
+    }else{
+      showToast('Error: '+(data.error||'could not restore'));
+      btn.textContent='&#8634; RESTORE TO ACTIVE PIPELINE';btn.disabled=false;
+    }
+  }catch(e){showToast('Connection error');btn.textContent='&#8634; RESTORE TO ACTIVE PIPELINE';btn.disabled=false;}
+}
+
+
   document.getElementById('clientsList').innerHTML=state.clients.map(c=>{const pt=c.PaymentType||'Monthly';let ah='';if(pt==='One-Time')ah=`<div class="client-amount" style="color:var(--purple)">&#8373;${c.OneTimeAmount||0}</div><div class="pay-onetime">ONE-TIME</div>`;else if(pt==='Both')ah=`<div class="client-amount">&#8373;${c.Amount||0}</div><div class="pay-both">MONTHLY+1x</div>`;else ah=`<div class="client-amount">&#8373;${c.Amount||0}</div><div class="pay-monthly">MONTHLY</div>`;const stat=(c.Status||'').toLowerCase();return`<div class="client-item ${stat==='churned'?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right">${ah}<div class="${stat==='active'?'active-tag':'overdue-tag'}" style="margin-top:4px">${c.Status}</div><div style="font-size:10px;color:var(--text-dim)">Renewal: ${c.Renewal||'—'}</div></div></div>`;}).join('')||'<div class="empty">No clients loaded</div>';
   document.getElementById('renewalsList').innerHTML=state.renewals.filter(r=>r.Status!=='UPCOMING').map(r=>`<div class="client-item overdue"><div style="flex:1"><div class="client-name">${r.Business}</div><div class="client-pkg">${r.Package}</div></div><div style="text-align:right"><div class="overdue-tag">${r.Status}</div><div style="font-size:11px;color:var(--text-dim)">${Math.abs(r.Days||0)}d ${(r.Days||0)<0?'overdue':'until renewal'}</div></div></div>`).join('')||'<div class="empty">No overdue renewals</div>';
 }
