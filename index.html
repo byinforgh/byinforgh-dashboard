@@ -504,7 +504,7 @@ select:focus{border-color:var(--gold);}
 
 <div class="toast" id="toast"></div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbySTWbIrmhX1mOyrfzi-gF045RJOpdBRgqF1G-6hCqD4CU4E9eMxgRqK0VInrnbC-xL/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbwWl-cL1tT2N7dTHqA9MRym20O62tMaUCog3b88hM90YoP3ywxCbFADXmkV2HjG08Fv/exec';
 let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};
 let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
@@ -894,7 +894,7 @@ async function restoreContact(business,number,btn){
   }catch(e){showToast('Connection error');btn.textContent='&#8634; RESTORE TO ACTIVE PIPELINE';btn.disabled=false;}
 }
 
-
+function renderClients(){
   document.getElementById('clientsList').innerHTML=state.clients.map(c=>{const pt=c.PaymentType||'Monthly';let ah='';if(pt==='One-Time')ah=`<div class="client-amount" style="color:var(--purple)">&#8373;${c.OneTimeAmount||0}</div><div class="pay-onetime">ONE-TIME</div>`;else if(pt==='Both')ah=`<div class="client-amount">&#8373;${c.Amount||0}</div><div class="pay-both">MONTHLY+1x</div>`;else ah=`<div class="client-amount">&#8373;${c.Amount||0}</div><div class="pay-monthly">MONTHLY</div>`;const stat=(c.Status||'').toLowerCase();return`<div class="client-item ${stat==='churned'?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right">${ah}<div class="${stat==='active'?'active-tag':'overdue-tag'}" style="margin-top:4px">${c.Status}</div><div style="font-size:10px;color:var(--text-dim)">Renewal: ${c.Renewal||'—'}</div></div></div>`;}).join('')||'<div class="empty">No clients loaded</div>';
   document.getElementById('renewalsList').innerHTML=state.renewals.filter(r=>r.Status!=='UPCOMING').map(r=>`<div class="client-item overdue"><div style="flex:1"><div class="client-name">${r.Business}</div><div class="client-pkg">${r.Package}</div></div><div style="text-align:right"><div class="overdue-tag">${r.Status}</div><div style="font-size:11px;color:var(--text-dim)">${Math.abs(r.Days||0)}d ${(r.Days||0)<0?'overdue':'until renewal'}</div></div></div>`).join('')||'<div class="empty">No overdue renewals</div>';
 }
