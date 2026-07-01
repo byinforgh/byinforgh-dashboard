@@ -465,6 +465,8 @@ select:focus{border-color:var(--gold);}
         <option value="Visibility Partner">Visibility Partner — GHS 500+</option>
         <option value="SME Systems">SME Systems</option>
         <option value="BBCS Consulting">BBCS Consulting</option>
+        <option value="Command Centre">Command Centre</option>
+        <option value="Business Authority">Business Authority</option>
         <option value="Custom Package">Custom Package</option>
       </select>
       <input id="conversionAmount" type="number" placeholder="Amount GHS (e.g. 180)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-size:12px">
@@ -731,7 +733,7 @@ function renderFollowUps(){
         </div>`}
         <div style="display:flex;flex-direction:column;gap:2px">
           <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px">NEXT FOLLOW-UP</span>
-          <input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-family:'Space Mono',monospace;outline:none">
+          <input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-family:'Space Mono',monospace;outline:none">
         </div>
       </div>
       <div class="message-box" id="msgbox-${idx}">${msg}</div>
@@ -739,7 +741,7 @@ function renderFollowUps(){
         <button class="copy-btn" onclick="copyMsg(document.getElementById('msgbox-${idx}').textContent,this)">COPY</button>
         <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${sb}','${sn}','${c.Category||''}','${emoji}','${ss}',this,${idx})">✨ PERSONALISE</button>
         <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
-        <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}',this)">✕ REJECT</button>
+        <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}','${src}',this)">✕ REJECT</button>
       </div></div>`;
   }).join('');
   let pagHtml='';
@@ -779,6 +781,8 @@ const OFFER_OPTIONS = [
   'Visibility Partner',
   'SME Systems',
   'BBCS Consulting',
+  'Command Centre',
+  'Business Authority',
   'Custom Package'
 ];
 
@@ -856,12 +860,15 @@ async function updateContactField(business, field, value, el, sheetSource) {
   }
 }
 
-async function rejectContact(business,btn){
+// v10.3 FIX: rejectContact now takes the sheetSource and forwards it to the
+// archiveRejected endpoint, so contacts from Koforidua Master are actually
+// found and removed instead of silently failing.
+async function rejectContact(business,sheetSource,btn){
   if(!confirm('Reject '+business+'? This archives them and removes from active pipeline.'))return;
   btn.textContent='Rejecting...';btn.disabled=true;
   const item=btn.closest('.followup-item');
   try{
-    const res=await fetch(API_URL+'?action=archiveRejected&business='+encodeURIComponent(business)+'&reason='+encodeURIComponent('Rejected from dashboard')+'&t='+Date.now());
+    const res=await fetch(API_URL+'?action=archiveRejected&business='+encodeURIComponent(business)+'&sheetSource='+encodeURIComponent(sheetSource||'Master CRM')+'&reason='+encodeURIComponent('Rejected from dashboard')+'&t='+Date.now());
     const data=await res.json();
     if(data.success){
       state.contacts=state.contacts.filter(c=>c.Business!==business);
@@ -1070,7 +1077,7 @@ function renderSME(){
   document.getElementById('smeMembersList').innerHTML=members.map(m=>{const isAct=(m.Status||'').toLowerCase()==='active';return`<div class="sme-item" style="${!isAct?'border-color:var(--border);opacity:0.7':''}"><div style="flex:1"><div class="client-name">&#128295; ${m.Business}</div><div class="client-pkg">${m.ContactName?'Contact: '+m.ContactName+' · ':''}${m.Package||'—'}${m.Location?' · '+m.Location:''}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${m.Notes||'—'}</div></div><div style="text-align:right"><div class="client-amount" style="color:var(--teal)">&#8373;${m.Amount||0}</div><div class="pay-monthly" style="color:var(--teal)">MONTHLY</div><div class="${isAct?'active-tag':'overdue-tag'}" style="margin-top:4px">${m.Status||'—'}</div><div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;margin-top:2px">${m.Number||'—'}</div></div></div>`;}).join('');
 }
 
-// ===== v10: SWEEP ARCHIVE =====
+// ===== SWEEP ARCHIVE =====
 async function sweepArchive(){
   const btn=document.getElementById('sweepArchiveBtn'),result=document.getElementById('sweepArchiveResult');
   if(!confirm('Sweep Master CRM and Koforidua Master for every contact already marked Rejected or Not Interested, and archive them?\n\nThis is safe to run repeatedly — already-archived contacts are skipped, never duplicated.'))return;
@@ -1090,7 +1097,7 @@ async function sweepArchive(){
   btn.textContent='&#128465; SWEEP & ARCHIVE ALL REJECTED';btn.disabled=false;
 }
 
-// ===== v10: ARCHIVE TAB =====
+// ===== ARCHIVE TAB =====
 let archiveData=[];
 async function renderArchive(){
   document.getElementById('archiveList').innerHTML='<div class="loading">Loading archived contacts</div>';
@@ -1152,6 +1159,7 @@ function renderRevenue(){
   const total=state.contacts.length,conversations=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length;
   const verified=state.clients.filter(c=>c.Package&&c.Package.toLowerCase().includes('verified')).length;
   const partners=state.clients.filter(c=>c.Package&&c.Package.toLowerCase().includes('partner')).length;
+  const custom=state.clients.filter(c=>c.Package&&(c.Package.toLowerCase().includes('custom')||c.Package.toLowerCase().includes('command centre')||c.Package.toLowerCase().includes('business authority'))).length;
   document.getElementById('revenueActual').innerHTML=`
     <div class="metric-card gold"><div class="metric-label">DAILY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/30)}</div><div class="metric-sub">MRR ÷ 30</div></div>
     <div class="metric-card green"><div class="metric-label">WEEKLY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/4.3)}</div><div class="metric-sub">MRR ÷ 4.3</div></div>
@@ -1168,7 +1176,8 @@ function renderRevenue(){
     <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">Business Presence (Free)</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--text-dim)">&#8373;0</div></div></div>
     <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">✅ Verified Business</div><div style="font-size:11px;color:var(--text-dim)">GHS 180 — lead offer always</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">&#8373;180</div></div><div style="font-size:11px;color:var(--gold);margin-top:4px">${verified} verified · Need ${Math.max(0,Math.ceil((5400-mrr)/180))} more for &#8373;5,400/month</div></div>
     <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">🔥 Visibility Partner</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--orange)">&#8373;500+</div></div><div style="font-size:11px;color:var(--orange);margin-top:4px">${partners} partner</div></div>
-    <div style="padding:10px 0"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">&#128295; SME Systems (BBCS)</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--teal)">&#8373;${smeMRR}/mo</div></div><div style="font-size:11px;color:var(--teal);margin-top:4px">${smeActive} active systems</div></div>`;
+    <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">&#128295; SME Systems (BBCS)</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--teal)">&#8373;${smeMRR}/mo</div></div><div style="font-size:11px;color:var(--teal);margin-top:4px">${smeActive} active systems</div></div>
+    <div style="padding:10px 0"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">&#128188; Command Centre / Business Authority / Custom</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--purple)">${custom}</div></div><div style="font-size:11px;color:var(--purple);margin-top:4px">${custom} client${custom!==1?'s':''} on a custom-priced package</div></div>`;
   document.getElementById('closesNeeded').innerHTML=[{label:'Hit GHS 180/day',monthly:5400},{label:'Hit GHS 500/day',monthly:15000},{label:'Hit GHS 1,000/day',monthly:30000}].map(t=>{const needed=Math.max(0,Math.ceil((t.monthly-mrr)/180));const pct=Math.min(100,Math.round((mrr/t.monthly)*100));return`<div style="padding:12px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">${t.label}</div><div style="font-size:11px;color:var(--text-dim)">${needed} more Verified closes</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-dim);margin-top:4px">${pct}% · &#8373;${mrr.toLocaleString()} of &#8373;${t.monthly.toLocaleString()}/month</div></div>`;}).join('');
 }
 
