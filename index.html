@@ -1136,7 +1136,7 @@ function buildCallScript(c){
   let ask='"Based on what we discussed, I have everything ready to get you set up. Shall we lock it in today?"';
   const s=(c.Stage||'').toLowerCase();
   if(s.includes('hot')||s.includes('verbal'))ask='"You mentioned you were ready to go ahead — GHS 180, done in 24 hours. Shall I confirm it now?"';
-  else if(s.includes('reject')||s.includes('not interested'))ask='"I understand it wasn\\'t the right fit before — has anything changed on your end since we last spoke?"';
+  else if(s.includes('reject')||s.includes('not interested'))ask='"I understand it wasn\'t the right fit before — has anything changed on your end since we last spoke?"';
   return `RETURNING CONTACT SCRIPT:\n${opener}\n\n${ask}`;
 }
 function toggleCallScript(key){
