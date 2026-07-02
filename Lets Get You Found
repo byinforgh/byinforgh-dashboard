@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>BYINFORGH — Get Your Business Seen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg:#0a0a0a;
+    --panel:#141210;
+    --gold:#f5c842;
+    --gold-dim:#c9a233;
+    --teal:#3fb6a8;
+    --cream:#faf6ec;
+    --text:#f2ede0;
+    --muted:#a89f8c;
+    --line:#2a271f;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(245,200,66,0.10), transparent 45%),
+      radial-gradient(circle at 90% 100%, rgba(63,182,168,0.10), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Space Mono', monospace;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .card{
+    width:100%;
+    max-width:480px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px 24px 24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg,var(--gold),var(--teal));
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px; margin-bottom:22px;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:8px;
+    background:var(--gold); color:#12100c;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Syne',sans-serif; font-weight:800; font-size:18px;
+  }
+  .brand .name{ font-family:'Syne',sans-serif; font-weight:700; font-size:16px; letter-spacing:0.5px;}
+  .brand .name b{color:var(--gold);}
+  .brand .tag{ font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;}
+
+  .progress{
+    display:flex; gap:6px; margin-bottom:22px;
+  }
+  .progress .seg{
+    flex:1; height:4px; border-radius:2px; background:var(--line);
+    transition:background .3s;
+  }
+  .progress .seg.done{ background:var(--gold); }
+
+  h1{
+    font-family:'Syne',sans-serif; font-weight:800;
+    font-size:22px; line-height:1.25; margin:0 0 6px;
+    color:var(--cream);
+  }
+  p.sub{ color:var(--muted); font-size:13px; line-height:1.5; margin:0 0 20px;}
+
+  label{
+    display:block; font-size:11px; text-transform:uppercase; letter-spacing:1px;
+    color:var(--gold); margin:16px 0 6px;
+  }
+  label.req::after{ content:" *"; color:var(--teal); }
+  input[type=text], input[type=tel], select, textarea{
+    width:100%; background:#1c1a15; border:1px solid var(--line);
+    color:var(--text); font-family:'Space Mono',monospace; font-size:15px;
+    padding:14px; border-radius:10px; outline:none;
+  }
+  input:focus, select:focus, textarea:focus{ border-color:var(--gold); }
+  textarea{ resize:vertical; min-height:70px; }
+  .hp{ position:absolute; left:-9999px; top:-9999px; }
+
+  .choice{
+    display:block; width:100%; text-align:left;
+    background:#1c1a15; border:1px solid var(--line); color:var(--text);
+    font-family:'Space Mono',monospace; font-size:15px; line-height:1.4;
+    padding:16px; border-radius:12px; margin-bottom:12px; cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .choice b{ color:var(--gold); font-family:'Syne',sans-serif; }
+  .choice:active, .choice.tapped{ border-color:var(--gold); background:#221f16; }
+
+  .pkg-choice{ display:block; width:100%; text-align:left;
+    background:#1c1a15; border:1px solid var(--line); color:var(--text);
+    font-family:'Space Mono',monospace; padding:14px 16px; border-radius:12px;
+    margin-bottom:10px; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .pkg-choice:active{ border-color:var(--gold); background:#221f16; }
+  .pkg-name{ font-family:'Syne',sans-serif; font-weight:700; font-size:15px; color:var(--cream); }
+  .pkg-price{ color:var(--gold); font-weight:700; font-size:13px; margin:2px 0 6px; }
+  .pkg-blurb{ font-size:12px; color:var(--muted); line-height:1.4; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:16px; border-radius:12px; border:none;
+    font-family:'Syne',sans-serif; font-weight:700; font-size:15px;
+    cursor:pointer; margin-top:8px;
+  }
+  .btn-primary{ background:var(--gold); color:#141210; }
+  .btn-primary:disabled{ opacity:.4; cursor:not-allowed; }
+  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .btn-teal{ background:var(--teal); color:#0a0a0a; }
+
+  .row{ display:flex; gap:10px; margin-top:14px; }
+  .row .btn{ margin-top:0; }
+
+  .step{ display:none; }
+  .step.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .badge{
+    display:inline-block; background:rgba(245,200,66,0.12); color:var(--gold);
+    border:1px solid rgba(245,200,66,0.35); font-size:11px; padding:4px 10px;
+    border-radius:20px; margin-bottom:12px; letter-spacing:0.5px;
+  }
+  .success-icon{
+    width:56px;height:56px;border-radius:50%; background:rgba(63,182,168,0.15);
+    border:1px solid var(--teal); display:flex;align-items:center;justify-content:center;
+    font-size:26px; margin-bottom:14px;
+  }
+  .muted-note{ font-size:12px; color:var(--muted); margin-top:14px; line-height:1.5; }
+  a.link{ color:var(--teal); }
+  .err{ color:#e77; font-size:12px; margin-top:6px; min-height:16px; }
+  .spinner{
+    width:16px;height:16px;border-radius:50%;
+    border:2px solid rgba(20,18,16,0.3); border-top-color:#141210;
+    animation:spin .7s linear infinite; display:none;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">
+    <div class="mark">B</div>
+    <div>
+      <div class="name">BY<b>INFORGH</b></div>
+      <div class="tag">Visible · Trusted · Local</div>
+    </div>
+  </div>
+
+  <div class="progress" id="progress"></div>
+
+  <form id="leadForm" autocomplete="off">
+    <!-- honeypot -->
+    <input class="hp" type="text" name="website" id="website" tabindex="-1" autocomplete="off">
+
+    <!-- STEP 1: contact details -->
+    <div class="step active" data-step="1">
+      <h1>Let's get your business found.</h1>
+      <p class="sub">Takes under a minute. No login needed.</p>
+
+      <label class="req">Business name</label>
+      <input type="text" id="business" required>
+
+      <label class="req">WhatsApp number</label>
+      <input type="tel" id="number" placeholder="024 123 4567" required>
+
+      <label class="req">Town</label>
+      <input type="text" id="town" required>
+
+      <label class="req">Category — what do you sell or do?</label>
+      <input type="text" id="category" placeholder="e.g. fashion, food, salon" required>
+
+      <label class="req">Your name</label>
+      <input type="text" id="contactName" required>
+
+      <div class="err" id="err1"></div>
+      <button type="button" class="btn btn-primary" onclick="goStep(2)">Next</button>
+    </div>
+
+    <!-- STEP 2: source + notes -->
+    <div class="step" data-step="2">
+      <h1>Almost there.</h1>
+      <p class="sub">Just a couple more details.</p>
+
+      <label>How did this conversation happen?</label>
+      <select id="source">
+        <option value="Landing Page — Filming">Filming / in-person</option>
+        <option value="Landing Page — WhatsApp Share">WhatsApp share</option>
+        <option value="Landing Page — Social Bio Link">Social media bio link</option>
+        <option value="Landing Page — Referral">Referral</option>
+        <option value="Landing Page — Other">Other</option>
+      </select>
+
+      <label>Anything else? (optional)</label>
+      <textarea id="notes" placeholder="Anything you'd like to add"></textarea>
+
+      <div class="row">
+        <button type="button" class="btn btn-ghost" onclick="goStep(1)">Back</button>
+        <button type="button" class="btn btn-primary" onclick="goStep(3)">Next</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: quiz Q1 -->
+    <div class="step" data-step="3">
+      <span class="badge">Quick question</span>
+      <h1>Which stage best describes your business today?</h1>
+      <button type="button" class="choice" data-field="stage" data-value="found" onclick="pick(this,'stage','found',4)">
+        <b>Found</b> — I need more people to find my business.
+      </button>
+      <button type="button" class="choice" data-field="stage" data-value="customers" onclick="pick(this,'stage','customers',4)">
+        <b>Customers</b> — I need more customers.
+      </button>
+      <button type="button" class="choice" data-field="stage" data-value="systems" onclick="pick(this,'stage','systems',4)">
+        <b>Systems</b> — I need better systems to manage my business.
+      </button>
+      <button type="button" class="btn btn-ghost" onclick="goStep(2)">Back</button>
+    </div>
+
+    <!-- STEP 4: quiz Q2 -->
+    <div class="step" data-step="4">
+      <span class="badge">How do you want to fix this?</span>
+      <h1>Pick your path.</h1>
+      <button type="button" class="choice" data-field="approach" data-value="diy" onclick="pick(this,'approach','diy',5)">
+        <b>A) Do it myself</b> — send me the free or low-cost blueprint.
+      </button>
+      <button type="button" class="choice" data-field="approach" data-value="expert" onclick="pick(this,'approach','expert','4b')">
+        <b>B) Expert help</b> — I want a team to build or manage it for me.
+      </button>
+      <button type="button" class="btn btn-ghost" onclick="goStep(3)">Back</button>
+    </div>
+
+    <!-- STEP 4b: package picker (expert path only) -->
+    <div class="step" data-step="4b">
+      <span class="badge">Expert help</span>
+      <h1>Pick the package that fits.</h1>
+      <p class="sub">Tap one to see it on WhatsApp and lock it in.</p>
+      <div id="packageChoices"></div>
+      <button type="button" class="btn btn-ghost" onclick="goStep(4)">Back</button>
+    </div>
+
+    <!-- STEP 5: confirm & submit -->
+    <div class="step" data-step="5">
+      <h1 id="confirmHeadline">Ready to send?</h1>
+      <p class="sub" id="confirmSub"></p>
+      <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitLead()">
+        <span class="spinner" id="spinner"></span>
+        <span id="submitLabel">Submit</span>
+      </button>
+      <div class="err" id="err5"></div>
+      <button type="button" class="btn btn-ghost" onclick="goStep(state.approach==='expert' ? '4b' : 4)">Back</button>
+    </div>
+
+    <!-- STEP 6: outcome -->
+    <div class="step" data-step="6">
+      <div id="outcome"></div>
+    </div>
+  </form>
+</div>
+
+<script>
+/* =========================================================
+   CONFIG — fill these in before going live
+   ========================================================= */
+const CONFIG = {
+  // Live Apps Script /exec URL — matches the deployment already used by the
+  // v12 Command Centre dashboard. Once you paste the submitLandingLead
+  // function in and redeploy (New version), this same URL serves both.
+  GAS_URL: "https://script.google.com/macros/s/AKfycbw-i42JDzlRIXF7SJV-S2wzNCmABinX5LWaEhg-rr_GMJSMyUlHXkGmNd9TBBnd3cpK/exec",
+
+  REGISTER_URL: "https://byinforgh.com/my-account-2/?register",
+  WHATSAPP_NUMBER: "233509960980", // used for wa.me links, no leading zero, no +
+
+  // DIY guide downloads per stage — these are relative paths to the real
+  // PDFs bundled in the /guides folder next to this HTML file. Upload the
+  // whole folder together (see hosting instructions) and these links work
+  // immediately with no external hosting needed. Found and Customers route
+  // to the genuinely free Business Presence path. Systems has NO free tier
+  // (SME Systems Starter is GHS 50/mo, the lowest-cost option), so it's
+  // handled separately below via LOW_COST instead of an instant download.
+  GUIDES: {
+    found:     { title: "The Foundation Check",  url: "guides/foundation-check.pdf" },
+    customers: { title: "The WhatsApp Gold Mine", url: "guides/whatsapp-gold-mine.pdf" }
+  },
+
+  // Systems + DIY: no free tier exists, so this is a low-cost self-serve
+  // offer, not an instant download. Price/copy matches SME Systems Starter.
+  LOW_COST_DIY: {
+    systems: { title: "SME Systems Starter", price: "GHS 50/month", blurb: "The lowest-cost way to build your own systems — self-serve, no team needed." }
+  },
+
+  // Expert-track PACKAGE CATALOG — shown as a picker after they choose
+  // "expert help". Two groups: Found/Customers share one 5-package list
+  // (Verified through Authority), Systems has its own 3-tier SME list.
+  PACKAGES: {
+    general: [ // shown when quiz stage is "found" or "customers"
+      { key: 'verified',   name: 'Verified Business',          price: 'GHS 180 setup + GHS 80/mo', blurb: 'Build trust. Get your blue tick. Get found.', wa: 'https://wa.me/p/27631699566449150/233509960980' },
+      { key: 'essentials', name: 'Essential Business',         price: 'GHS 250/month',              blurb: 'Everything you need to be seen — guidance, systems, checklists, training.', wa: 'https://wa.me/p/27271660312461350/233509960980' },
+      { key: 'partner',    name: 'Visibility Partner Starter', price: 'GHS 750/month',              blurb: 'We guide you, you grow — done-with-you support for maximum visibility.', wa: 'https://wa.me/p/27418886311137178/233509960980' },
+      { key: 'growth',     name: 'Growth Engine',              price: 'GHS 1,500/month',            blurb: 'We build. We manage. You grow. Full content + platform management.', wa: 'https://wa.me/p/27626184867017247/233509960980' },
+      { key: 'authority',  name: 'Authority Partner',          price: 'GHS 5,000/month',            blurb: 'We build. We run. You dominate. Complete outsourced growth team.', wa: 'https://wa.me/p/27185195301152448/233509960980' }
+    ],
+    systems: [ // shown when quiz stage is "systems"
+      { key: 'sme_starter',   name: 'SME Starter',   price: 'GHS 50/month',  blurb: 'Simple systems, strong foundation — 1 business system + basic guidance.', wa: 'https://wa.me/p/27324320283890779/233509960980' },
+      { key: 'sme_growth',    name: 'SME Growth',    price: 'GHS 150/month', blurb: 'SOPs, setup guide, training materials, and implementation support.', wa: 'https://wa.me/p/37079554828324617/233509960980' },
+      { key: 'sme_authority', name: 'SME Authority', price: 'GHS 500/month', blurb: 'Ongoing support, accountability, and advanced growth strategies.', wa: 'https://wa.me/p/27577083311950108/233509960980' }
+    ]
+  },
+
+  // Expert-track offer copy per stage — labels match the dashboard's
+  // OFFER_OPTIONS dropdown exactly (Visibility Partner 250 / SME Systems
+  // Growth = entry tier of those tracks; bump if a different starting
+  // tier fits your pricing better).
+  EXPERT_OFFERS: {
+    found:     { offer: "Verified Business",     blurb: "We'll be in touch to get you Verified — GHS 180 setup, live in 24 hours." },
+    customers: { offer: "Visibility Partner 250", blurb: "We'll be in touch about Visibility Partner and getting you more customers." },
+    systems:   { offer: "SME Systems Growth",     blurb: "We'll be in touch about BYINFORGH SME Systems for your business." }
+  }
+};
+
+/* ========================================================= */
+
+const state = { stage:null, approach:null, package:null };
+const totalSteps = 5; // progress bar covers steps 1-5, step 6 is the outcome screen
+
+function buildProgress(){
+  const el = document.getElementById('progress');
+  el.innerHTML = '';
+  for(let i=1;i<=totalSteps;i++){
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.id = 'seg'+i;
+    el.appendChild(seg);
+  }
+}
+buildProgress();
+
+function updateProgress(step){
+  for(let i=1;i<=totalSteps;i++){
+    document.getElementById('seg'+i).classList.toggle('done', i<=step);
+  }
+}
+
+function goStep(n){
+  if(n===2){
+    const required = ['business','number','town','category','contactName'];
+    for(const id of required){
+      if(!document.getElementById(id).value.trim()){
+        document.getElementById('err1').textContent = 'Please fill in all required fields.';
+        return;
+      }
+    }
+    document.getElementById('err1').textContent = '';
+  }
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.querySelector('.step[data-step="'+n+'"]').classList.add('active');
+  if(n<=totalSteps) updateProgress(n);
+  if(n==='4b') renderPackageStep();
+  if(n===5) setConfirmCopy();
+}
+
+function renderPackageStep(){
+  const group = state.stage === 'systems' ? CONFIG.PACKAGES.systems : CONFIG.PACKAGES.general;
+  const el = document.getElementById('packageChoices');
+  el.innerHTML = group.map(pkg => `
+    <button type="button" class="pkg-choice" onclick='selectPackage(${JSON.stringify(pkg)})'>
+      <div class="pkg-name">${pkg.name}</div>
+      <div class="pkg-price">${pkg.price}</div>
+      <div class="pkg-blurb">${pkg.blurb}</div>
+    </button>
+  `).join('');
+}
+
+function selectPackage(pkg){
+  state.package = pkg;
+  goStep(5);
+}
+
+function pick(btn, field, value, nextStep){
+  document.querySelectorAll('.choice[data-field="'+field+'"]').forEach(b=>b.classList.remove('tapped'));
+  btn.classList.add('tapped');
+  state[field] = value;
+  setTimeout(()=>goStep(nextStep), 150);
+}
+
+function offerFor(stage, approach){
+  if(approach==='diy') return CONFIG.GUIDES[stage] ? CONFIG.GUIDES[stage].title : CONFIG.LOW_COST_DIY[stage].title;
+  return state.package ? state.package.name : CONFIG.EXPERT_OFFERS[stage].offer;
+}
+
+function setConfirmCopy(){
+  const stageLabel = {found:'getting found', customers:'getting more customers', systems:'better systems'}[state.stage];
+  if(state.approach === 'expert' && state.package){
+    document.getElementById('confirmHeadline').textContent = state.package.name + ' — ' + state.package.price;
+    document.getElementById('confirmSub').textContent = 'Tap submit and we\'ll log this and take you to WhatsApp to confirm.';
+  } else {
+    const approachLabel = state.approach==='diy' ? 'the free/low-cost blueprint' : 'expert help';
+    document.getElementById('confirmHeadline').textContent = 'You want help with ' + stageLabel + '.';
+    document.getElementById('confirmSub').textContent = 'You chose ' + approachLabel + '. Tap submit and we\'ll take it from here.';
+  }
+}
+
+async function submitLead(){
+  const errEl = document.getElementById('err5');
+  errEl.textContent = '';
+
+  // honeypot check — silently "succeed" without writing anything
+  if(document.getElementById('website').value.trim() !== ''){
+    showOutcome();
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('spinner');
+  const label = document.getElementById('submitLabel');
+  btn.disabled = true; spinner.style.display='inline-block'; label.textContent='Submitting...';
+
+  const payload = {
+    action: 'submitLandingLead',
+    business: document.getElementById('business').value.trim(),
+    number: document.getElementById('number').value.trim(),
+    town: document.getElementById('town').value.trim(),
+    category: document.getElementById('category').value.trim(),
+    contactName: document.getElementById('contactName').value.trim(),
+    source: document.getElementById('source').value,
+    notes: document.getElementById('notes').value.trim(),
+    quizStage: state.stage,
+    quizApproach: state.approach
+  };
+  if(state.approach === 'expert' && state.package){
+    payload.offer = state.package.name;
+    payload.offerPrice = state.package.price;
+  }
+
+  const qs = Object.entries(payload).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  let writeSucceeded = false;
+
+  try{
+    const res = await fetch(CONFIG.GAS_URL + '?' + qs);
+    const data = await res.json();
+    if(!data.success) throw new Error(data.error || 'Unknown error');
+    writeSucceeded = true;
+  }catch(e){
+    // Still show the visitor a working outcome — don't leave them stuck.
+    // The CRM write may have failed; flag this so YJ can follow up manually.
+    console.warn('CRM submit issue:', e);
+  }finally{
+    btn.disabled = false; spinner.style.display='none'; label.textContent='Submit';
+    // Every submission registers the business on the platform — this is
+    // how the free listing / account gets locked in regardless of path.
+    try{ window.open(CONFIG.REGISTER_URL, '_blank'); }catch(e){}
+    // Expert leads ALSO get their chosen package opened on WhatsApp so
+    // they can confirm the order right away, alongside registering.
+    if(state.approach === 'expert' && state.package){
+      try{ window.open(state.package.wa, '_blank'); }catch(e){}
+    }
+    showOutcome(writeSucceeded);
+  }
+}
+
+function showOutcome(writeSucceeded){
+  const el = document.getElementById('outcome');
+  const stage = state.stage, approach = state.approach;
+
+  const registerBlock = `
+      <a class="btn btn-primary" style="text-decoration:none;" href="${CONFIG.REGISTER_URL}" target="_blank" rel="noopener">Register now — lock in your foundation</a>
+      <p class="muted-note">We just opened registration in a new tab. Tap <b style="color:var(--gold)">Register</b> there to save your business and unlock every free guide — no need to explain your business to us again.</p>`;
+
+  if(approach === 'diy' && stage !== 'systems'){
+    const guide = CONFIG.GUIDES[stage];
+    const waText = encodeURIComponent('Hi BYINFORGH, please send me the ' + guide.title + ' guide.');
+    el.innerHTML = `
+      <div class="success-icon">✓</div>
+      <h1>You're logged. Here's your guide.</h1>
+      <p class="sub">${guide.title} — free, ready right now.</p>
+      ${registerBlock}
+      <a class="btn btn-teal" style="text-decoration:none; color:#0a0a0a;" href="${guide.url}" target="_blank" rel="noopener">Download the guide</a>
+      <a class="btn btn-ghost" style="text-decoration:none;" href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${waText}" target="_blank" rel="noopener">Send it to my WhatsApp instead</a>
+    `;
+  } else if(approach === 'diy' && stage === 'systems'){
+    const lc = CONFIG.LOW_COST_DIY.systems;
+    el.innerHTML = `
+      <div class="success-icon">✓</div>
+      <h1>You're logged.</h1>
+      <p class="sub">There's no free tier for systems — but ${lc.title} is the lowest-cost way to do it yourself: <b style="color:var(--gold)">${lc.price}</b>.</p>
+      <p class="sub">${lc.blurb}</p>
+      ${registerBlock}
+      <a class="btn btn-ghost" style="text-decoration:none;" href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}" target="_blank" rel="noopener">Message us on WhatsApp</a>
+    `;
+  } else {
+    const pkg = state.package || { name: CONFIG.EXPERT_OFFERS[stage].offer, price: '', wa: `https://wa.me/${CONFIG.WHATSAPP_NUMBER}` };
+    el.innerHTML = `
+      <div class="success-icon">✓</div>
+      <h1>You're logged. Two tabs just opened.</h1>
+      <p class="sub">${pkg.name}${pkg.price ? ' — <b style="color:var(--gold)">' + pkg.price + '</b>' : ''}</p>
+      <a class="btn btn-primary" style="text-decoration:none;" href="${pkg.wa}" target="_blank" rel="noopener">Confirm your order on WhatsApp</a>
+      <a class="btn btn-teal" style="text-decoration:none; color:#0a0a0a;" href="${CONFIG.REGISTER_URL}" target="_blank" rel="noopener">Register your business</a>
+      <p class="muted-note">We opened both your package on WhatsApp and registration on byinforgh.com. Confirm the order on WhatsApp — we reply fast — and tap Register to lock in your account.</p>
+    `;
+  }
+  if(!writeSucceeded){
+    el.innerHTML += `<p class="muted-note" style="color:#e77">We had trouble saving this automatically — if you don't hear from us in a day, please message us directly so nothing gets lost.</p>`;
+  }
+
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.querySelector('.step[data-step="6"]').classList.add('active');
+}
+</script>
+</body>
+</html>
