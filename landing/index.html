@@ -225,13 +225,16 @@
       <button type="button" class="choice" data-field="stage" data-value="customers" onclick="pick(this,'stage','customers',4)">
         <b>Customers</b> — I need more customers.
       </button>
-      <button type="button" class="choice" data-field="stage" data-value="systems" onclick="pick(this,'stage','systems',4)">
+      <button type="button" class="choice" data-field="stage" data-value="systems" onclick="state.approach='expert'; pick(this,'stage','systems','4b')">
         <b>Systems</b> — I need better systems to manage my business.
       </button>
       <button type="button" class="btn btn-ghost" onclick="goStep(2)">Back</button>
     </div>
 
-    <!-- STEP 4: quiz Q2 -->
+    <!-- STEP 4: quiz Q2 — skipped entirely for "systems", since systems is
+         never a DIY offer (no self-serve tier — only the GHS 50/150/500
+         expert-built packages). Systems routes straight from step 3 to the
+         4b package picker instead. -->
     <div class="step" data-step="4">
       <span class="badge">How do you want to fix this?</span>
       <h1>Pick your path.</h1>
@@ -250,7 +253,7 @@
       <h1>Pick the package that fits.</h1>
       <p class="sub">Tap one to see it on WhatsApp and lock it in.</p>
       <div id="packageChoices"></div>
-      <button type="button" class="btn btn-ghost" onclick="goStep(4)">Back</button>
+      <button type="button" class="btn btn-ghost" onclick="goStep(state.stage==='systems' ? 3 : 4)">Back</button>
     </div>
 
     <!-- STEP 5: confirm & submit -->
@@ -348,6 +351,7 @@ const CONFIG = {
 /* ========================================================= */
 
 const state = { stage:null, approach:null, package:null };
+const PAGE_LOAD_TIME = Date.now(); // anti-bot: used by the timing check in submitLead()
 const totalSteps = 5; // progress bar covers steps 1-5, step 6 is the outcome screen
 
 function buildProgress(){
@@ -368,14 +372,35 @@ function updateProgress(step){
   }
 }
 
+// Real field-level validation — not just "is it empty". Each field needs a
+// sane minimum length and, for name-type fields, actual letters (blocks
+// "a", "1", "xx" style junk that used to sail through on a blank check).
+function validateStep1(){
+  const business = document.getElementById('business').value.trim();
+  const number = document.getElementById('number').value.trim();
+  const town = document.getElementById('town').value.trim();
+  const category = document.getElementById('category').value.trim();
+  const contactName = document.getElementById('contactName').value.trim();
+  const hasLetters = v => /[a-zA-Z]{2,}/.test(v);
+  // Ghana numbers: 0XXXXXXXXX (10 digits) or +233XXXXXXXXX / 233XXXXXXXXX —
+  // strip spaces/dashes first so "024 123 4567" style input still passes.
+  const digits = number.replace(/[\s-]/g,'');
+  const validPhone = /^0\d{9}$/.test(digits) || /^(\+233|233)\d{9}$/.test(digits);
+
+  if(business.length < 2 || !hasLetters(business)) return 'Enter your full business name.';
+  if(!validPhone) return 'Enter a valid Ghana WhatsApp number, e.g. 024 123 4567.';
+  if(town.length < 2 || !hasLetters(town)) return 'Enter your town.';
+  if(category.length < 2 || !hasLetters(category)) return 'Tell us what you sell or do.';
+  if(contactName.length < 2 || !hasLetters(contactName)) return 'Enter your name.';
+  return '';
+}
+
 function goStep(n){
   if(n===2){
-    const required = ['business','number','town','category','contactName'];
-    for(const id of required){
-      if(!document.getElementById(id).value.trim()){
-        document.getElementById('err1').textContent = 'Please fill in all required fields.';
-        return;
-      }
+    const errMsg = validateStep1();
+    if(errMsg){
+      document.getElementById('err1').textContent = errMsg;
+      return;
     }
     document.getElementById('err1').textContent = '';
   }
@@ -433,6 +458,13 @@ async function submitLead(){
 
   // honeypot check — silently "succeed" without writing anything
   if(document.getElementById('website').value.trim() !== ''){
+    showOutcome();
+    return;
+  }
+  // timing check — a real person needs at least a few seconds to read and
+  // fill 5 fields across 2 screens; bots that auto-fill and submit instantly
+  // get silently "succeeded" the same way the honeypot does, no writing.
+  if(Date.now() - PAGE_LOAD_TIME < 4000){
     showOutcome();
     return;
   }
@@ -512,6 +544,10 @@ function showOutcome(writeSucceeded){
       ${bundleBlock}
     `;
   } else if(approach === 'diy' && stage === 'systems'){
+    // Defensive fallback only — the UI no longer offers a DIY path for
+    // systems (step 3 routes "systems" straight to the expert package
+    // picker), since systems is never self-serve. Kept here in case
+    // state.approach is ever set some other way.
     const lc = CONFIG.LOW_COST_DIY.systems;
     el.innerHTML = `
       <div class="success-icon">✓</div>
