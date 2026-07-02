@@ -28,6 +28,8 @@
 .metric-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;position:relative;overflow:hidden;}
 .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .metric-card.gold::before{background:var(--gold);}.metric-card.green::before{background:var(--green);}.metric-card.red::before{background:var(--red);}.metric-card.blue::before{background:var(--blue);}.metric-card.orange::before{background:var(--orange);}.metric-card.purple::before{background:var(--purple);}.metric-card.teal::before{background:var(--teal);}
+.metric-card.clickable{cursor:pointer;transition:transform .15s,border-color .15s;}
+.metric-card.clickable:hover{transform:translateY(-2px);border-color:var(--gold);}
 .metric-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
 .metric-value{font-size:32px;font-weight:800;font-family:'Space Mono',monospace;line-height:1;}
 .metric-sub{font-size:11px;color:var(--text-dim);margin-top:6px;}
@@ -41,7 +43,8 @@
 .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:16px;}
 .card-title{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:14px;text-transform:uppercase;}
 .wa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
-.wa-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;align-items:center;gap:10px;}
+.wa-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s,transform .15s;}
+.wa-item:hover{border-color:var(--gold);transform:translateY(-2px);}
 .wa-emoji{font-size:20px;}.wa-count{font-size:22px;font-weight:800;font-family:'Space Mono',monospace;}.wa-label{font-size:10px;color:var(--text-dim);margin-top:2px;}
 .contact-table{width:100%;border-collapse:collapse;font-size:12px;}
 .contact-table th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:700;letter-spacing:1px;border-bottom:1px solid var(--border);font-size:10px;}
@@ -62,8 +65,16 @@
 .message-box{background:var(--black);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:10px;font-family:'Space Mono',monospace;white-space:pre-wrap;}
 .copy-btn{background:var(--border);border:none;color:var(--text);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Syne',sans-serif;transition:all .2s;}
 .copy-btn:hover{background:var(--gold);color:var(--black);}.copy-btn.copied{background:var(--green);color:var(--black);}
-.call-item{background:var(--surface);border:1px solid #2a1500;border-left:3px solid var(--red);border-radius:6px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.call-item{background:var(--surface);border:1px solid #2a1500;border-left:3px solid var(--red);border-radius:6px;padding:12px 14px;margin-bottom:10px;}
+.call-item-row{display:flex;justify-content:space-between;align-items:center;gap:10px;}
 .call-name{font-size:13px;font-weight:700;}.call-sub{font-size:11px;color:var(--text-dim);margin-top:2px;}.call-number{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);}
+.call-mid{flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px;padding:0 12px;border-left:1px dashed #2a2a2a;border-right:1px dashed #2a2a2a;}
+.call-mid select,.call-mid input{background:var(--black);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:4px;font-size:11px;font-family:'Syne',sans-serif;outline:none;width:100%;}
+.call-mid select:focus,.call-mid input:focus{border-color:var(--gold);}
+.call-mid-row{display:flex;gap:6px;}
+.call-script-box{background:var(--black);border:1px solid var(--teal);border-radius:5px;padding:8px 10px;font-size:11px;color:var(--text-dim);font-family:'Space Mono',monospace;line-height:1.5;margin-top:2px;white-space:pre-wrap;display:none;}
+.call-script-box.open{display:block;}
+.call-log-btn{background:var(--green);border:none;color:var(--black);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:800;letter-spacing:1px;font-family:'Syne',sans-serif;white-space:nowrap;}
 .client-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;}.client-item.overdue{border-color:var(--red);}
 .client-name{font-size:13px;font-weight:700;}.client-pkg{font-size:11px;color:var(--text-dim);}.client-amount{font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold);}
 .overdue-tag{color:var(--red);font-weight:700;}.active-tag{color:var(--green);font-weight:700;}
@@ -129,12 +140,18 @@ select:focus{border-color:var(--gold);}
 .cal-pill{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--black);border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.5}
 .cal-pill:hover{border-color:var(--gold)}
 .cal-more{font-size:9px;color:var(--gold);cursor:pointer;font-weight:700;padding:1px 5px}
-@media(max-width:768px){.cal-grid{grid-template-columns:repeat(7,1fr);gap:3px}.cal-cell{min-height:60px;padding:3px}.cal-pill{font-size:8px}.cal-dow{font-size:8px}}
+.pkg-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px}
+.pkg-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.pkg-card-title{font-size:13px;font-weight:700}
+.pkg-card-sub{font-size:10px;color:var(--text-dim);margin-bottom:8px}
+.pkg-tier-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid #1a1a1a;font-size:11px}
+.pkg-tier-row:first-of-type{border-top:none}
+@media(max-width:768px){.cal-grid{grid-template-columns:repeat(7,1fr);gap:3px}.cal-cell{min-height:60px;padding:3px}.cal-pill{font-size:8px}.cal-dow{font-size:8px}.call-mid{border-left:none;border-right:none;padding:0}.call-item-row{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v11</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v12</span></div>
   <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
 </div>
 <div class="shabbat-banner" id="shabbatBanner">
@@ -166,7 +183,7 @@ select:focus{border-color:var(--gold);}
   <div class="target-bar-wrap" id="targetBar"></div>
   <div class="two-col">
     <div><div class="section-title">&#128293; ACTION REQUIRED TODAY</div><div id="todayActions"></div></div>
-    <div><div class="section-title">&#128202; WA BOARD &mdash; CRM + KOFORIDUA COMBINED</div><div class="wa-grid" id="waBoard"></div></div>
+    <div><div class="section-title">&#128202; WA BOARD &mdash; CRM + KOFORIDUA COMBINED <span style="font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(tap any to open)</span></div><div class="wa-grid" id="waBoard"></div></div>
   </div>
   <div class="section-title">&#128308; CALL LIST &mdash; 1 TICK</div><div id="callList"></div>
   <div class="section-title" style="margin-top:20px">&#128205; KOFORIDUA PRIORITY VISITS</div><div id="kofVisitList"></div>
@@ -190,7 +207,7 @@ select:focus{border-color:var(--gold);}
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">OUTCOME</div><select id="convReviewOutcome"><option value="no_reply">No reply yet</option><option value="replied">They replied</option><option value="interested">Showed interest</option><option value="objection">Raised objection</option><option value="closed">Closed / converted</option><option value="rejected">Rejected</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">PACKAGE DISCUSSED</div><select id="convReviewPackage"><option value="">Not discussed</option><option value="Business Presence">Business Presence &mdash; Free</option><option value="Verified Business">Verified Business &mdash; GHS 180</option><option value="Visibility Partner">Visibility Partner &mdash; GHS 500+</option><option value="SME Systems">SME Systems</option><option value="BBCS Consulting">BBCS / Consulting</option></select></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">PACKAGE DISCUSSED</div><select id="convReviewPackage"><option value="">Not discussed</option><option value="Business Presence">Business Presence &mdash; Free</option><option value="Verified Business">Verified Business &mdash; GHS 180</option><option value="Visibility Partner">Visibility Partner &mdash; GHS 250/750/1500</option><option value="Business Authority">Business Authority &mdash; GHS 5000</option><option value="SME Systems">SME Systems &mdash; GHS 50/150/500</option><option value="Command Centre">Command Centre &mdash; GHS 25000/50000/90000</option><option value="BBCS Consulting">BBCS / Consulting</option></select></div>
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">AMOUNT (GHS)</div><input id="convReviewAmount" type="number" class="search-input" style="margin:0" placeholder="e.g. 350"></div>
     </div>
     <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">WHAT HAPPENED</div>
@@ -297,11 +314,11 @@ select:focus{border-color:var(--gold);}
 <!-- CALLS -->
 <div class="tab-content" id="tab-calls">
   <div style="background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
-    <strong style="color:var(--red)">&#128222; CALL LIST — 🔴 1 TICK CONTACTS</strong> · WhatsApp message delivered but not reaching them. Must call directly.
+    <strong style="color:var(--red)">&#128222; CALL LIST — 🔴 1 TICK CONTACTS</strong> · WhatsApp message delivered but not reaching them. Must call directly. Set the outcome, add notes/follow-up, then tap LOG.
   </div>
   <div class="section-title">DAILY CALL TARGETS</div>
   <div id="callBlockList"></div>
-  <div class="section-title" style="margin-top:24px">LOG A CALL CONVERSATION</div>
+  <div class="section-title" style="margin-top:24px">LOG A CALL CONVERSATION MANUALLY</div>
   <div class="card">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
       <div>
@@ -404,7 +421,7 @@ select:focus{border-color:var(--gold);}
   <div class="proj-grid" id="projCards"></div>
   <div class="two-col">
     <div class="card"><div class="card-title">WEEKLY DOUBLING TRAJECTORY</div><div class="chart-wrap"><div class="chart-bars" id="weekChart"></div></div><div style="margin-top:12px;font-size:11px;color:var(--text-dim);display:flex;gap:16px"><span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;margin-right:4px"></span>Base</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px"></span>Doubling</span></div></div>
-    <div class="card"><div class="card-title">CONVERSION TRACKER</div><div id="conversionTracker"></div></div>
+    <div class="card"><div class="card-title">CONVERSION TRACKER — BY PACKAGE</div><div id="conversionTracker"></div></div>
   </div>
   <div class="card" style="margin-top:16px"><div class="card-title">CLOSES NEEDED TO HIT TARGETS</div><div id="closesNeeded"></div></div>
 </div>
@@ -462,11 +479,17 @@ select:focus{border-color:var(--gold);}
       <select id="conversionOffer" onchange="handleConversionOfferChange()">
         <option value="Business Presence">Business Presence — Free</option>
         <option value="Verified Business" selected>Verified Business — GHS 180</option>
-        <option value="Visibility Partner">Visibility Partner — GHS 500+</option>
-        <option value="SME Systems">SME Systems</option>
+        <option value="Visibility Partner 250">Visibility Partner — GHS 250</option>
+        <option value="Visibility Partner 750">Visibility Partner — GHS 750</option>
+        <option value="Visibility Partner 1500">Visibility Partner — GHS 1500</option>
+        <option value="Business Authority">Business Authority — GHS 5000</option>
+        <option value="SME Systems Starter">SME Systems — Starter GHS 50</option>
+        <option value="SME Systems Growth">SME Systems — Growth GHS 150</option>
+        <option value="SME Systems Authority">SME Systems — Authority GHS 500</option>
+        <option value="Command Centre Starter">Command Centre — Starter GHS 25000</option>
+        <option value="Command Centre Growth">Command Centre — Growth GHS 50000</option>
+        <option value="Command Centre Authority">Command Centre — Authority GHS 90000</option>
         <option value="BBCS Consulting">BBCS Consulting</option>
-        <option value="Command Centre">Command Centre</option>
-        <option value="Business Authority">Business Authority</option>
         <option value="Custom Package">Custom Package</option>
       </select>
       <input id="conversionAmount" type="number" placeholder="Amount GHS (e.g. 180)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-size:12px">
@@ -539,16 +562,45 @@ select:focus{border-color:var(--gold);}
 
 <div class="toast" id="toast"></div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbwWVXAMaPcUkTIRUF4QGGQXPpP3qqHbMqJbjwylzx9avSZ1sDSubd9KEMl9hz56s3BZ/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbw-i42JDzlRIXF7SJV-S2wzNCmABinX5LWaEhg-rr_GMJSMyUlHXkGmNd9TBBnd3cpK/exec';
 let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};
 let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
 const FOLLOWUP_PAGE_SIZE=12,ACTIVITY_PAGE_SIZE=15;
 let followupAllContacts=[],activityAllItems=[],aiHistory=[],trackerData={activities:[],statusViewers:[],outreachLog:[],conversions:[],callLogs:[],todayOutreachCount:0,totalOutreachCount:0};
 const contactSearchState={};
+const callInlineState={}; // v12: per-contact inline call-outcome state on Calls tab, keyed by business name
+
+// Order must match the .tab buttons in the header exactly — used by activateTab()
+// so metric cards / WA board items can jump straight to a tab from code.
+const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','contacts','tracker','archive'];
 
 // Daily rotation: changes each calendar day so messages are never the same two days running
 const TODAY_SEED=(()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})();
+
+// v12: PACKAGE / PRICING TIERS — used by the Revenue tab's Conversion Tracker
+// and by the call-script generator. Edit prices here if they change.
+const REVENUE_PACKAGES=[
+  {key:'presence',name:'Business Presence',color:'var(--text-dim)',free:true,match:p=>/presence/i.test(p||'')},
+  {key:'verified',name:'✅ Verified Business',color:'var(--gold)',amount:180,match:p=>/verified/i.test(p||'')&&!/visibility/i.test(p||'')},
+  {key:'visibility',name:'🔥 Visibility Partner',color:'var(--orange)',tiers:[
+    {label:'Tier 1',amount:250,match:p=>/visibility partner/i.test(p||'')&&/250/.test(p||'')},
+    {label:'Tier 2',amount:750,match:p=>/visibility partner/i.test(p||'')&&/750/.test(p||'')},
+    {label:'Tier 3',amount:1500,match:p=>/visibility partner/i.test(p||'')&&/1500/.test(p||'')}
+  ]},
+  {key:'authority',name:'👑 Business Authority',color:'var(--purple)',amount:5000,match:p=>/business authority/i.test(p||'')},
+  {key:'sme',name:'🔧 SME Systems (BBCS)',color:'var(--teal)',tiers:[
+    {label:'Starter',amount:50,match:p=>/(sme|bbcs)/i.test(p||'')&&/starter/i.test(p||'')},
+    {label:'Growth',amount:150,match:p=>/(sme|bbcs)/i.test(p||'')&&/growth/i.test(p||'')},
+    {label:'Authority',amount:500,match:p=>/(sme|bbcs)/i.test(p||'')&&/authority/i.test(p||'')}
+  ]},
+  {key:'command',name:'💼 Command Centre',color:'var(--blue)',tiers:[
+    {label:'Starter',amount:25000,match:p=>/command/i.test(p||'')&&/starter/i.test(p||'')},
+    {label:'Growth',amount:50000,match:p=>/command/i.test(p||'')&&/growth/i.test(p||'')},
+    {label:'Authority',amount:90000,match:p=>/command/i.test(p||'')&&/authority/i.test(p||'')}
+  ]},
+  {key:'custom',name:'🎨 Custom Package',color:'var(--text-dim)',match:p=>/custom/i.test(p||'')}
+];
 
 const MSG_VERSIONS={
 '🟡':{A:'Hey [NAME], hope all is well.\n\nSomeone searched for [CATEGORY] in your area this week. Your business did not come up.\n\nI can fix that today — free to start. Want me to?',B:'Hey [NAME], quick one.\n\nHow are customers currently finding your business?',C:'Hey [NAME].\n\nA [CATEGORY] business near you just went live on BYINFORGH and started getting enquiries.\n\nYour spot is still open. Want me to set it up? Free to start.',D:'Hey [NAME].\n\nNot here to pitch anything. One question — what is the biggest challenge in getting customers to find you?'},
@@ -584,9 +636,55 @@ function isOverdue(dateStr){if(!dateStr)return false;const d=parseFollowUpDate(d
 function checkShabbat(){const day=new Date().getDay();const b=document.getElementById('shabbatBanner');if(day===6)b.classList.add('active');else b.classList.remove('active');}
 function isShabbat(){return new Date().getDay()===6;}
 function toggleCheck(el){el.classList.toggle('done');const txt=el.parentElement.querySelector('.action-text');if(txt)txt.classList.toggle('done-text');}
-function handleConversionOfferChange(){const val=document.getElementById('conversionOffer').value;const cf=document.getElementById('conversionCustomPackageName');if(val==='Custom Package'){cf.style.display='block';}else{cf.style.display='none';if(val==='Business Presence')document.getElementById('conversionAmount').value='0';}}
+function handleConversionOfferChange(){const val=document.getElementById('conversionOffer').value;const cf=document.getElementById('conversionCustomPackageName');const amt=document.getElementById('conversionAmount');const presets={'Business Presence':0,'Verified Business':180,'Visibility Partner 250':250,'Visibility Partner 750':750,'Visibility Partner 1500':1500,'Business Authority':5000,'SME Systems Starter':50,'SME Systems Growth':150,'SME Systems Authority':500,'Command Centre Starter':25000,'Command Centre Growth':50000,'Command Centre Authority':90000};if(val==='Custom Package'){cf.style.display='block';}else{cf.style.display='none';if(presets[val]!==undefined)amt.value=presets[val];}}
 function setDeployment(dep,btn){currentDeployment=dep;document.querySelectorAll('[id^="dep"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-function switchTab(name,evt){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));if(evt&&evt.target)evt.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='followup')renderFollowUps();if(name==='contacts')renderAllContacts();if(name==='messages')renderMsgLibrary();if(name==='koforidua')renderKoforidua();if(name==='revenue')renderRevenue();if(name==='pipeline')renderPipeline();if(name==='clients')renderClients();if(name==='ai')renderAI();if(name==='tracker')renderTracker();if(name==='calls')renderCallTab();if(name==='sme')renderSME();if(name==='archive')renderArchive();if(name==='calendar')renderCalendar();}
+
+// v12: split tab switching into activateTab() (does the work, callable from
+// anywhere) and switchTab() (the click handler). Metric cards / WA board /
+// pipeline stages etc all call activateTab() directly so any number on the
+// Today screen can be tapped straight through to the right place.
+function activateTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  const idx=TAB_ORDER.indexOf(name);
+  const btns=document.querySelectorAll('.tabs .tab');
+  if(idx>=0&&btns[idx])btns[idx].classList.add('active');
+  const el=document.getElementById('tab-'+name);
+  if(el)el.classList.add('active');
+  if(name==='followup')renderFollowUps();
+  if(name==='contacts')renderAllContacts();
+  if(name==='messages')renderMsgLibrary();
+  if(name==='koforidua')renderKoforidua();
+  if(name==='revenue')renderRevenue();
+  if(name==='pipeline')renderPipeline();
+  if(name==='clients')renderClients();
+  if(name==='ai')renderAI();
+  if(name==='tracker')renderTracker();
+  if(name==='calls')renderCallTab();
+  if(name==='sme')renderSME();
+  if(name==='archive')renderArchive();
+  if(name==='calendar')renderCalendar();
+  el&&el.scrollIntoView&&window.scrollTo({top:0,behavior:'smooth'});
+}
+function switchTab(name,evt){activateTab(name);}
+
+// v12: jump straight to the Follow-Ups tab pre-filtered to a WA label / stage,
+// used by clickable metric cards and the WA board.
+function goFollowupFilter(val){
+  activateTab('followup');
+  currentFilter=val;followupPage=0;
+  const order=['all','🟡','🟠','🟢','🔄','🔵','monthly','quarterly'];
+  const idx=order.indexOf(val);
+  document.querySelectorAll('#labelFilters .filter-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  renderFollowUps();
+}
+// v12: WA board items route to whichever tab actually shows that bucket of contacts.
+function goToWA(emoji){
+  const routeMap={'🔴':'calls','✅':'clients','⬛':'archive','📍':'koforidua'};
+  if(routeMap[emoji]){activateTab(routeMap[emoji]);return;}
+  if(['🟡','🟠','🟢','🔄','🔵'].includes(emoji)){goFollowupFilter(emoji);return;}
+  activateTab('contacts'); // ⬜ non-business and anything else — just show full list
+}
 
 async function loadData(){
   document.getElementById('lastRefresh').textContent='Refreshing...';
@@ -635,13 +733,13 @@ function renderToday(){
   const overdue=state.renewals.filter(r=>r.Status==='OVERDUE').length;
   const todayOut=state.todayOutreach||0;
   document.getElementById('topMetrics').innerHTML=`
-    <div class="metric-card gold"><div class="metric-label">TOTAL MRR</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
-    <div class="metric-card green"><div class="metric-label">TOTAL CONTACTS</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM:${state.crmCount||0}</span><span style="color:var(--teal)">Kof:${state.kofCount||0}</span></div></div>
-    <div class="metric-card orange"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
-    <div class="metric-card blue"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
-    <div class="metric-card teal"><div class="metric-label">SME MEMBERS</div><div class="metric-value">${smeActive}</div><div class="metric-sub">${(state.smeMembers||[]).length} total · GHS ${smeMRR}/mo</div></div>
-    <div class="metric-card red"><div class="metric-label">RENEWALS OVERDUE</div><div class="metric-value">${overdue}</div><div class="metric-sub">urgent attention</div></div>
-    <div class="metric-card purple"><div class="metric-label">TODAY OUTREACH</div><div class="metric-value">${todayOut}</div><div class="metric-sub">logged today</div></div>`;
+    <div class="metric-card gold clickable" onclick="activateTab('revenue')"><div class="metric-label">TOTAL MRR</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
+    <div class="metric-card green clickable" onclick="activateTab('contacts')"><div class="metric-label">TOTAL CONTACTS</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM:${state.crmCount||0}</span><span style="color:var(--teal)">Kof:${state.kofCount||0}</span></div></div>
+    <div class="metric-card orange clickable" onclick="goFollowupFilter('🔵')"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
+    <div class="metric-card blue clickable" onclick="goFollowupFilter('🟢')"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
+    <div class="metric-card teal clickable" onclick="activateTab('sme')"><div class="metric-label">SME MEMBERS</div><div class="metric-value">${smeActive}</div><div class="metric-sub">${(state.smeMembers||[]).length} total · GHS ${smeMRR}/mo</div></div>
+    <div class="metric-card red clickable" onclick="activateTab('clients')"><div class="metric-label">RENEWALS OVERDUE</div><div class="metric-value">${overdue}</div><div class="metric-sub">urgent attention</div></div>
+    <div class="metric-card purple clickable" onclick="activateTab('tracker')"><div class="metric-label">TODAY OUTREACH</div><div class="metric-value">${todayOut}</div><div class="metric-sub">logged today</div></div>`;
   const mt=state.settings?(parseInt(state.settings.monthly_target)||5400):5400;
   const wd=state.settings?(parseInt(state.settings.working_days)||26):26;
   const dt=Math.round(mt/wd),pct=Math.min(100,Math.round((mrr/mt)*100));
@@ -658,18 +756,18 @@ function renderToday(){
   const callC=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
   document.getElementById('todayActions').innerHTML=`<div class="card">
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Ask discovery question to 5 new contacts — how are customers finding you?</div><div class="action-tag tag-outreach">OUTREACH</div></div>
-    <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Follow up ${dueF.length} contacts due today — Follow-Ups tab</div><div class="action-tag tag-followup">FOLLOW-UP</div></div>
+    <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text" style="cursor:pointer" onclick="goFollowupFilter('all')">Follow up ${dueF.length} contacts due today — Follow-Ups tab</div><div class="action-tag tag-followup">FOLLOW-UP</div></div>
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Google Maps drop on 3 contacts — screenshot + send. Nothing else. Wait.</div><div class="action-tag tag-outreach">VALUE DROP</div></div>
-    <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Call ${callC.length} contacts with 🔴 1-tick — Calls tab</div><div class="action-tag tag-visit">CALL LIST</div></div>
+    <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text" style="cursor:pointer" onclick="activateTab('calls')">Call ${callC.length} contacts with 🔴 1-tick — Calls tab</div><div class="action-tag tag-visit">CALL LIST</div></div>
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Close 1 conversation to Business Presence (free) first</div><div class="action-tag tag-client">CLOSE</div></div>
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Post on TikTok today — content builds trust before close</div><div class="action-tag tag-content">CONTENT</div></div>
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Update CRM after every conversation</div><div class="action-tag tag-client">CRM</div></div>
   </div>`;
   const labels=[{e:'🔴',l:'1 Tick — call only'},{e:'🟡',l:'2 Tick unread'},{e:'🟠',l:'Read no reply'},{e:'🟢',l:'Conversation'},{e:'🔵',l:'Hot lead'},{e:'✅',l:'Client'},{e:'⬛',l:'Rejected'},{e:'🔄',l:'Re-engage'},{e:'📍',l:'Koforidua physical'},{e:'⬜',l:'Non-business'}];
-  document.getElementById('waBoard').innerHTML=labels.map(l=>`<div class="wa-item"><div class="wa-emoji">${l.e}</div><div><div class="wa-count" style="color:${getColorForLabel(l.e)}">${countByLabel(l.e)}</div><div class="wa-label">${l.l}</div></div></div>`).join('');
-  document.getElementById('callList').innerHTML=callC.length?callC.slice(0,6).map(c=>`<div class="call-item" style="cursor:pointer" onclick="switchTab('calls',{target:document.querySelectorAll('.tab')[4]})"><div><div class="call-name">${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div></div><div class="call-number">${c.Number}</div></div>`).join(''):'<div class="empty">No 1-tick contacts right now</div>';
+  document.getElementById('waBoard').innerHTML=labels.map(l=>`<div class="wa-item" onclick="goToWA('${l.e}')" title="Tap to open"><div class="wa-emoji">${l.e}</div><div><div class="wa-count" style="color:${getColorForLabel(l.e)}">${countByLabel(l.e)}</div><div class="wa-label">${l.l}</div></div></div>`).join('');
+  document.getElementById('callList').innerHTML=callC.length?callC.slice(0,6).map(c=>`<div class="call-item" style="cursor:pointer" onclick="activateTab('calls')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No 1-tick contacts right now</div>';
   const kofPri=(state.koforidua||[]).filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('active')||c.Stage.toLowerCase().includes('warm')));
-  document.getElementById('kofVisitList').innerHTML=kofPri.length?kofPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal)"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Koforidua'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
+  document.getElementById('kofVisitList').innerHTML=kofPri.length?kofPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal);cursor:pointer" onclick="activateTab('koforidua')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Koforidua'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
 }
 
 function setFilter(f,btn){currentFilter=f;followupPage=0;document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
@@ -778,11 +876,17 @@ const OFFER_OPTIONS = [
   '',
   'Business Presence',
   'Verified Business',
-  'Visibility Partner',
-  'SME Systems',
-  'BBCS Consulting',
-  'Command Centre',
+  'Visibility Partner 250',
+  'Visibility Partner 750',
+  'Visibility Partner 1500',
   'Business Authority',
+  'SME Systems Starter',
+  'SME Systems Growth',
+  'SME Systems Authority',
+  'Command Centre Starter',
+  'Command Centre Growth',
+  'Command Centre Authority',
+  'BBCS Consulting',
   'Custom Package'
 ];
 
@@ -993,13 +1097,105 @@ function openPipelineStage(key,name){
 }
 function closePipelinePanel(){document.getElementById('pipelineContactPanel').style.display='none';}
 
+// =====================================================
+// v12: CALLS TAB — inline outcome dropdown / notes / follow-up date / script
+// =====================================================
+// Call outcomes shown in the middle dropdown of each call-item row.
+const CALL_OUTCOME_OPTIONS=[
+  {value:'',label:'— Select outcome —'},
+  {value:'Business Presence Listed',label:'✅ Agreed — Presence (Free)'},
+  {value:'Verified Business',label:'✅ Agreed — Verified (GHS 180)'},
+  {value:'Visibility Partner',label:'✅ Agreed — Visibility Partner'},
+  {value:'SME Systems',label:'✅ Agreed — SME Systems'},
+  {value:'Conversation Active',label:'💬 Interested — Conversation'},
+  {value:'Needs Second Call',label:'📞 Callback Requested'},
+  {value:'Called — No Answer',label:'🔕 No Answer'},
+  {value:'Called — Wrong Number',label:'❓ Wrong Number'},
+  {value:'Not Interested',label:'✕ Rejected / Not Interested'}
+];
+function callOutcomeOptionsHtml(selected){
+  return CALL_OUTCOME_OPTIONS.map(o=>`<option value="${o.value}"${o.value===selected?' selected':''}>${o.label}</option>`).join('');
+}
+// Builds the call script for a contact: personalised from their notes/stage
+// if we already have history with them, otherwise the generic first-time
+// cold-call opener from the message/database scripts.
+function buildCallScript(c){
+  const name=(c.Business||'').split(' ')[0];
+  const cat=c.Category||'business';
+  const notes=(c.Notes||'').trim();
+  const msgCount=state.messageCounts[c.Business]||0;
+  const hasHistory=!!notes||msgCount>0||(c.Stage&&c.Stage.toLowerCase()!=='first message');
+  if(!hasHistory){
+    return `FIRST-TIME CALL SCRIPT:\n"Hi, is this ${c.Business}? My name is [YOUR NAME] calling from BYINFORGH. `+
+    `We help ${cat} businesses in Ghana get found by more customers online. `+
+    `Quick question — how are customers currently finding your business?"\n\n`+
+    `[Listen. Then:] "I can get you listed for free today, no cost to start. Can I take your business name and what you sell to set it up?"`;
+  }
+  let opener=`"Hi ${name}, this is [YOUR NAME] from BYINFORGH, following up on our earlier messages."`;
+  if(notes)opener+=`\n\nFROM YOUR NOTES: ${notes.substring(0,180)}`;
+  let ask='"Based on what we discussed, I have everything ready to get you set up. Shall we lock it in today?"';
+  const s=(c.Stage||'').toLowerCase();
+  if(s.includes('hot')||s.includes('verbal'))ask='"You mentioned you were ready to go ahead — GHS 180, done in 24 hours. Shall I confirm it now?"';
+  else if(s.includes('reject')||s.includes('not interested'))ask='"I understand it wasn\\'t the right fit before — has anything changed on your end since we last spoke?"';
+  return `RETURNING CONTACT SCRIPT:\n${opener}\n\n${ask}`;
+}
+function toggleCallScript(key){
+  const box=document.getElementById('callscript-'+key);
+  if(box)box.classList.toggle('open');
+}
+function callInlineUpdate(key,field,value){
+  callInlineState[key]=callInlineState[key]||{};
+  callInlineState[key][field]=value;
+}
+async function logInlineCall(business,number,waLabel,key){
+  const st=callInlineState[key]||{};
+  const outcome=st.outcome||'';
+  if(!outcome){showToast('Select an outcome first');return;}
+  const notes=st.notes||'';
+  const nextFollowUp=st.nextFollowUp?dateInputToSheetFormat(st.nextFollowUp):'';
+  const btn=document.getElementById('calllogbtn-'+key);
+  if(btn){btn.textContent='Logging...';btn.disabled=true;}
+  try{
+    const url=API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number||'')
+      +'&waLabel='+encodeURIComponent(waLabel||'')+'&stage='+encodeURIComponent(outcome)+'&notes='+encodeURIComponent(notes)
+      +'&nextAction='+encodeURIComponent(notes)+'&nextFollowUp='+encodeURIComponent(nextFollowUp)+'&t='+Date.now();
+    await fetch(url);
+  }catch(e){}
+  const c=state.contacts.find(x=>x.Business===business);
+  if(c){c.Stage=outcome;if(nextFollowUp)c.Next_Follow_Up=nextFollowUp;}
+  showToast('Call logged — '+business+' → '+outcome);
+  const row=document.getElementById('callrow-'+key);
+  if(row){row.style.opacity='0.4';row.style.borderColor='var(--green)';}
+  if(btn){btn.textContent='✓ LOGGED';}
+  setTimeout(()=>{renderCallTab();},900);
+}
 function renderCallTab(){
   const callC=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
-  document.getElementById('callBlockList').innerHTML=callC.length?callC.map((c,i)=>`<div class="call-item">
-    <div style="flex:1"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'} · Last: ${cleanDate(c.Last_Contact)}</div><div class="call-sub" style="margin-top:3px;color:var(--text-dim)">${c.Notes?c.Notes.substring(0,80):'No notes'}</div></div>
-    <div style="text-align:right"><div class="call-number">${c.Number}</div>
-    <button onclick="preloadCallContact('${c.Business.replace(/'/g,"\\'")}','${c.Number||''}','${(c.WA_Label||'').substring(0,10).replace(/'/g,"\\'")}')" style="background:var(--red);border:none;color:#fff;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;margin-top:6px;font-family:Syne,sans-serif">LOG CALL</button></div>
-  </div>`).join(''):'<div class="empty">No 🔴 1-tick contacts — good work!</div>';
+  document.getElementById('callBlockList').innerHTML=callC.length?callC.map((c,i)=>{
+    const key=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'_'+i;
+    const script=buildCallScript(c).replace(/</g,'&lt;');
+    return `<div class="call-item" id="callrow-${key}">
+      <div class="call-item-row">
+        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number}</div></div>
+        <div class="call-mid">
+          <select onchange="callInlineUpdate('${key}','outcome',this.value)">${callOutcomeOptionsHtml('')}</select>
+          <div class="call-mid-row">
+            <input type="text" placeholder="Notes / callback reason..." oninput="callInlineUpdate('${key}','notes',this.value)">
+            <input type="date" onchange="callInlineUpdate('${key}','nextFollowUp',this.value)" title="Follow-up date">
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="copy-btn" style="background:var(--surface);font-size:9px;padding:4px 8px" onclick="toggleCallScript('${key}')">📜 SCRIPT</button>
+            <button class="call-log-btn" id="calllogbtn-${key}" onclick="logInlineCall('${c.Business.replace(/'/g,"\\'")}','${c.Number||''}','${(c.WA_Label||'').substring(0,10).replace(/'/g,"\\'")}','${key}')">LOG CALL</button>
+          </div>
+          <div class="call-script-box" id="callscript-${key}">${script}</div>
+        </div>
+        <div style="text-align:right;flex:0 0 auto">
+          <div style="font-size:10px;color:var(--text-dim)">Last: ${cleanDate(c.Last_Contact)}</div>
+          <button onclick="preloadCallContact('${c.Business.replace(/'/g,"\\'")}','${c.Number||''}','${(c.WA_Label||'').substring(0,10).replace(/'/g,"\\'")}')" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;margin-top:6px;font-family:Syne,sans-serif">FULL FORM ↓</button>
+        </div>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty">No 🔴 1-tick contacts — good work!</div>';
   renderRecentCallLog();
 }
 function preloadCallContact(business,number,waLabel){
@@ -1152,14 +1348,24 @@ function renderClients(){
 function setMsgCategory(cat,btn){currentMsgCategory=cat;document.querySelectorAll('#tab-messages .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderMsgLibrary();}
 function renderMsgLibrary(){const msgs=MSG_LIBRARY[currentMsgCategory]||[];document.getElementById('msgLibrary').innerHTML=msgs.map(m=>`<div class="followup-item"><div class="followup-header"><div class="followup-name">${m.title}</div></div><div class="message-box">${m.msg}</div><button class="copy-btn" onclick="copyMsg(this.previousElementSibling.textContent,this)">COPY</button></div>`).join('');}
 
+// v12: computes { count, revenue } across Clients + SME Members for a given
+// package matcher, restricted to Active status.
+function matchPackageStats(matchFn){
+  let count=0, revenue=0;
+  (state.clients||[]).forEach(c=>{
+    if((c.Status||'').trim().toLowerCase()!=='active')return;
+    if(matchFn(c.Package)){count++;revenue+=(parseFloat(c.Amount)||parseFloat(c.OneTimeAmount)||0);}
+  });
+  (state.smeMembers||[]).forEach(m=>{
+    if((m.Status||'').toLowerCase()!=='active')return;
+    if(matchFn(m.Package)){count++;revenue+=(parseFloat(m.Amount)||0);}
+  });
+  return {count,revenue};
+}
 function renderRevenue(){
   const mrr=getMRR(),visMRR=getVisMRR(),smeMRR=getSmeMRR(),oneTime=getOneTimeRevenue();
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
   const smeActive=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length;
-  const total=state.contacts.length,conversations=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length;
-  const verified=state.clients.filter(c=>c.Package&&c.Package.toLowerCase().includes('verified')).length;
-  const partners=state.clients.filter(c=>c.Package&&c.Package.toLowerCase().includes('partner')).length;
-  const custom=state.clients.filter(c=>c.Package&&(c.Package.toLowerCase().includes('custom')||c.Package.toLowerCase().includes('command centre')||c.Package.toLowerCase().includes('business authority'))).length;
   document.getElementById('revenueActual').innerHTML=`
     <div class="metric-card gold"><div class="metric-label">DAILY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/30)}</div><div class="metric-sub">MRR ÷ 30</div></div>
     <div class="metric-card green"><div class="metric-label">WEEKLY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/4.3)}</div><div class="metric-sub">MRR ÷ 4.3</div></div>
@@ -1172,12 +1378,26 @@ function renderRevenue(){
   const doubling=[mrr||180];for(let i=1;i<8;i++)doubling.push(doubling[i-1]*2);
   const maxV=Math.max(...doubling);
   document.getElementById('weekChart').innerHTML=weeks.map((w,i)=>`<div class="chart-bar-group"><div style="display:flex;gap:2px;align-items:flex-end;height:130px"><div class="chart-bar base" style="height:${Math.round(((mrr||180)/maxV)*120)+4}px;width:14px"></div><div class="chart-bar double" style="height:${Math.round((doubling[i]/maxV)*120)+2}px;width:14px"></div></div><div class="chart-label">${w}</div><div class="chart-label" style="color:var(--gold)">&#8373;${doubling[i]>=1000?(doubling[i]/1000).toFixed(1)+'k':doubling[i]}</div></div>`).join('');
-  document.getElementById('conversionTracker').innerHTML=`
-    <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">Business Presence (Free)</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--text-dim)">&#8373;0</div></div></div>
-    <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">✅ Verified Business</div><div style="font-size:11px;color:var(--text-dim)">GHS 180 — lead offer always</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">&#8373;180</div></div><div style="font-size:11px;color:var(--gold);margin-top:4px">${verified} verified · Need ${Math.max(0,Math.ceil((5400-mrr)/180))} more for &#8373;5,400/month</div></div>
-    <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">🔥 Visibility Partner</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--orange)">&#8373;500+</div></div><div style="font-size:11px;color:var(--orange);margin-top:4px">${partners} partner</div></div>
-    <div style="padding:10px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">&#128295; SME Systems (BBCS)</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--teal)">&#8373;${smeMRR}/mo</div></div><div style="font-size:11px;color:var(--teal);margin-top:4px">${smeActive} active systems</div></div>
-    <div style="padding:10px 0"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:700">&#128188; Command Centre / Business Authority / Custom</div></div><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--purple)">${custom}</div></div><div style="font-size:11px;color:var(--purple);margin-top:4px">${custom} client${custom!==1?'s':''} on a custom-priced package</div></div>`;
+
+  // v12: each package gets its OWN card, same layout style as Verified (name,
+  // count/GHS, tier breakdown for tiered packages). Business Authority,
+  // Command Centre, SME Systems and Custom are no longer lumped together.
+  const presenceStats={count:0,revenue:0}; // free — count active Business Presence clients
+  (state.clients||[]).forEach(c=>{if((c.Status||'').trim().toLowerCase()==='active'&&/presence/i.test(c.Package||''))presenceStats.count++;});
+  document.getElementById('conversionTracker').innerHTML=REVENUE_PACKAGES.map(pkg=>{
+    if(pkg.key==='presence'){
+      return `<div class="pkg-card"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">Free</div></div><div class="pkg-card-sub">${presenceStats.count} active listing${presenceStats.count!==1?'s':''} · always the entry offer</div></div>`;
+    }
+    if(pkg.tiers){
+      const rows=pkg.tiers.map(t=>{const st=matchPackageStats(t.match);return `<div class="pkg-tier-row"><span style="color:var(--text-dim)">${t.label} — GHS ${t.amount.toLocaleString()}</span><span style="font-family:'Space Mono',monospace;color:${pkg.color};font-weight:700">${st.count} · GHS ${st.revenue.toLocaleString()}</span></div>`;}).join('');
+      const totalCount=pkg.tiers.reduce((s,t)=>s+matchPackageStats(t.match).count,0);
+      const totalRev=pkg.tiers.reduce((s,t)=>s+matchPackageStats(t.match).revenue,0);
+      return `<div class="pkg-card"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">${totalCount}</div></div><div class="pkg-card-sub">GHS ${totalRev.toLocaleString()} total from this package</div>${rows}</div>`;
+    }
+    const st=matchPackageStats(pkg.match);
+    return `<div class="pkg-card"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}${pkg.amount?` — GHS ${pkg.amount.toLocaleString()}`:''}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">${st.count}</div></div><div class="pkg-card-sub">GHS ${st.revenue.toLocaleString()} total from this package</div></div>`;
+  }).join('');
+
   document.getElementById('closesNeeded').innerHTML=[{label:'Hit GHS 180/day',monthly:5400},{label:'Hit GHS 500/day',monthly:15000},{label:'Hit GHS 1,000/day',monthly:30000}].map(t=>{const needed=Math.max(0,Math.ceil((t.monthly-mrr)/180));const pct=Math.min(100,Math.round((mrr/t.monthly)*100));return`<div style="padding:12px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">${t.label}</div><div style="font-size:11px;color:var(--text-dim)">${needed} more Verified closes</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-dim);margin-top:4px">${pct}% · &#8373;${mrr.toLocaleString()} of &#8373;${t.monthly.toLocaleString()}/month</div></div>`;}).join('');
 }
 
@@ -1218,7 +1438,7 @@ function renderAI(){
   if(orangeDue.length>3)tips.push(`👁 ${orangeDue.length} read-no-reply due today — Google Maps screenshot. Not the same message.`);
   if(red.length>5)tips.push(`📞 ${red.length} contacts with 1-tick — call them. Calls tab.`);
   if(tips.length===0)tips.push(`🎯 No hot follow-ups due today. Add new contacts or run discovery on cold pipeline.`);
-  tips.push(`🎯 ECOSYSTEM: Business Presence (Free) → Verified (GHS 180) → Visibility Partner → SME Systems.`);
+  tips.push(`🎯 ECOSYSTEM: Business Presence (Free) → Verified (GHS 180) → Visibility Partner → Business Authority → SME Systems → Command Centre.`);
   document.getElementById('aiConversionTips').innerHTML=tips.map(t=>`<div style="padding:8px 12px;background:var(--surface);border-radius:5px;border-left:3px solid var(--gold);margin-bottom:8px;font-size:12px;line-height:1.6">${t}</div>`).join('');
   const day=new Date().getDay();const dayName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][day];
   const hour=new Date().getHours();
@@ -1242,7 +1462,7 @@ function buildDailyBriefing(){
   const hot=state.contacts.find(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
   const smeActive=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length;
-  return`Good morning. BYINFORGH daily briefing:\n\n📊 ${total} contacts · GHS ${mrr}/month MRR\n${active} visibility clients · ${smeActive} SME members\n\nTODAY:\n${blue>0?`1. 🔵 Contact ${hot?hot.Business:'your hot lead'} first — close today`:'1. No hot leads — focus on discovery'}\n2. 🟢 ${green} active conversations — ask discovery questions\n3. 📞 Call ${red} 1-tick contacts (Calls tab)\n4. ${due.length} follow-ups due today\n\n${due.length>0?`DUE: ${due.slice(0,3).map(c=>c.Business).join(', ')}${due.length>3?' + '+(due.length-3)+' more':''}`:' No overdue follow-ups'}\n\nECOSYSTEM: Business Presence → Verified (GHS 180) → Visibility Partner → SME Systems\n\nWhat do you want to work on first?`;
+  return`Good morning. BYINFORGH daily briefing:\n\n📊 ${total} contacts · GHS ${mrr}/month MRR\n${active} visibility clients · ${smeActive} SME members\n\nTODAY:\n${blue>0?`1. 🔵 Contact ${hot?hot.Business:'your hot lead'} first — close today`:'1. No hot leads — focus on discovery'}\n2. 🟢 ${green} active conversations — ask discovery questions\n3. 📞 Call ${red} 1-tick contacts (Calls tab)\n4. ${due.length} follow-ups due today\n\n${due.length>0?`DUE: ${due.slice(0,3).map(c=>c.Business).join(', ')}${due.length>3?' + '+(due.length-3)+' more':''}`:' No overdue follow-ups'}\n\nECOSYSTEM: Business Presence → Verified (GHS 180) → Visibility Partner → Business Authority → SME Systems → Command Centre\n\nWhat do you want to work on first?`;
 }
 
 function addAIMessage(role,text){const chat=document.getElementById('aiChat');const div=document.createElement('div');div.style.cssText=`background:${role==='user'?'var(--border)':'var(--surface)'};border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:12px;line-height:1.7;white-space:pre-wrap;align-self:${role==='user'?'flex-end':'flex-start'};max-width:90%;color:var(--text);`;if(role==='assistant')div.style.borderLeft='3px solid var(--gold)';div.textContent=text;chat.appendChild(div);chat.scrollTop=chat.scrollHeight;}
@@ -1296,6 +1516,12 @@ function getSmartLocalReply(question){
   return null;
 }
 
+// v12: AI ASSIST FIX — this used to call api.anthropic.com directly from the
+// browser, which never works on a live site (no API key client-side, and
+// Anthropic's API is not reachable cross-origin from a browser). That is
+// why AI answers looked wrong/generic — every real call silently failed
+// and fell back to canned text. Now it calls our own Apps Script backend
+// (action=aiAsk), which holds the key server-side. See Code.gs for setup.
 async function sendAI(){
   const input=document.getElementById('aiInput');const question=input.value.trim();if(!question)return;
   input.value='';addAIMessage('user',question);
@@ -1303,16 +1529,22 @@ async function sendAI(){
   const local=getSmartLocalReply(question);
   if(local){loading.remove();aiHistory.push({role:'user',content:question},{role:'assistant',content:local});addAIMessage('assistant',local);return;}
   const mrr=getMRR();
-  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner→SME Systems. Lead with problem not product. Be brief and specific.`;
+  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000). Lead with problem not product. Be brief and specific.`;
   aiHistory.push({role:'user',content:question});
   try{
-    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),8000);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:sp,messages:aiHistory.slice(-6)}),signal:ctrl.signal});
-    clearTimeout(t);if(!res.ok)throw new Error('API '+res.status);
-    const data=await res.json();loading.remove();
-    const reply=data.content&&data.content[0]&&data.content[0].text?data.content[0].text:`Based on your pipeline: ${total} contacts GHS ${mrr} MRR. Try: "Who should I contact first?" or type a business name.`;
+    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),15000);
+    const res=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(question)+'&context='+encodeURIComponent(sp)+'&history='+encodeURIComponent(JSON.stringify(aiHistory.slice(-6)))+'&t='+Date.now(),{signal:ctrl.signal});
+    clearTimeout(t);
+    const data=await res.json();
+    loading.remove();
+    if(data.error)throw new Error(data.error);
+    const reply=data.reply||`Based on your pipeline: ${state.contacts.length} contacts GHS ${mrr} MRR. Try: "Who should I contact first?" or type a business name.`;
     aiHistory.push({role:'assistant',content:reply});addAIMessage('assistant',reply);
-  }catch(e){loading.remove();const fb=`Pipeline: ${state.contacts.length} contacts · GHS ${mrr} MRR · ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} hot leads.\n\nTry: "Who should I contact first?" · "Hot leads" · "Revenue" · type any business name.`;aiHistory.push({role:'assistant',content:fb});addAIMessage('assistant',fb);}
+  }catch(e){
+    loading.remove();
+    const fb=`Couldn't reach the AI backend (${e.message||'connection error'}).\n\nIf this keeps happening, check that ANTHROPIC_API_KEY is set in the Apps Script's Script Properties and the script is redeployed — see the note at the top of Code.gs.\n\nMeanwhile: Pipeline: ${state.contacts.length} contacts · GHS ${mrr} MRR · ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} hot leads.\n\nTry: "Who should I contact first?" · "Hot leads" · "Revenue" · type any business name.`;
+    aiHistory.push({role:'assistant',content:fb});addAIMessage('assistant',fb);
+  }
 }
 
 function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx){
@@ -1342,6 +1574,7 @@ function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx){
   setTimeout(()=>{btn.textContent='✨ PERSONALISE';btn.style.background='';btn.style.color='';btn.disabled=false;},3000);
 }
 
+// v12: routed through the same Apps Script aiAsk proxy as sendAI() — see the note there.
 async function sendConvReview(){
   const business=document.getElementById('convReviewBusiness').value.trim();
   const summary=document.getElementById('convReviewSummary').value.trim();
@@ -1352,14 +1585,15 @@ async function sendConvReview(){
   if(!summary){showToast('Add a conversation summary first');return;}
   resultDiv.innerHTML='<div class="loading">Analysing</div>';
   const pkgCtx=pkg?`\nPackage: ${pkg}${amount?' (GHS '+amount+')':''}`:'' ;
-  const sp=`You are a sales coach for BYINFORGH Ghana. Ecosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner→SME Systems.\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
+  const sp=`You are a sales coach for BYINFORGH Ghana. Ecosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
+  const question=`Business: ${business||'unnamed'}\nOutcome: ${outcome}${pkgCtx}\nSummary: ${summary}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:sp,messages:[{role:'user',content:`Business: ${business||'unnamed'}\nOutcome: ${outcome}${pkgCtx}\nSummary: ${summary}`}]})});
-    if(!r.ok)throw new Error('API '+r.status);
+    const r=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(question)+'&context='+encodeURIComponent(sp)+'&t='+Date.now());
     const d=await r.json();
-    const reply=d.content&&d.content[0]&&d.content[0].text?d.content[0].text:'Could not generate feedback.';
+    if(d.error)throw new Error(d.error);
+    const reply=d.reply||'Could not generate feedback.';
     resultDiv.innerHTML=`<div style="background:var(--surface);border:1px solid var(--teal);border-radius:6px;padding:14px;font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text)">${reply}</div>`;
-  }catch(e){resultDiv.innerHTML='<div class="error-msg">Could not get feedback — check connection.</div>';}
+  }catch(e){resultDiv.innerHTML='<div class="error-msg">Could not get feedback — '+(e.message||'check connection')+'. If this persists, confirm ANTHROPIC_API_KEY is set in Script Properties.</div>';}
 }
 
 async function archiveNotes(){
