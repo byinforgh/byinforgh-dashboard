@@ -123,30 +123,32 @@
 .freq-quarterly{background:#0a0a1a;color:#6366f1;border:1px solid #6366f1;}
 select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:'Syne',sans-serif;font-size:12px;width:100%;outline:none;margin-bottom:0;}
 select:focus{border-color:var(--gold);}
+.cal-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
 .cal-nav{display:flex;align-items:center;gap:10px}
-.cal-nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:5px;cursor:pointer;font-size:14px;font-weight:700}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:5px;cursor:pointer;font-size:16px;font-weight:700}
 .cal-nav-btn:hover{border-color:var(--gold);color:var(--gold)}
 .cal-month-label{font-size:16px;font-weight:800;letter-spacing:1px;min-width:160px;text-align:center}
-.cal-today-btn{background:var(--gold);color:var(--black);border:none;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Syne',sans-serif}
+.cal-today-btn{background:var(--gold);color:var(--black);border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Syne',sans-serif}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.cal-dow{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-align:center;padding:4px 0}
+.cal-dow{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-align:center;padding:4px 0}
 .cal-cell{background:var(--surface);border:1px solid var(--border);border-radius:6px;min-height:90px;padding:6px;display:flex;flex-direction:column;gap:3px}
 .cal-cell.empty{background:transparent;border:none}
-.cal-cell.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
-.cal-cell.has-overdue{border-color:var(--red)}
+.cal-cell.today{border-color:var(--gold);border-width:2px;box-shadow:0 0 0 1px var(--gold) inset}
+.cal-cell.has-overdue{border-color:var(--red);border-width:2px}
 .cal-daynum{font-size:11px;font-weight:700;color:var(--text-dim);font-family:'Space Mono',monospace}
 .cal-cell.today .cal-daynum{color:var(--gold)}
-.cal-pill{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--black);border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.5}
-.cal-pill:hover{border-color:var(--gold)}
-.cal-more{font-size:9px;color:var(--gold);cursor:pointer;font-weight:700;padding:1px 5px}
+.cal-pill{font-size:9px;padding:3px 6px;border-radius:4px;background:var(--border);color:var(--text);border:1px solid #3a3a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.6;font-weight:600}
+.cal-pill:hover{border-color:var(--gold);background:#2f2f2f}
+.cal-more{font-size:9px;color:var(--gold);cursor:pointer;font-weight:700;padding:2px 6px;background:var(--border);border-radius:4px;display:inline-block;margin-top:2px}
+.cal-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:10px;color:var(--text-dim)}
 .pkg-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px}
 .pkg-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
 .pkg-card-title{font-size:13px;font-weight:700}
 .pkg-card-sub{font-size:10px;color:var(--text-dim);margin-bottom:8px}
 .pkg-tier-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid #1a1a1a;font-size:11px}
 .pkg-tier-row:first-of-type{border-top:none}
-@media(max-width:768px){.cal-grid{grid-template-columns:repeat(7,1fr);gap:3px}.cal-cell{min-height:60px;padding:3px}.cal-pill{font-size:8px}.cal-dow{font-size:8px}.call-mid{border-left:none;border-right:none;padding:0}.call-item-row{flex-direction:column;align-items:stretch}}
+@media(max-width:768px){.cal-wrap{padding:10px;border-radius:8px}.cal-grid{grid-template-columns:repeat(7,1fr);gap:4px}.cal-cell{min-height:74px;padding:4px;border-radius:5px}.cal-pill{font-size:9px;padding:2px 4px}.cal-dow{font-size:9px}.cal-daynum{font-size:10px}.cal-month-label{font-size:14px;min-width:120px}.call-mid{border-left:none;border-right:none;padding:0}.call-item-row{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 <body>
@@ -284,16 +286,21 @@ select:focus{border-color:var(--gold);}
 
 <!-- CALENDAR -->
 <div class="tab-content" id="tab-calendar">
-  <div class="cal-header">
-    <div class="cal-nav">
-      <button class="cal-nav-btn" onclick="calNavMonth(-1)">&#8249;</button>
-      <div class="cal-month-label" id="calMonthLabel">—</div>
-      <button class="cal-nav-btn" onclick="calNavMonth(1)">&#8250;</button>
+  <div class="cal-wrap">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calNavMonth(-1)">&#8249;</button>
+        <div class="cal-month-label" id="calMonthLabel">—</div>
+        <button class="cal-nav-btn" onclick="calNavMonth(1)">&#8250;</button>
+      </div>
+      <button class="cal-today-btn" onclick="calGoToday()">TODAY</button>
     </div>
-    <button class="cal-today-btn" onclick="calGoToday()">TODAY</button>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Tap a contact to view full notes · Red border = overdue follow-ups present</div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <span>🔵 Hot lead</span><span>🟢 Conversation</span><span>🟠 Read no reply</span><span>🟡 Unread</span><span>🔄 Re-engage</span><span>🔴 Call only</span>
+    </div>
   </div>
-  <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Tap a contact to view full notes · Red border = overdue follow-ups present</div>
-  <div class="cal-grid" id="calGrid"></div>
 </div>
 
 <!-- PIPELINE -->
@@ -314,7 +321,7 @@ select:focus{border-color:var(--gold);}
 <!-- CALLS -->
 <div class="tab-content" id="tab-calls">
   <div style="background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
-    <strong style="color:var(--red)">&#128222; CALL LIST — 🔴 1 TICK CONTACTS</strong> · WhatsApp message delivered but not reaching them. Must call directly. Set the outcome, add notes/follow-up, then tap LOG.
+    <strong style="color:var(--red)">&#128222; CALL LIST — 🔴 1 TICK CONTACTS</strong> · WhatsApp message delivered but not reaching them. Must call directly. Set the outcome, add notes/follow-up, then tap LOG. Logging an outcome moves the contact off this list — it will not reappear or get double-logged.
   </div>
   <div class="section-title">DAILY CALL TARGETS</div>
   <div id="callBlockList"></div>
@@ -1099,6 +1106,10 @@ function closePipelinePanel(){document.getElementById('pipelineContactPanel').st
 
 // =====================================================
 // v12: CALLS TAB — inline outcome dropdown / notes / follow-up date / script
+// v12.3: outcomes now map to a new WA_Label that is written back to the
+// sheet (see callOutcomeToWaLabel below). This is what makes a logged call
+// actually leave the 🔴 Calls list instead of reappearing/getting logged
+// twice for the same conversation.
 // =====================================================
 // Call outcomes shown in the middle dropdown of each call-item row.
 const CALL_OUTCOME_OPTIONS=[
@@ -1115,6 +1126,40 @@ const CALL_OUTCOME_OPTIONS=[
 ];
 function callOutcomeOptionsHtml(selected){
   return CALL_OUTCOME_OPTIONS.map(o=>`<option value="${o.value}"${o.value===selected?' selected':''}>${o.label}</option>`).join('');
+}
+// v12.3: maps a logged call outcome to the new WA_Label that should be
+// written back to Master CRM. Anything not in this map (e.g. the default
+// "Phone Call Needed") returns '' — meaning no label change, the contact
+// correctly stays on the 🔴 Calls list because nothing was resolved.
+function callOutcomeToWaLabel(outcome){
+  const map={
+    'Business Presence Listed':'✅ Client — Business Presence',
+    'Verified Business':'✅ Client — Verified Business',
+    'Visibility Partner':'✅ Client — Visibility Partner',
+    'SME Systems':'✅ Client — SME Systems',
+    'Called — Interested':'🟢 Conversation Active',
+    'Conversation Active':'🟢 Conversation Active',
+    'Hot Lead — Close Today':'🔵 Hot Lead — Close Today',
+    'Needs Second Call':'🟠 Read No Reply — Callback Requested',
+    'Called — Callback Requested':'🟠 Read No Reply — Callback Requested',
+    'Called — No Answer':'🟠 Read No Reply — No Answer, Retry',
+    'Called — Wrong Number':'⬛ Rejected — Wrong Number',
+    'Called — Not Interested':'⬛ Rejected — Not Interested',
+    'Not Interested':'⬛ Rejected — Not Interested'
+  };
+  return map[outcome]||'';
+}
+// v12.3: pulls the most recent "[CALL dd/mm/yyyy] ..." entry out of a
+// contact's Notes so the Calls tab can show "what happened last time"
+// without needing to open the script box.
+function getLastCallNote(notes){
+  if(!notes)return'';
+  const marker='[CALL ';
+  const idx=notes.lastIndexOf(marker);
+  if(idx===-1)return'';
+  const rest=notes.substring(idx);
+  const nl=rest.indexOf('\n');
+  return nl===-1?rest:rest.substring(0,nl);
 }
 // Builds the call script for a contact: personalised from their notes/stage
 // if we already have history with them, otherwise the generic first-time
@@ -1153,17 +1198,24 @@ async function logInlineCall(business,number,waLabel,key){
   if(!outcome){showToast('Select an outcome first');return;}
   const notes=st.notes||'';
   const nextFollowUp=st.nextFollowUp?dateInputToSheetFormat(st.nextFollowUp):'';
+  const newWaLabel=callOutcomeToWaLabel(outcome); // v12.3: what actually removes it from this list
   const btn=document.getElementById('calllogbtn-'+key);
   if(btn){btn.textContent='Logging...';btn.disabled=true;}
   try{
     const url=API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number||'')
-      +'&waLabel='+encodeURIComponent(waLabel||'')+'&stage='+encodeURIComponent(outcome)+'&notes='+encodeURIComponent(notes)
+      +'&waLabel='+encodeURIComponent(newWaLabel||waLabel||'')+'&stage='+encodeURIComponent(outcome)+'&notes='+encodeURIComponent(notes)
       +'&nextAction='+encodeURIComponent(notes)+'&nextFollowUp='+encodeURIComponent(nextFollowUp)+'&t='+Date.now();
     await fetch(url);
   }catch(e){}
   const c=state.contacts.find(x=>x.Business===business);
-  if(c){c.Stage=outcome;if(nextFollowUp)c.Next_Follow_Up=nextFollowUp;}
-  showToast('Call logged — '+business+' → '+outcome);
+  const today=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  if(c){
+    c.Stage=outcome;
+    if(nextFollowUp)c.Next_Follow_Up=nextFollowUp;
+    if(newWaLabel)c.WA_Label=newWaLabel;
+    if(notes)c.Notes=(c.Notes?c.Notes+'\n':'')+'[CALL '+today+'] '+notes;
+  }
+  showToast('Call logged — '+business+(newWaLabel?' → moved off call list':' (still needs a call)'));
   const row=document.getElementById('callrow-'+key);
   if(row){row.style.opacity='0.4';row.style.borderColor='var(--green)';}
   if(btn){btn.textContent='✓ LOGGED';}
@@ -1174,9 +1226,10 @@ function renderCallTab(){
   document.getElementById('callBlockList').innerHTML=callC.length?callC.map((c,i)=>{
     const key=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'_'+i;
     const script=buildCallScript(c).replace(/</g,'&lt;');
+    const lastCall=getLastCallNote(c.Notes).replace(/</g,'&lt;');
     return `<div class="call-item" id="callrow-${key}">
       <div class="call-item-row">
-        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number}</div></div>
+        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number}</div>${lastCall?`<div style="font-size:10px;color:var(--gold);margin-top:5px;font-style:italic;line-height:1.4">&#128220; Last: ${lastCall.substring(0,140)}</div>`:''}</div>
         <div class="call-mid">
           <select onchange="callInlineUpdate('${key}','outcome',this.value)">${callOutcomeOptionsHtml('')}</select>
           <div class="call-mid-row">
@@ -1216,14 +1269,21 @@ async function logCallTap(){
   const stage=document.getElementById('callStageSelect').value;
   const notes=document.getElementById('callNotes').value.trim();
   const nextAction=document.getElementById('callNextAction').value.trim();
+  const newWaLabel=callOutcomeToWaLabel(stage); // v12.3
   const result=document.getElementById('callLogResult');
   result.innerHTML='<div style="color:var(--muted)">Logging...</div>';
-  try{await fetch(API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&waLabel='+encodeURIComponent(waLabel)+'&stage='+encodeURIComponent(stage)+'&notes='+encodeURIComponent(notes)+'&nextAction='+encodeURIComponent(nextAction)+'&t='+Date.now());}catch(e){}
+  try{await fetch(API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&waLabel='+encodeURIComponent(newWaLabel||waLabel)+'&stage='+encodeURIComponent(stage)+'&notes='+encodeURIComponent(notes)+'&nextAction='+encodeURIComponent(nextAction)+'&t='+Date.now());}catch(e){}
+  const c=state.contacts.find(x=>x.Business===business);
   const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-  trackerData.callLogs=[{timestamp:new Date().toString(),date:ds,business,number,stage,waLabel,notes,nextAction},...(trackerData.callLogs||[])];
-  result.innerHTML=`<div style="color:var(--green);font-weight:700">✓ Call logged — ${business}</div>`;
+  if(c){
+    if(stage)c.Stage=stage;
+    if(newWaLabel)c.WA_Label=newWaLabel;
+    if(notes)c.Notes=(c.Notes?c.Notes+'\n':'')+'[CALL '+ds+'] '+notes;
+  }
+  trackerData.callLogs=[{timestamp:new Date().toString(),date:ds,business,number,stage,waLabel:newWaLabel||waLabel,notes,nextAction},...(trackerData.callLogs||[])];
+  result.innerHTML=`<div style="color:var(--green);font-weight:700">✓ Call logged — ${business}${newWaLabel?' (moved off call list)':''}</div>`;
   document.getElementById('callNotes').value='';document.getElementById('callNextAction').value='';
-  clearContactSearch('call');renderRecentCallLog();showToast('Call logged — '+business);
+  clearContactSearch('call');renderRecentCallLog();renderCallTab();showToast('Call logged — '+business);
 }
 
 function renderKoforidua(){
