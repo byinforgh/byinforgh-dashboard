@@ -832,10 +832,10 @@ function renderFollowUps(){
       >${buildStageOptionsHtml(c.Stage||'')}</select>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid #1a1a1a">
-        ${src==='Koforidua Master'?'':`<div style="display:flex;flex-direction:column;gap:2px">
+       <div style="display:flex;flex-direction:column;gap:2px">
           <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px">OFFER</span>
           <select data-orig="${c.Offer||''}" onchange="updateContactField('${sb}','Offer',this.value,this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;max-width:160px;outline:none">${OFFER_OPTIONS.map(opt=>`<option value="${opt}"${opt===(c.Offer||'')?' selected':''}>${opt||'— none —'}</option>`).join('')}</select>
-        </div>`}
+        </div>
         <div style="display:flex;flex-direction:column;gap:2px">
           <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px">NEXT FOLLOW-UP</span>
           <input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:10px;font-family:'Space Mono',monospace;outline:none">
