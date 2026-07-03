@@ -505,11 +505,12 @@ async function submitLead(){
     console.warn('CRM submit issue:', e);
   }finally{
     btn.disabled = false; spinner.style.display='none'; label.textContent='Submit';
-    // Every submission registers the business on the platform — this is
-    // how the free listing / account gets locked in regardless of path.
-    try{ window.open(CONFIG.REGISTER_URL, '_blank'); }catch(e){}
-    // Expert leads ALSO get their chosen package opened on WhatsApp so
-    // they can confirm the order right away, alongside registering.
+    // Registration is now a tap-through button on the outcome screen (see
+    // showOutcome) instead of an auto-opened tab — forcing people off the
+    // page the instant they submit, right when they're expecting their
+    // free guide, was pulling them away before they'd even seen it.
+    // Expert leads still get their chosen package opened on WhatsApp
+    // automatically so they can confirm the order right away.
     if(state.approach === 'expert' && state.package){
       try{ window.open(state.package.wa, '_blank'); }catch(e){}
     }
@@ -522,8 +523,8 @@ function showOutcome(writeSucceeded){
   const stage = state.stage, approach = state.approach;
 
   const registerBlock = `
-      <a class="btn btn-primary" style="text-decoration:none;" href="${CONFIG.REGISTER_URL}" target="_blank" rel="noopener">Register now — lock in your foundation</a>
-      <p class="muted-note">We just opened registration in a new tab. Tap <b style="color:var(--gold)">Register</b> there to save your business and unlock every free guide — no need to explain your business to us again.</p>`;
+      <a class="btn btn-teal" style="text-decoration:none; color:#0a0a0a;" href="${CONFIG.REGISTER_URL}" target="_blank" rel="noopener">Register now — lock in your foundation</a>
+      <p class="muted-note">Registering saves your business and unlocks every free guide — no need to explain your business to us again.</p>`;
 
   const bundleBlock = `
       <p class="muted-note" style="margin-top:16px; margin-bottom:6px;">All 5 free guides — yours to keep:</p>
@@ -538,9 +539,9 @@ function showOutcome(writeSucceeded){
       <div class="success-icon">✓</div>
       <h1>You're logged. Here's your guide.</h1>
       <p class="sub">${guide.title} — free, ready right now.</p>
-      ${registerBlock}
-      <a class="btn btn-teal" style="text-decoration:none; color:#0a0a0a;" href="${guide.url}" target="_blank" rel="noopener">Download the guide</a>
+      <a class="btn btn-primary" style="text-decoration:none;" href="${guide.url}" target="_blank" rel="noopener">Download the guide</a>
       <a class="btn btn-ghost" style="text-decoration:none;" href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${waText}" target="_blank" rel="noopener">Send it to my WhatsApp instead</a>
+      ${registerBlock}
       ${bundleBlock}
     `;
   } else if(approach === 'diy' && stage === 'systems'){
@@ -562,11 +563,11 @@ function showOutcome(writeSucceeded){
     const pkg = state.package || { name: CONFIG.EXPERT_OFFERS[stage].offer, price: '', wa: `https://wa.me/${CONFIG.WHATSAPP_NUMBER}` };
     el.innerHTML = `
       <div class="success-icon">✓</div>
-      <h1>You're logged. Two tabs just opened.</h1>
+      <h1>You're logged. WhatsApp just opened.</h1>
       <p class="sub">${pkg.name}${pkg.price ? ' — <b style="color:var(--gold)">' + pkg.price + '</b>' : ''}</p>
       <a class="btn btn-primary" style="text-decoration:none;" href="${pkg.wa}" target="_blank" rel="noopener">Confirm your order on WhatsApp</a>
       <a class="btn btn-teal" style="text-decoration:none; color:#0a0a0a;" href="${CONFIG.REGISTER_URL}" target="_blank" rel="noopener">Register your business</a>
-      <p class="muted-note">We opened both your package on WhatsApp and registration on byinforgh.com. Confirm the order on WhatsApp — we reply fast — and tap Register to lock in your account.</p>
+      <p class="muted-note">Confirm the order on WhatsApp — we reply fast — and tap Register to lock in your account.</p>
     `;
   }
   if(!writeSucceeded){
