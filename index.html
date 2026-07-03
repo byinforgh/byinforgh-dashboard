@@ -372,14 +372,19 @@ select:focus{border-color:var(--gold);}
 <!-- KOFORIDUA -->
 <div class="tab-content" id="tab-koforidua">
   <div class="metrics-grid" id="kofMetrics"></div>
+  <div class="section-title">CLICK ANY STAGE TO SEE REAL CONTACTS INSIDE</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px" id="kofPipelineGrid"></div>
+  <div id="kofPipelineContactPanel" style="display:none;margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-title" id="kofPipelineContactTitle" style="margin-bottom:0">—</div>
+      <button onclick="closeKofPipelinePanel()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 12px;border-radius:3px;cursor:pointer;font-size:11px">CLOSE &#x2715;</button>
+    </div>
+    <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>AREA</th><th>WA</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="kofPipelineContactBody"></tbody></table></div>
+  </div>
   <div style="background:#001a1a;border:1px solid var(--teal);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
     <strong style="color:var(--teal)">VISIT PRIORITY:</strong> B1 Active first. B2 Warm next. Filter by area to plan your route for the day.
   </div>
   <div class="section-title">AREA FILTER</div>
-  <div class="kof-area" id="kofAreas"></div>
-  <div class="section-title" style="margin-top:12px">&#127959; KOFORIDUA VISIT LIST — PRIORITY ORDER</div>
-  <div id="kofList"></div>
-</div>
 
 <!-- CLIENTS -->
 <div class="tab-content" id="tab-clients">
@@ -1285,18 +1290,53 @@ async function logCallTap(){
 
 function renderKoforidua(){
   const kof=state.koforidua||[];
-  const b1=kof.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active'))).length;
-  const b2=kof.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))).length;
-  const cold=kof.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b3')||c.Stage.toLowerCase().includes('b4')||c.Stage.toLowerCase().includes('b5'))).length;
+  const active=kof.filter(c=>(c.WA_Label||'').includes('✅')||(c.Stage||'').toLowerCase()==='client').length;
+  const conv=kof.filter(c=>(c.Stage||'').toLowerCase()==='conversation').length;
+  const hot=kof.filter(c=>(c.WA_Label||'').includes('🔵')).length;
   document.getElementById('kofMetrics').innerHTML=`
     <div class="metric-card teal"><div class="metric-label">TOTAL KOF</div><div class="metric-value">${kof.length}</div><div class="metric-sub">Koforidua Master</div></div>
-    <div class="metric-card green"><div class="metric-label">B1 ACTIVE — VISIT FIRST</div><div class="metric-value">${b1}</div><div class="metric-sub">conversation active</div></div>
-    <div class="metric-card orange"><div class="metric-label">B2 WARM — VISIT NEXT</div><div class="metric-value">${b2}</div><div class="metric-sub">responded positively</div></div>
-    <div class="metric-card red"><div class="metric-label">B3/B4 NEED WORK</div><div class="metric-value">${cold}</div><div class="metric-sub">cold or no reply</div></div>`;
+    <div class="metric-card blue"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
+    <div class="metric-card green"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
+    <div class="metric-card gold"><div class="metric-label">CLIENTS</div><div class="metric-value">${active}</div><div class="metric-sub">converted</div></div>`;
+
+  // v13.1: same stage grid style as Pipeline tab, scoped to Koforidua only —
+  // uses the real Stage values (Follow up, Conversation, Proposal sent, etc.)
+  // now that Koforidua Master shares Master CRM's column layout.
+  const kofStages=[
+    {n:'First Message',key:'first message sent',color:'var(--muted)'},
+    {n:'Follow Up',key:'follow up',color:'var(--text-dim)'},
+    {n:'Conversation',key:'conversation',color:'var(--teal)'},
+    {n:'Interested',key:'interested',color:'var(--orange)'},
+    {n:'Proposal Sent',key:'proposal sent',color:'var(--gold)'},
+    {n:'Listed Business',key:'listed business',color:'var(--green)'},
+    {n:'Verified',key:'verified',color:'var(--blue)'},
+    {n:'Client',key:'client',color:'#22c55e'},
+    {n:'Retainer',key:'retainer',color:'var(--purple)'},
+    {n:'Phone Call Need',key:'phone call need',color:'var(--red)'},
+    {n:'Inactive',key:'inactive',color:'#666'},
+    {n:'Not Interested',key:'not interested',color:'var(--red)'}
+  ];
+  document.getElementById('kofPipelineGrid').innerHTML=kofStages.map(s=>{
+    const count=kof.filter(c=>c.Stage&&c.Stage.toLowerCase()===s.key).length;
+    return `<div class="pipeline-stage" onclick="openKofPipelineStage('${s.key}','${s.n}')"><div class="pipeline-count" style="color:${s.color}">${count}</div><div class="pipeline-name">${s.n}</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>`;
+  }).join('');
+
   const areaSet=new Set(['ALL','★ B1+B2 PRIORITY']);
   kof.forEach(c=>{if(c.Area&&c.Area.trim())areaSet.add(c.Area.trim());});
   document.getElementById('kofAreas').innerHTML=Array.from(areaSet).slice(0,14).map(a=>`<div class="kof-tag ${a===currentKofArea?'active':''}" onclick="setKofArea('${a.replace(/'/g,"\\'").replace(/★/g,'★')}',this)">${a}</div>`).join('');
   renderKofList();
+}
+
+// v13.1: opens the "real contacts inside" panel for a tapped Koforidua stage card
+function openKofPipelineStage(key,name){
+  const kof=state.koforidua||[];
+  const matches=kof.filter(c=>c.Stage&&c.Stage.toLowerCase()===key);
+  document.getElementById('kofPipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
+  document.getElementById('kofPipelineContactBody').innerHTML=matches.length?matches.map(c=>`<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td style="font-size:16px">${getWAEmoji(c.WA_Label)}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td style="font-size:11px;white-space:nowrap;color:${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--text-dim)'}">${cleanDate(c.Next_Follow_Up)}</td><td style="font-size:11px;max-width:180px;color:var(--text-dim)">${c.Notes?c.Notes.substring(0,80):'—'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
+  document.getElementById('kofPipelineContactPanel').style.display='block';
+  document.getElementById('kofPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeKofPipelinePanel(){document.getElementById('kofPipelineContactPanel').style.display='none';}
 }
 function setKofArea(area,el){currentKofArea=area;document.querySelectorAll('.kof-tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderKofList();}
 function getBucketBadge(stage){if(!stage)return'stage-cold';const b=stage.toLowerCase();if(b.includes('b1')||b.includes('active'))return'stage-conv';if(b.includes('b2')||b.includes('warm'))return'stage-hot';if(b.includes('b3')||b.includes('seen'))return'stage-warm';if(b.includes('reject'))return'stage-reject';return'stage-cold';}
