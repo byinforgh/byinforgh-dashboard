@@ -385,6 +385,12 @@ select:focus{border-color:var(--gold);}
     <strong style="color:var(--teal)">VISIT PRIORITY:</strong> B1 Active first. B2 Warm next. Filter by area to plan your route for the day.
   </div>
   <div class="section-title">AREA FILTER</div>
+  <div class="kof-area" id="kofAreas"></div>
+  <div class="section-title" style="margin-top:12px">&#127959; KOFORIDUA VISIT LIST — PRIORITY ORDER</div>
+  <div id="kofList"></div>
+</div>
+
+<!-- CLIENTS -->
 
 <!-- CLIENTS -->
 <div class="tab-content" id="tab-clients">
@@ -1337,7 +1343,7 @@ function openKofPipelineStage(key,name){
   document.getElementById('kofPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeKofPipelinePanel(){document.getElementById('kofPipelineContactPanel').style.display='none';}
-}
+function setKofArea(area,el){currentKofArea=area;...
 function setKofArea(area,el){currentKofArea=area;document.querySelectorAll('.kof-tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderKofList();}
 function getBucketBadge(stage){if(!stage)return'stage-cold';const b=stage.toLowerCase();if(b.includes('b1')||b.includes('active'))return'stage-conv';if(b.includes('b2')||b.includes('warm'))return'stage-hot';if(b.includes('b3')||b.includes('seen'))return'stage-warm';if(b.includes('reject'))return'stage-reject';return'stage-cold';}
 function renderKofList(){
