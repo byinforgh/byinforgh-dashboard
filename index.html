@@ -738,7 +738,10 @@ function goToWA(emoji){
 async function loadData(){
   document.getElementById('lastRefresh').textContent='Refreshing...';
   try{
-    const res=await fetch(API_URL+'?t='+Date.now());
+    const ctrl=new AbortController();
+    const timeoutId=setTimeout(()=>ctrl.abort(),20000);
+    const res=await fetch(API_URL+'?t='+Date.now(),{signal:ctrl.signal});
+    clearTimeout(timeoutId);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const raw=await res.json();
     if(raw.fatalError)throw new Error(raw.fatalError);
@@ -2033,8 +2036,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   checkShabbat();
   loadSettings().then(()=>loadData());
   loadTrackerData();
-  setInterval(()=>{if(!isShabbat())loadData();},60000);
-});
+setInterval(()=>{loadData();},60000);});
 </script>
 </body>
 </html>
