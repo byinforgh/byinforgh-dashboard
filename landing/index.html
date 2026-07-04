@@ -280,13 +280,15 @@
    CONFIG — fill these in before going live
    ========================================================= */
 const CONFIG = {
-  // Live Apps Script /exec URL. UPDATED to the new deployment created after
-  // redeploying v13.0 with "New version" — the previous URL
-  // (…AKfycbw-i42J…) was pointing at a stale deployment that predated the
-  // submitLandingLead action, which is why submissions weren't landing in
-  // Master CRM. This URL must match whatever deployment is currently live
-  // in Apps Script → Deploy → Manage deployments.
-  GAS_URL: "https://script.google.com/macros/s/AKfycbxsTwpMg_p3SdcO4plzu5WxdP2PjaYFC_4FgozT4R0gv06JKavmAbReuXPJjL-9OmWS/exec",
+  // Live Apps Script /exec URL — CONFIRMED against Apps Script editor's
+  // Deploy > Manage deployments as the actual active Web App deployment.
+  // Every prior URL used here (AKfycbw-i42J..., AKfycbxsTwpMg...) was a
+  // stale/different deployment, which is why submissions weren't reaching
+  // Master CRM even though the form appeared to submit successfully.
+  // This URL MUST match Deploy > Manage deployments exactly, and MUST
+  // match the dashboard's API_URL — if either one drifts again, submissions
+  // will silently go to the wrong (or no-longer-live) backend again.
+  GAS_URL: "https://script.google.com/macros/s/AKfycbwGQMkmh9Cw4oyDaURgRkhmcXN-MvQqK4lc1xEQjzBdmsXtObxSzrEO1kMTCjNVMtAH/exec",
 
   REGISTER_URL: "https://byinforgh.com/my-account-2/?register",
   WHATSAPP_NUMBER: "233509960980", // used for wa.me links, no leading zero, no +
@@ -333,6 +335,12 @@ const CONFIG = {
   //    dropdown validation list. This is what actually gets written to
   //    the sheet, so the picker's marketing copy can stay nice while the
   //    backend value matches the sheet dropdown exactly.
+  //
+  // NOTE: as of Code.gs v14.0, every landing submission — DIY or expert —
+  // writes Stage=Conversation / Offer=Warm Message / WA Label=🟢 regardless
+  // of which package was picked here. crmOffer and price are still sent
+  // and preserved in the Notes column as context for the follow-up call,
+  // they just no longer set the actual Offer field directly.
   PACKAGES: {
     general: [ // shown when quiz stage is "found" or "customers"
       { key: 'verified',   name: 'Verified Business',          price: 'GHS 180 setup + GHS 80/mo', blurb: 'Build trust. Get your blue tick. Get found.', wa: 'https://wa.me/p/27631699566449150/233509960980', crmOffer: 'Verified Business — 180 GHS setup + 80 GHS/month' },
@@ -348,10 +356,10 @@ const CONFIG = {
     ]
   },
 
-  // Expert-track offer copy per stage — labels match the dashboard's
-  // OFFER_OPTIONS dropdown exactly (Visibility Partner 250 / SME Systems
-  // Growth = entry tier of those tracks; bump if a different starting
-  // tier fits your pricing better).
+  // Expert-track offer copy per stage — shown only in the outcome-screen
+  // fallback text if no specific package was picked. Labels are cosmetic
+  // now (see PACKAGES note above) since Code.gs v14.0 writes a fixed
+  // Offer value regardless.
   EXPERT_OFFERS: {
     found:     { offer: "Verified Business",     blurb: "We'll be in touch to get you Verified — GHS 180 setup, live in 24 hours." },
     customers: { offer: "Visibility Partner 250", blurb: "We'll be in touch about Visibility Partner and getting you more customers." },
