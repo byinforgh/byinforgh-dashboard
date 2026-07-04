@@ -580,7 +580,7 @@ select:focus{border-color:var(--gold);}
 
 <div class="toast" id="toast"></div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbw-i42JDzlRIXF7SJV-S2wzNCmABinX5LWaEhg-rr_GMJSMyUlHXkGmNd9TBBnd3cpK/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbxsTwpMg_p3SdcO4plzu5WxdP2PjaYFC_4FgozT4R0gv06JKavmAbReuXPJjL-9OmWS/exec';
 let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};
 let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
@@ -1343,7 +1343,6 @@ function openKofPipelineStage(key,name){
   document.getElementById('kofPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeKofPipelinePanel(){document.getElementById('kofPipelineContactPanel').style.display='none';}
-function setKofArea(area,el){currentKofArea=area;...
 function setKofArea(area,el){currentKofArea=area;document.querySelectorAll('.kof-tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderKofList();}
 function getBucketBadge(stage){if(!stage)return'stage-cold';const b=stage.toLowerCase();if(b.includes('b1')||b.includes('active'))return'stage-conv';if(b.includes('b2')||b.includes('warm'))return'stage-hot';if(b.includes('b3')||b.includes('seen'))return'stage-warm';if(b.includes('reject'))return'stage-reject';return'stage-cold';}
 function renderKofList(){
