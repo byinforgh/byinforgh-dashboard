@@ -298,13 +298,25 @@ const CONFIG = {
   REGISTER_URL: "https://byinforgh.com/my-account-2/?register",
   WHATSAPP_NUMBER: "233509960980", // used for wa.me links, no leading zero, no +
 
-  // DIY guide downloads per stage — these are relative paths to the real
-  // PDFs bundled in the /guides folder next to this HTML file. Upload the
-  // whole folder together (see hosting instructions) and these links work
-  // immediately with no external hosting needed. Found and Customers route
-  // to the genuinely free Business Presence path. Systems has NO free tier
-  // (SME Systems Starter is GHS 50/mo, the lowest-cost option), so it's
-  // handled separately below via LOW_COST instead of an instant download.
+  // DIY guide downloads per stage — relative paths to the real PDFs in the
+  // /guides folder next to this HTML file (i.e. landing/guides/...).
+  //
+  // FIXED 4 July 2026: the guide files on GitHub were re-uploaded under
+  // their real long/descriptive filenames (with spaces) instead of the
+  // short slug names this config used to point to — "foundation-check.pdf"
+  // and "5-levels-of-a-customer.pdf" no longer exist, so those download
+  // links were broken 404s. Paths below now match the actual files:
+  //   - "Is Your House Ready _ - FOUNDATION CHECK.docx.pdf"
+  //   - "Guide 1 5 Levels of a Customer BYINFORGH Way.docx.pdf"
+  // Spaces and underscores are URL-encoded (%20 etc.) so the links resolve
+  // correctly in every browser. whatsapp-gold-mine.pdf, network-vs-networth.pdf,
+  // and currency-of-value.pdf were already using their real filenames, so
+  // those three are unchanged.
+  //
+  // Found and Customers route to the genuinely free Business Presence path.
+  // Systems has NO free tier (SME Systems Starter is GHS 50/mo, the
+  // lowest-cost option), so it's handled separately below via LOW_COST
+  // instead of an instant download.
   //
   // "primary" = the one guide most relevant to what they said their
   // problem was (shown as the big highlighted download). ALL_GUIDES is
@@ -312,12 +324,12 @@ const CONFIG = {
   // the one tied to their quiz answer, since it's more value for the
   // same one form-fill.
   GUIDES: {
-    found:     { title: "The Foundation Check",  url: "guides/foundation-check.pdf" },
+    found:     { title: "The Foundation Check",  url: "guides/Is%20Your%20House%20Ready%20_%20-%20FOUNDATION%20CHECK.docx.pdf" },
     customers: { title: "The WhatsApp Gold Mine", url: "guides/whatsapp-gold-mine.pdf" }
   },
   ALL_GUIDES: [
-    { title: "The Foundation Check",         url: "guides/foundation-check.pdf" },
-    { title: "Guide 1: The 5 Levels of a Customer", url: "guides/5-levels-of-a-customer.pdf" },
+    { title: "The Foundation Check",                 url: "guides/Is%20Your%20House%20Ready%20_%20-%20FOUNDATION%20CHECK.docx.pdf" },
+    { title: "Guide 1: The 5 Levels of a Customer",  url: "guides/Guide%201%205%20Levels%20of%20a%20Customer%20BYINFORGH%20Way.docx.pdf" },
     { title: "Guide 2: Network vs. Net Worth",       url: "guides/network-vs-networth.pdf" },
     { title: "Guide 3: The WhatsApp Gold Mine",      url: "guides/whatsapp-gold-mine.pdf" },
     { title: "Guide 4: The Currency of Value",       url: "guides/currency-of-value.pdf" }
