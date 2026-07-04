@@ -280,15 +280,20 @@
    CONFIG — fill these in before going live
    ========================================================= */
 const CONFIG = {
-  // Live Apps Script /exec URL — CONFIRMED against Apps Script editor's
-  // Deploy > Manage deployments as the actual active Web App deployment.
-  // Every prior URL used here (AKfycbw-i42J..., AKfycbxsTwpMg...) was a
-  // stale/different deployment, which is why submissions weren't reaching
-  // Master CRM even though the form appeared to submit successfully.
-  // This URL MUST match Deploy > Manage deployments exactly, and MUST
-  // match the dashboard's API_URL — if either one drifts again, submissions
-  // will silently go to the wrong (or no-longer-live) backend again.
-  GAS_URL: "https://script.google.com/macros/s/AKfycbwGQMkmh9Cw4oyDaURgRkhmcXN-MvQqK4lc1xEQjzBdmsXtObxSzrEO1kMTCjNVMtAH/exec",
+  // Live Apps Script /exec URL — CONFIRMED 4 July 2026 against the Apps
+  // Script editor's Deploy > Manage deployments, matching the ACTIVE
+  // deployment named "NEW 4 JULY" (Deployment ID starting AKfycbzEUdWF...).
+  //
+  // IMPORTANT: every prior URL used here (including the AKfycbwGQMkmh9Cw...
+  // one this replaces) pointed at an older/different deployment — that's
+  // why Stage/Offer were showing stale values like "Listed Business" /
+  // "Free Listing — 0 GHS" instead of the current Conversation/Interested
+  // + Warm Message logic, and why the phone-number and duplicate-matching
+  // fixes weren't taking effect. This URL MUST always match whatever
+  // deployment is Active in Deploy > Manage deployments — if you deploy a
+  // new version under a NEW deployment (not "Manage deployments > Edit >
+  // Deploy" on the existing one), this URL will need updating again.
+  GAS_URL: "https://script.google.com/macros/s/AKfycbzEUdWFKIqhKsM9LBYyzGv-JBJdI0wTboH1GvGIUSrLYeBGzdITHmRCDTOGFN3HnwGq/exec",
 
   REGISTER_URL: "https://byinforgh.com/my-account-2/?register",
   WHATSAPP_NUMBER: "233509960980", // used for wa.me links, no leading zero, no +
