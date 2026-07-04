@@ -336,11 +336,19 @@ const CONFIG = {
   //    the sheet, so the picker's marketing copy can stay nice while the
   //    backend value matches the sheet dropdown exactly.
   //
-  // NOTE: as of Code.gs v14.0, every landing submission — DIY or expert —
-  // writes Stage=Conversation / Offer=Warm Message / WA Label=🟢 regardless
-  // of which package was picked here. crmOffer and price are still sent
-  // and preserved in the Notes column as context for the follow-up call,
-  // they just no longer set the actual Offer field directly.
+  // v14.3 FIX: sme_growth and sme_authority previously had wrong/vague
+  // crmOffer values — sme_growth was accidentally using the general
+  // "Growth Partner 1500" label (copy-paste leftover from a different
+  // tier at a totally different price), and sme_authority was just the
+  // word "Authority" with no price. Corrected to match their own
+  // name/price so the Notes machine-tag on the CRM row is accurate.
+  //
+  // NOTE: as of Code.gs v14.0+, every landing submission — DIY or expert —
+  // writes Stage=Conversation (or Interested for expert, per v14.2) /
+  // Offer=Warm Message / WA Label=🟢 regardless of which package was
+  // picked here. crmOffer and price are still sent and preserved in the
+  // Notes column as context for the follow-up call, they just no longer
+  // set the actual Offer field directly.
   PACKAGES: {
     general: [ // shown when quiz stage is "found" or "customers"
       { key: 'verified',   name: 'Verified Business',          price: 'GHS 180 setup + GHS 80/mo', blurb: 'Build trust. Get your blue tick. Get found.', wa: 'https://wa.me/p/27631699566449150/233509960980', crmOffer: 'Verified Business — 180 GHS setup + 80 GHS/month' },
@@ -351,14 +359,14 @@ const CONFIG = {
     ],
     systems: [ // shown when quiz stage is "systems"
       { key: 'sme_starter',   name: 'SME Starter',   price: 'GHS 50/month',  blurb: 'Simple systems, strong foundation — 1 business system + basic guidance.', wa: 'https://wa.me/p/27324320283890779/233509960980', crmOffer: 'SME Starter 50' },
-      { key: 'sme_growth',    name: 'SME Growth',    price: 'GHS 150/month', blurb: 'SOPs, setup guide, training materials, and implementation support.', wa: 'https://wa.me/p/37079554828324617/233509960980', crmOffer: 'Growth 1500' },
-      { key: 'sme_authority', name: 'SME Authority', price: 'GHS 500/month', blurb: 'Ongoing support, accountability, and advanced growth strategies.', wa: 'https://wa.me/p/27577083311950108/233509960980', crmOffer: 'Authority' }
+      { key: 'sme_growth',    name: 'SME Growth',    price: 'GHS 150/month', blurb: 'SOPs, setup guide, training materials, and implementation support.', wa: 'https://wa.me/p/37079554828324617/233509960980', crmOffer: 'SME Growth 150' },
+      { key: 'sme_authority', name: 'SME Authority', price: 'GHS 500/month', blurb: 'Ongoing support, accountability, and advanced growth strategies.', wa: 'https://wa.me/p/27577083311950108/233509960980', crmOffer: 'SME Authority 500' }
     ]
   },
 
   // Expert-track offer copy per stage — shown only in the outcome-screen
   // fallback text if no specific package was picked. Labels are cosmetic
-  // now (see PACKAGES note above) since Code.gs v14.0 writes a fixed
+  // now (see PACKAGES note above) since Code.gs v14.0+ writes a fixed
   // Offer value regardless.
   EXPERT_OFFERS: {
     found:     { offer: "Verified Business",     blurb: "We'll be in touch to get you Verified — GHS 180 setup, live in 24 hours." },
