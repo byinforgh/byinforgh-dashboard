@@ -572,23 +572,24 @@ function showOutcome(writeSucceeded){
       <a class="btn btn-teal" style="text-decoration:none; color:#0a0a0a;" href="${CONFIG.REGISTER_URL}" target="_blank" rel="noopener">Register now — lock in your foundation</a>
       <p class="muted-note">Registering saves your business and unlocks every free guide — no need to explain your business to us again.</p>`;
 
-  const bundleBlock = `
-      <p class="muted-note" style="margin-top:16px; margin-bottom:6px;">All 5 free guides — yours to keep:</p>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        ${CONFIG.ALL_GUIDES.map(g => `<a href="${g.url}" target="_blank" rel="noopener" style="color:var(--teal); font-size:13px; text-decoration:none;">↓ ${g.title}</a>`).join('')}
+  // Every free/DIY visitor gets ALL 5 guides as equally prominent, full-width
+  // download buttons — not one highlighted "primary" guide with the other 4
+  // buried as small text links underneath (which people were missing entirely,
+  // thinking they'd only gotten 1 guide out of 5).
+  const guideButtonsBlock = `
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+        ${CONFIG.ALL_GUIDES.map(g => `<a class="btn btn-primary" style="text-decoration:none;" href="${g.url}" target="_blank" rel="noopener">↓ ${g.title}</a>`).join('')}
       </div>`;
 
   if(approach === 'diy' && stage !== 'systems'){
-    const guide = CONFIG.GUIDES[stage];
-    const waText = encodeURIComponent('Hi BYINFORGH, please send me the ' + guide.title + ' guide.');
+    const waText = encodeURIComponent('Hi BYINFORGH, please send me all 5 free guides.');
     el.innerHTML = `
       <div class="success-icon">✓</div>
-      <h1>You're logged. Here's your guide.</h1>
-      <p class="sub">${guide.title} — free, ready right now.</p>
-      <a class="btn btn-primary" style="text-decoration:none;" href="${guide.url}" target="_blank" rel="noopener">Download the guide</a>
-      <a class="btn btn-ghost" style="text-decoration:none;" href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${waText}" target="_blank" rel="noopener">Send it to my WhatsApp instead</a>
+      <h1>You're logged. Here are all 5 free guides.</h1>
+      <p class="sub">Tap each one below to download — they're all yours to keep.</p>
+      ${guideButtonsBlock}
+      <a class="btn btn-ghost" style="text-decoration:none;" href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${waText}" target="_blank" rel="noopener">Send all 5 to my WhatsApp instead</a>
       ${registerBlock}
-      ${bundleBlock}
     `;
   } else if(approach === 'diy' && stage === 'systems'){
     // Defensive fallback only — the UI no longer offers a DIY path for
@@ -603,7 +604,7 @@ function showOutcome(writeSucceeded){
       <p class="sub">${lc.blurb}</p>
       ${registerBlock}
       <a class="btn btn-ghost" style="text-decoration:none;" href="https://wa.me/${CONFIG.WHATSAPP_NUMBER}" target="_blank" rel="noopener">Message us on WhatsApp</a>
-      ${bundleBlock}
+      ${guideButtonsBlock}
     `;
   } else {
     const pkg = state.package || { name: CONFIG.EXPERT_OFFERS[stage].offer, price: '', wa: `https://wa.me/${CONFIG.WHATSAPP_NUMBER}` };
