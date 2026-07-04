@@ -153,7 +153,7 @@ select:focus{border-color:var(--gold);}
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v12</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v13</span></div>
   <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
 </div>
 <div class="shabbat-banner" id="shabbatBanner">
@@ -173,6 +173,7 @@ select:focus{border-color:var(--gold);}
   <button class="tab" onclick="switchTab('sme',event)">SME SYSTEMS</button>
   <button class="tab" onclick="switchTab('messages',event)">MESSAGES</button>
   <button class="tab" onclick="switchTab('revenue',event)">REVENUE</button>
+  <button class="tab" onclick="switchTab('analytics',event)">&#128202; SUMMARY</button>
   <button class="tab" onclick="switchTab('contacts',event)">ALL CONTACTS</button>
   <button class="tab" onclick="switchTab('tracker',event)">TRACKER</button>
   <button class="tab" onclick="switchTab('archive',event)">&#128465; ARCHIVE</button>
@@ -391,8 +392,6 @@ select:focus{border-color:var(--gold);}
 </div>
 
 <!-- CLIENTS -->
-
-<!-- CLIENTS -->
 <div class="tab-content" id="tab-clients">
   <div style="background:#001020;border:1px solid var(--blue);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.7">
     <strong style="color:var(--blue)">COLUMNS:</strong> A=Business · B=Package · C=Joined · D=Renewal · <strong style="color:var(--purple)">E=One-Time</strong> · F=Payment Date · <strong style="color:var(--green)">G=Status</strong> · <strong style="color:var(--gold)">H=Monthly Amount</strong> · I=Number · J=Notes
@@ -442,6 +441,38 @@ select:focus{border-color:var(--gold);}
     <div class="card"><div class="card-title">CONVERSION TRACKER — BY PACKAGE</div><div id="conversionTracker"></div></div>
   </div>
   <div class="card" style="margin-top:16px"><div class="card-title">CLOSES NEEDED TO HIT TARGETS</div><div id="closesNeeded"></div></div>
+</div>
+
+<!-- ANALYTICS / SUMMARY -->
+<div class="tab-content" id="tab-analytics">
+  <div class="filter-row" id="analyticsPeriodFilters">
+    <button class="filter-btn" onclick="setAnalyticsPeriod('today',this)">TODAY</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('week',this)">THIS WEEK</button>
+    <button class="filter-btn active" onclick="setAnalyticsPeriod('month',this)">THIS MONTH</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('q1',this)">Q1</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('q2',this)">Q2</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('q3',this)">Q3</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('q4',this)">Q4</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('6m',this)">6 MONTHS</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('year',this)">1 YEAR</button>
+    <button class="filter-btn" onclick="setAnalyticsPeriod('all',this)">ALL TIME</button>
+  </div>
+  <div class="metrics-grid" id="analyticsMetrics"></div>
+  <div class="target-bar-wrap" id="analyticsTargetBar"></div>
+  <div class="two-col">
+    <div class="card"><div class="card-title">&#128202; CONVERSION FUNNEL</div><div id="analyticsFunnel"></div></div>
+    <div class="card"><div class="card-title">&#128161; ADVICE &amp; WHAT TO IMPROVE</div><div id="analyticsAdvice"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">WEEKLY TREND — ACTUAL vs TARGET (last 12 weeks)</div>
+    <div class="chart-wrap" style="height:180px"><div class="chart-bars" id="analyticsChart"></div></div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text-dim);display:flex;gap:16px">
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;margin-right:4px"></span>Target</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px"></span>Actual revenue</span>
+    </div>
+  </div>
+  <div class="section-title">PERIOD BREAKDOWN</div>
+  <div class="proj-grid" id="analyticsPeriodGrid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))"></div>
 </div>
 
 <!-- ALL CONTACTS -->
@@ -591,7 +622,7 @@ const callInlineState={}; // v12: per-contact inline call-outcome state on Calls
 
 // Order must match the .tab buttons in the header exactly — used by activateTab()
 // so metric cards / WA board items can jump straight to a tab from code.
-const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','contacts','tracker','archive'];
+const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','analytics','contacts','tracker','archive'];
 
 // Daily rotation: changes each calendar day so messages are never the same two days running
 const TODAY_SEED=(()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})();
@@ -639,6 +670,7 @@ sme:[{title:'SME1 — Opening Question',msg:"Hey [NAME], quick question — if I
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function copyMsg(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.textContent='COPIED';btn.classList.add('copied');setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);showToast('Message copied');});}
+function scrollToTabTop(tabId){const el=document.getElementById(tabId);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 function getWAEmoji(label){if(!label)return'';if(label.includes('🔴'))return'🔴';if(label.includes('🟡'))return'🟡';if(label.includes('🟠'))return'🟠';if(label.includes('🟢'))return'🟢';if(label.includes('🔵'))return'🔵';if(label.includes('✅'))return'✅';if(label.includes('⬛'))return'⬛';if(label.includes('⬜'))return'⬜';if(label.includes('🔄'))return'🔄';if(label.includes('📍'))return'📍';return label.charAt(0);}
 function countByLabel(emoji){return state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes(emoji)).length;}
 function countByStage(stage){return state.contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes(stage.toLowerCase())).length;}
@@ -674,6 +706,7 @@ function activateTab(name){
   if(name==='messages')renderMsgLibrary();
   if(name==='koforidua')renderKoforidua();
   if(name==='revenue')renderRevenue();
+  if(name==='analytics'){loadTrackerData().then(renderAnalytics);}
   if(name==='pipeline')renderPipeline();
   if(name==='clients')renderClients();
   if(name==='ai')renderAI();
@@ -829,7 +862,7 @@ function renderFollowUps(){
         <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgCount}</div>
         <textarea
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
-          oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,1500,'${src}')"
+          oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')"
           placeholder="No notes — tap to add"
           style="width:100%;min-height:34px;max-height:120px;background:transparent;border:1px solid transparent;color:var(--text-dim);font-style:italic;font-family:Syne,sans-serif;font-size:11px;margin-top:3px;padding:3px 4px;border-radius:3px;resize:vertical;outline:none"
           onfocus="this.style.background='var(--black)';this.style.borderColor='var(--border)'"
@@ -863,9 +896,9 @@ function renderFollowUps(){
   let pagHtml='';
   if(totalPages>1){
     pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} due today · Page ${followupPage+1}/${totalPages}</span>`;
-    if(followupPage>0)pagHtml+=`<button class="page-btn" onclick="followupPage--;renderFollowUps()">← Prev</button>`;
-    for(let i=Math.max(0,followupPage-2);i<=Math.min(totalPages-1,followupPage+2);i++)pagHtml+=`<button class="page-btn ${i===followupPage?'active':''}" onclick="followupPage=${i};renderFollowUps()">${i+1}</button>`;
-    if(followupPage<totalPages-1)pagHtml+=`<button class="page-btn" onclick="followupPage++;renderFollowUps()">Next →</button>`;
+    if(followupPage>0)pagHtml+=`<button class="page-btn" onclick="followupPage--;renderFollowUps();scrollToTabTop('tab-followup')">← Prev</button>`;
+    for(let i=Math.max(0,followupPage-2);i<=Math.min(totalPages-1,followupPage+2);i++)pagHtml+=`<button class="page-btn ${i===followupPage?'active':''}" onclick="followupPage=${i};renderFollowUps();scrollToTabTop('tab-followup')">${i+1}</button>`;
+    if(followupPage<totalPages-1)pagHtml+=`<button class="page-btn" onclick="followupPage++;renderFollowUps();scrollToTabTop('tab-followup')">Next →</button>`;
   }else if(total>0)pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} contacts due today</span>`;
   document.getElementById('followupPagination').innerHTML=pagHtml;
 }
@@ -933,7 +966,7 @@ function sheetDateToInputFormat(sheetStr) {
 }
 
 // v11: debounce helper — Notes textarea fires this instead of updateContactField directly,
-// so it only saves 1.5s after the person stops typing instead of on every keystroke.
+// so it only saves ~2.2s after the person stops typing instead of on every keystroke.
 const debounceTimers = {};
 function debouncedUpdateContactField(business, field, value, el, delay, sheetSource) {
   const key = business + '|' + field;
@@ -941,13 +974,18 @@ function debouncedUpdateContactField(business, field, value, el, delay, sheetSou
   debounceTimers[key] = setTimeout(() => {
     updateContactField(business, field, value, el, sheetSource);
     delete debounceTimers[key];
-  }, delay || 1500);
+  }, delay || 2200);
 }
 
-// v11: INLINE FIELD UPDATE — calls updateContactField endpoint, updates local state
+// v13.1: INLINE FIELD UPDATE — calls updateContactField endpoint, updates local state.
+// FIX: Notes is a <textarea> the person may still be typing in when the debounced
+// save fires. We no longer disable/grey it out mid-save (that was eating keystrokes
+// typed during the network round-trip) — only non-text inputs (selects, date pickers)
+// get the disabled/opacity treatment. Notes just gets a quick green outline flash.
 async function updateContactField(business, field, value, el, sheetSource) {
   const orig = el ? el.dataset.orig : '';
-  if (el) { el.disabled = true; el.style.opacity = '0.6'; }
+  const isTextInput = el && el.tagName === 'TEXTAREA';
+  if (el && !isTextInput) { el.disabled = true; el.style.opacity = '0.6'; }
   try {
     const res  = await fetch(API_URL + '?action=updateContactField'
       + '&business=' + encodeURIComponent(business)
@@ -963,19 +1001,18 @@ async function updateContactField(business, field, value, el, sheetSource) {
       if (c) c[field] = value;
       if (el) {
         el.dataset.orig  = value; // update baseline for future reverts
-        el.style.opacity = '1';
+        if (!isTextInput) { el.style.opacity = '1'; el.disabled = false; }
         el.style.outline = '2px solid var(--green)';
         setTimeout(() => { if (el) el.style.outline = ''; }, 1800);
-        el.disabled = false;
       }
       showToast('\u2713 ' + business + ' \u2014 ' + field + ' updated');
     } else {
       showToast('Error: ' + (data.error || 'could not update'));
-      if (el) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
+      if (el && !isTextInput) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
     }
   } catch(err) {
     showToast('Connection error \u2014 change not saved');
-    if (el) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
+    if (el && !isTextInput) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
   }
 }
 
@@ -1481,10 +1518,7 @@ function renderRevenue(){
   const maxV=Math.max(...doubling);
   document.getElementById('weekChart').innerHTML=weeks.map((w,i)=>`<div class="chart-bar-group"><div style="display:flex;gap:2px;align-items:flex-end;height:130px"><div class="chart-bar base" style="height:${Math.round(((mrr||180)/maxV)*120)+4}px;width:14px"></div><div class="chart-bar double" style="height:${Math.round((doubling[i]/maxV)*120)+2}px;width:14px"></div></div><div class="chart-label">${w}</div><div class="chart-label" style="color:var(--gold)">&#8373;${doubling[i]>=1000?(doubling[i]/1000).toFixed(1)+'k':doubling[i]}</div></div>`).join('');
 
-  // v12: each package gets its OWN card, same layout style as Verified (name,
-  // count/GHS, tier breakdown for tiered packages). Business Authority,
-  // Command Centre, SME Systems and Custom are no longer lumped together.
-  const presenceStats={count:0,revenue:0}; // free — count active Business Presence clients
+  const presenceStats={count:0,revenue:0};
   (state.clients||[]).forEach(c=>{if((c.Status||'').trim().toLowerCase()==='active'&&/presence/i.test(c.Package||''))presenceStats.count++;});
   document.getElementById('conversionTracker').innerHTML=REVENUE_PACKAGES.map(pkg=>{
     if(pkg.key==='presence'){
@@ -1501,6 +1535,140 @@ function renderRevenue(){
   }).join('');
 
   document.getElementById('closesNeeded').innerHTML=[{label:'Hit GHS 180/day',monthly:5400},{label:'Hit GHS 500/day',monthly:15000},{label:'Hit GHS 1,000/day',monthly:30000}].map(t=>{const needed=Math.max(0,Math.ceil((t.monthly-mrr)/180));const pct=Math.min(100,Math.round((mrr/t.monthly)*100));return`<div style="padding:12px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">${t.label}</div><div style="font-size:11px;color:var(--text-dim)">${needed} more Verified closes</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-dim);margin-top:4px">${pct}% · &#8373;${mrr.toLocaleString()} of &#8373;${t.monthly.toLocaleString()}/month</div></div>`;}).join('');
+}
+
+// =====================================================
+// v13.1: ANALYTICS / SUMMARY TAB — period-based performance view.
+// Reads from trackerData (Outreach Counter, Conversions, Call Log — all
+// already loaded via getActivityLog) plus state.contacts. No new backend
+// endpoints needed; everything here is derived client-side from data the
+// dashboard already fetches.
+// =====================================================
+let analyticsPeriod='month';
+function setAnalyticsPeriod(p,btn){
+  analyticsPeriod=p;
+  document.querySelectorAll('#analyticsPeriodFilters .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAnalytics();
+}
+
+function getPeriodRange(period){
+  const now=new Date(); const y=now.getFullYear();
+  let start=new Date(), end=new Date();
+  if(period==='today'){ start.setHours(0,0,0,0); }
+  else if(period==='week'){ const day=now.getDay(); start.setDate(now.getDate()-day); start.setHours(0,0,0,0); }
+  else if(period==='month'){ start=new Date(y,now.getMonth(),1); }
+  else if(period==='q1'){ start=new Date(y,0,1); end=new Date(y,2,31,23,59,59); }
+  else if(period==='q2'){ start=new Date(y,3,1); end=new Date(y,5,30,23,59,59); }
+  else if(period==='q3'){ start=new Date(y,6,1); end=new Date(y,8,30,23,59,59); }
+  else if(period==='q4'){ start=new Date(y,9,1); end=new Date(y,11,31,23,59,59); }
+  else if(period==='6m'){ start=new Date(now); start.setMonth(start.getMonth()-6); }
+  else if(period==='year'){ start=new Date(y,0,1); }
+  else if(period==='all'){ start=new Date(2000,0,1); }
+  end.setHours(23,59,59,999);
+  return {start,end};
+}
+function parseAnyDate(str){
+  if(!str) return null;
+  const d1=parseFollowUpDate(str); if(d1) return d1;
+  const d2=new Date(str); if(!isNaN(d2.getTime())) return d2;
+  return null;
+}
+function inRange(dateStr,range){
+  const d=parseAnyDate(dateStr);
+  return d ? (d>=range.start && d<=range.end) : false;
+}
+function daysBetween(a,b){ return Math.max(1,Math.round((b-a)/(1000*60*60*24))); }
+
+function computeAnalytics(period){
+  const range=getPeriodRange(period);
+  const outreach=(trackerData.outreachLog||[]).filter(o=>inRange(o.date||o.timestamp,range));
+  const conversions=(trackerData.conversions||[]).filter(c=>inRange(c.date||c.timestamp,range));
+  const calls=(trackerData.callLogs||[]).filter(c=>inRange(c.date||c.timestamp,range));
+  const revenue=conversions.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+  const newContacts=state.contacts.filter(c=>c.Created_Date&&inRange(c.Created_Date,range)).length;
+
+  let counts=[];
+  conversions.forEach(cv=>{
+    const cd=parseAnyDate(cv.date||cv.timestamp);
+    if(!cd)return;
+    const n=(trackerData.outreachLog||[]).filter(o=>o.business===cv.business && parseAnyDate(o.date||o.timestamp) && parseAnyDate(o.date||o.timestamp)<=cd).length;
+    if(n>0) counts.push(n);
+  });
+  const avgOutreachBeforeConv=counts.length?Math.round((counts.reduce((a,b)=>a+b,0)/counts.length)*10)/10:null;
+
+  const totalContacts=state.contacts.length;
+  const conversionRate=totalContacts>0?((trackerData.totalConversions||0)/totalContacts*100):0;
+  const periodConvRate=outreach.length>0?(conversions.length/outreach.length*100):0;
+
+  return {range,outreach,conversions,calls,revenue,newContacts,avgOutreachBeforeConv,totalContacts,conversionRate,periodConvRate};
+}
+
+function renderAnalytics(){
+  const A=computeAnalytics(analyticsPeriod);
+  const wd=state.settings?(parseInt(state.settings.working_days)||26):26;
+  const mt=state.settings?(parseInt(state.settings.monthly_target)||5400):5400;
+  const dailyTarget=mt/wd;
+  const periodEnd = A.range.end<new Date()?A.range.end:new Date();
+  const periodDays=daysBetween(A.range.start,periodEnd);
+  const periodTarget=Math.round(dailyTarget*periodDays);
+  const pct=periodTarget>0?Math.round((A.revenue/periodTarget)*100):0;
+  const statusColor=pct>=100?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+  const statusText=pct>=100?'ON / ABOVE TARGET':pct>=70?'CLOSE TO TARGET':'BELOW TARGET';
+
+  document.getElementById('analyticsMetrics').innerHTML=`
+    <div class="metric-card gold"><div class="metric-label">REVENUE — PERIOD</div><div class="metric-value">&#8373;${A.revenue.toLocaleString()}</div><div class="metric-sub">of &#8373;${periodTarget.toLocaleString()} target</div></div>
+    <div class="metric-card green"><div class="metric-label">CONVERSIONS</div><div class="metric-value">${A.conversions.length}</div><div class="metric-sub">${A.periodConvRate.toFixed(1)}% of period outreach</div></div>
+    <div class="metric-card blue"><div class="metric-label">OUTREACH SENT</div><div class="metric-value">${A.outreach.length}</div><div class="metric-sub">calls logged: ${A.calls.length}</div></div>
+    <div class="metric-card teal"><div class="metric-label">NEW CONTACTS</div><div class="metric-value">${A.newContacts}</div><div class="metric-sub">added this period</div></div>
+    <div class="metric-card purple"><div class="metric-label">AVG MSGS &#8594; CONVERT</div><div class="metric-value">${A.avgOutreachBeforeConv!==null?A.avgOutreachBeforeConv:'—'}</div><div class="metric-sub">messages before close (all-time)</div></div>
+    <div class="metric-card orange"><div class="metric-label">OVERALL CONV RATE</div><div class="metric-value">${A.conversionRate.toFixed(1)}%</div><div class="metric-sub">of ${A.totalContacts} total contacts</div></div>`;
+
+  document.getElementById('analyticsTargetBar').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div><div style="font-size:12px;font-weight:700;letter-spacing:2px;color:var(--muted)">PERIOD PERFORMANCE</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${A.range.start.toLocaleDateString('en-GB')} — ${periodEnd.toLocaleDateString('en-GB')}</div></div>
+      <div style="text-align:right"><div style="font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:${statusColor}">${statusText}</div><div style="font-size:11px;color:var(--text-dim)">${pct}% of prorated target</div></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100,pct)}%;background:${pct>=100?'linear-gradient(90deg,var(--green),var(--teal))':'linear-gradient(90deg,var(--gold),var(--orange))'}"></div></div>`;
+
+  const totalC=state.contacts.length;
+  const engaged=state.contacts.filter(c=>c.WA_Label&&(c.WA_Label.includes('🟢')||c.WA_Label.includes('🔵')||c.WA_Label.includes('🟠'))).length;
+  const hot=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length;
+  const won=(state.clients.filter(c=>(c.Status||'').toLowerCase()==='active').length)+((state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length);
+  const stages=[{l:'Total Contacts',v:totalC,c:'var(--text-dim)'},{l:'Engaged (reading/replying)',v:engaged,c:'var(--orange)'},{l:'Hot Leads',v:hot,c:'var(--blue)'},{l:'Converted (clients)',v:won,c:'var(--green)'}];
+  document.getElementById('analyticsFunnel').innerHTML=stages.map(s=>{
+    const w=totalC>0?Math.max(6,Math.round((s.v/totalC)*100)):6;
+    return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>${s.l}</span><span style="font-weight:700;color:${s.c}">${s.v}</span></div><div class="progress-track"><div class="progress-fill" style="width:${w}%;background:${s.c}"></div></div></div>`;
+  }).join('');
+
+  const advice=[];
+  if(A.periodConvRate<3 && A.outreach.length>10) advice.push('Conversion rate on outreach is low this period — lead with a discovery question before pitching any package.');
+  if(A.avgOutreachBeforeConv!==null && A.avgOutreachBeforeConv>5) advice.push(`It's taking ~${A.avgOutreachBeforeConv} messages to convert on average — try personalising the 2nd message instead of repeating the same script.`);
+  const redCount=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴')).length;
+  if(redCount>5) advice.push(`${redCount} contacts are stuck on 1-tick — call these directly, they won't convert through messaging.`);
+  if(pct<70) advice.push(`Revenue is below prorated target (${pct}%) — prioritise closing 🔵 Hot Leads, they convert fastest.`);
+  if(pct>=100) advice.push(`Ahead of target this period (${pct}%) — good time to push the SME Systems upsell to existing Verified clients.`);
+  const overdueF=state.contacts.filter(c=>{const d=parseFollowUpDate(c.Next_Follow_Up);return d&&d<new Date()&&c.WA_Label&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅');}).length;
+  if(overdueF>10) advice.push(`${overdueF} follow-ups are overdue — clear the backlog in Follow-Ups before adding new outreach.`);
+  if(advice.length===0) advice.push('No red flags in the numbers right now — keep the current cadence and prioritise hot leads.');
+  document.getElementById('analyticsAdvice').innerHTML=advice.map(a=>`<div style="padding:9px 12px;background:var(--surface);border-left:3px solid var(--gold);border-radius:5px;margin-bottom:8px;font-size:12px;line-height:1.6">${a}</div>`).join('');
+
+  const weeks=[];
+  for(let i=11;i>=0;i--){
+    const wEnd=new Date(); wEnd.setDate(wEnd.getDate()-i*7);
+    const wStart=new Date(wEnd); wStart.setDate(wStart.getDate()-6); wStart.setHours(0,0,0,0); wEnd.setHours(23,59,59,999);
+    const rev=(trackerData.conversions||[]).filter(c=>inRange(c.date||c.timestamp,{start:wStart,end:wEnd})).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+    weeks.push({label:'W'+(12-i),rev,target:Math.round(dailyTarget*7)});
+  }
+  const maxV=Math.max(...weeks.map(w=>Math.max(w.rev,w.target)),1);
+  document.getElementById('analyticsChart').innerHTML=weeks.map(w=>`<div class="chart-bar-group"><div style="display:flex;gap:2px;align-items:flex-end;height:140px"><div class="chart-bar base" style="height:${Math.round((w.target/maxV)*130)+2}px;width:12px" title="Target GHS ${w.target}"></div><div class="chart-bar double" style="height:${Math.round((w.rev/maxV)*130)+2}px;width:12px" title="Actual GHS ${w.rev}"></div></div><div class="chart-label">${w.label}</div></div>`).join('');
+
+  const periods=['today','week','month','q1','q2','q3','q4','6m','year','all'];
+  const labels={today:'Today',week:'This Week',month:'This Month',q1:'Q1',q2:'Q2',q3:'Q3',q4:'Q4','6m':'6 Months',year:'This Year',all:'All Time'};
+  document.getElementById('analyticsPeriodGrid').innerHTML=periods.map(p=>{
+    const d=computeAnalytics(p);
+    return `<div class="proj-card"><div class="proj-period">${labels[p]}</div><div class="proj-amount">&#8373;${d.revenue.toLocaleString()}</div><div class="proj-clients">${d.conversions.length} conv · ${d.outreach.length} msgs</div></div>`;
+  }).join('');
 }
 
 let allContactsData=[];
@@ -1794,7 +1962,7 @@ function renderActivityLog(){
   const ac={stage_change:'var(--gold)',followup_change:'var(--blue)',conversation:'var(--green)',note_added:'var(--text-dim)',proposal_sent:'var(--orange)',rejected:'var(--red)',wa_label_change:'var(--purple)',phone_call:'var(--red)'};
   document.getElementById('activityRecentList').innerHTML=page.length?page.map(a=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:12px"><div style="color:${ac[a.action]||'var(--text-dim)'};font-weight:700;white-space:nowrap;font-size:10px;min-width:100px">${(a.action||'').replace(/_/g,' ').toUpperCase()}</div><div style="flex:1"><strong>${a.business||'—'}</strong> ${a.notes?'— '+a.notes.substring(0,60):''}</div><div style="color:var(--text-dim);font-size:10px;white-space:nowrap">${cleanDate(a.timestamp)}</div></div>`).join(''):'<div class="empty">No activity matching filter</div>';
   let ph='';
-  if(tp>1){ph=`<span style="font-size:11px;color:var(--muted)">${total} entries · Page ${activityPage+1}/${tp}</span>`;if(activityPage>0)ph+=`<button class="page-btn" onclick="activityPage--;renderActivityLog()">← Prev</button>`;for(let i=Math.max(0,activityPage-1);i<=Math.min(tp-1,activityPage+1);i++)ph+=`<button class="page-btn ${i===activityPage?'active':''}" onclick="activityPage=${i};renderActivityLog()">${i+1}</button>`;if(activityPage<tp-1)ph+=`<button class="page-btn" onclick="activityPage++;renderActivityLog()">Next →</button>`;}
+  if(tp>1){ph=`<span style="font-size:11px;color:var(--muted)">${total} entries · Page ${activityPage+1}/${tp}</span>`;if(activityPage>0)ph+=`<button class="page-btn" onclick="activityPage--;renderActivityLog();scrollToTabTop('tab-tracker')">← Prev</button>`;for(let i=Math.max(0,activityPage-1);i<=Math.min(tp-1,activityPage+1);i++)ph+=`<button class="page-btn ${i===activityPage?'active':''}" onclick="activityPage=${i};renderActivityLog();scrollToTabTop('tab-tracker')">${i+1}</button>`;if(activityPage<tp-1)ph+=`<button class="page-btn" onclick="activityPage++;renderActivityLog();scrollToTabTop('tab-tracker')">Next →</button>`;}
   document.getElementById('activityPagination').innerHTML=ph;
 }
 
