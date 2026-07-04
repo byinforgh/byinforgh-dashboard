@@ -280,10 +280,13 @@
    CONFIG — fill these in before going live
    ========================================================= */
 const CONFIG = {
-  // Live Apps Script /exec URL — matches the deployment already used by the
-  // v12 Command Centre dashboard. Once you paste the submitLandingLead
-  // function in and redeploy (New version), this same URL serves both.
-  GAS_URL: "https://script.google.com/macros/s/AKfycbw-i42JDzlRIXF7SJV-S2wzNCmABinX5LWaEhg-rr_GMJSMyUlHXkGmNd9TBBnd3cpK/exec",
+  // Live Apps Script /exec URL. UPDATED to the new deployment created after
+  // redeploying v13.0 with "New version" — the previous URL
+  // (…AKfycbw-i42J…) was pointing at a stale deployment that predated the
+  // submitLandingLead action, which is why submissions weren't landing in
+  // Master CRM. This URL must match whatever deployment is currently live
+  // in Apps Script → Deploy → Manage deployments.
+  GAS_URL: "https://script.google.com/macros/s/AKfycbxsTwpMg_p3SdcO4plzu5WxdP2PjaYFC_4FgozT4R0gv06JKavmAbReuXPJjL-9OmWS/exec",
 
   REGISTER_URL: "https://byinforgh.com/my-account-2/?register",
   WHATSAPP_NUMBER: "233509960980", // used for wa.me links, no leading zero, no +
@@ -322,18 +325,26 @@ const CONFIG = {
   // Expert-track PACKAGE CATALOG — shown as a picker after they choose
   // "expert help". Two groups: Found/Customers share one 5-package list
   // (Verified through Authority), Systems has its own 3-tier SME list.
+  //
+  // Each package has TWO name fields:
+  //  - name: the friendly marketing name shown to the visitor on the
+  //    picker screen (unchanged from before).
+  //  - crmOffer: the EXACT text from the Master CRM "Offer" column's
+  //    dropdown validation list. This is what actually gets written to
+  //    the sheet, so the picker's marketing copy can stay nice while the
+  //    backend value matches the sheet dropdown exactly.
   PACKAGES: {
     general: [ // shown when quiz stage is "found" or "customers"
-      { key: 'verified',   name: 'Verified Business',          price: 'GHS 180 setup + GHS 80/mo', blurb: 'Build trust. Get your blue tick. Get found.', wa: 'https://wa.me/p/27631699566449150/233509960980' },
-      { key: 'essentials', name: 'Essential Business',         price: 'GHS 250/month',              blurb: 'Everything you need to be seen — guidance, systems, checklists, training.', wa: 'https://wa.me/p/27271660312461350/233509960980' },
-      { key: 'partner',    name: 'Visibility Partner Starter', price: 'GHS 750/month',              blurb: 'We guide you, you grow — done-with-you support for maximum visibility.', wa: 'https://wa.me/p/27418886311137178/233509960980' },
-      { key: 'growth',     name: 'Growth Engine',              price: 'GHS 1,500/month',            blurb: 'We build. We manage. You grow. Full content + platform management.', wa: 'https://wa.me/p/27626184867017247/233509960980' },
-      { key: 'authority',  name: 'Authority Partner',          price: 'GHS 5,000/month',            blurb: 'We build. We run. You dominate. Complete outsourced growth team.', wa: 'https://wa.me/p/27185195301152448/233509960980' }
+      { key: 'verified',   name: 'Verified Business',          price: 'GHS 180 setup + GHS 80/mo', blurb: 'Build trust. Get your blue tick. Get found.', wa: 'https://wa.me/p/27631699566449150/233509960980', crmOffer: 'Verified Business — 180 GHS setup + 80 GHS/month' },
+      { key: 'essentials', name: 'Essential Business',         price: 'GHS 250/month',              blurb: 'Everything you need to be seen — guidance, systems, checklists, training.', wa: 'https://wa.me/p/27271660312461350/233509960980', crmOffer: 'Visibility Essential 250' },
+      { key: 'partner',    name: 'Visibility Partner Starter', price: 'GHS 750/month',              blurb: 'We guide you, you grow — done-with-you support for maximum visibility.', wa: 'https://wa.me/p/27418886311137178/233509960980', crmOffer: 'Visibility Partner 750' },
+      { key: 'growth',     name: 'Growth Engine',              price: 'GHS 1,500/month',            blurb: 'We build. We manage. You grow. Full content + platform management.', wa: 'https://wa.me/p/27626184867017247/233509960980', crmOffer: 'Growth Partner 1500' },
+      { key: 'authority',  name: 'Authority Partner',          price: 'GHS 5,000/month',            blurb: 'We build. We run. You dominate. Complete outsourced growth team.', wa: 'https://wa.me/p/27185195301152448/233509960980', crmOffer: 'Authority Market 5000' }
     ],
     systems: [ // shown when quiz stage is "systems"
-      { key: 'sme_starter',   name: 'SME Starter',   price: 'GHS 50/month',  blurb: 'Simple systems, strong foundation — 1 business system + basic guidance.', wa: 'https://wa.me/p/27324320283890779/233509960980' },
-      { key: 'sme_growth',    name: 'SME Growth',    price: 'GHS 150/month', blurb: 'SOPs, setup guide, training materials, and implementation support.', wa: 'https://wa.me/p/37079554828324617/233509960980' },
-      { key: 'sme_authority', name: 'SME Authority', price: 'GHS 500/month', blurb: 'Ongoing support, accountability, and advanced growth strategies.', wa: 'https://wa.me/p/27577083311950108/233509960980' }
+      { key: 'sme_starter',   name: 'SME Starter',   price: 'GHS 50/month',  blurb: 'Simple systems, strong foundation — 1 business system + basic guidance.', wa: 'https://wa.me/p/27324320283890779/233509960980', crmOffer: 'SME Starter 50' },
+      { key: 'sme_growth',    name: 'SME Growth',    price: 'GHS 150/month', blurb: 'SOPs, setup guide, training materials, and implementation support.', wa: 'https://wa.me/p/37079554828324617/233509960980', crmOffer: 'Growth 1500' },
+      { key: 'sme_authority', name: 'SME Authority', price: 'GHS 500/month', blurb: 'Ongoing support, accountability, and advanced growth strategies.', wa: 'https://wa.me/p/27577083311950108/233509960980', crmOffer: 'Authority' }
     ]
   },
 
@@ -487,7 +498,9 @@ async function submitLead(){
     quizApproach: state.approach
   };
   if(state.approach === 'expert' && state.package){
-    payload.offer = state.package.name;
+    // crmOffer is the exact Master CRM "Offer" dropdown text; pkg.price is
+    // still sent separately for the machine-tag note in Notes.
+    payload.offer = state.package.crmOffer || state.package.name;
     payload.offerPrice = state.package.price;
   }
 
