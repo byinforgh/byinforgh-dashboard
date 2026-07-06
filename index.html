@@ -210,6 +210,7 @@ select:focus{border-color:var(--gold);}
           </select>
           <select id="addContactStage"></select>
         </div>
+        <select id="addContactOffer" style="margin-bottom:8px"></select>
         <textarea id="addContactNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
         <button class="refresh-btn" onclick="submitManualContact()" style="background:var(--gold);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">+ ADD CONTACT</button>
         <div id="addContactResult" style="margin-top:8px;font-size:12px"></div>
@@ -638,7 +639,7 @@ select:focus{border-color:var(--gold);}
 
 <div class="toast" id="toast"></div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbwVlC5xqSho1rOgInpWdmQ6LCFWh2i7BxCNIzvvY7wrdUSQ8bppYXiUafa0WeVlevbJ/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbznh5SRtiNEJo6SHbuo6F3rOEPrIrW1_b0ZaMFTEK70dJPI-d_-ogeUkyWH1Xq42zl-/exec';
 let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};
 let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
@@ -1067,6 +1068,7 @@ async function submitManualContact(){
   const contactName=document.getElementById('addContactName').value.trim();
   const source=document.getElementById('addContactSource').value;
   const stage=document.getElementById('addContactStage').value;
+  const offer=document.getElementById('addContactOffer').value;
   const notes=document.getElementById('addContactNotes').value.trim();
   const result=document.getElementById('addContactResult');
   if(!business||!number){result.innerHTML='<span style="color:var(--red)">Business name and number are required.</span>';return;}
@@ -1075,13 +1077,14 @@ async function submitManualContact(){
   try{
     const url=API_URL+'?action=addManualContact&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)
       +'&town='+encodeURIComponent(town)+'&category='+encodeURIComponent(category)+'&contactName='+encodeURIComponent(contactName)
-      +'&source='+encodeURIComponent(source)+'&stage='+encodeURIComponent(stage)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+      +'&source='+encodeURIComponent(source)+'&stage='+encodeURIComponent(stage)+'&offer='+encodeURIComponent(offer)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
     const res=await fetch(url);const data=await res.json();
     if(data.success){
-      state.contacts.push({ID:data.id,WA_Label:'🟡 2 Tick No Read Delivered, unread follow up in 3 days',Business:business,Number:number,Town:town,Category:category,Contact_Name:contactName,Source:source,Stage:stage,Offer:'',Last_Contact:'',Next_Follow_Up:'',Notes:notes,Extra_Notes:'',Created_Date:'',Sheet_Source:'Master CRM'});
+      state.contacts.push({ID:data.id,WA_Label:'🟡 2 Tick No Read Delivered, unread follow up in 3 days',Business:business,Number:number,Town:town,Category:category,Contact_Name:contactName,Source:source,Stage:stage,Offer:offer,Last_Contact:'',Next_Follow_Up:'',Notes:notes,Extra_Notes:'',Created_Date:'',Sheet_Source:'Master CRM'});
       result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added — '+data.id+'</span>';
       showToast('Added — '+business);
       ['addContactBusiness','addContactNumber','addContactTown','addContactCategory','addContactName','addContactNotes'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('addContactOffer').value='';
       renderToday();
     }else{
       result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not add')+'</span>';
@@ -2108,6 +2111,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   checkShabbat();
   document.getElementById('addContactStage').innerHTML =
     STAGE_OPTIONS.map(s=>`<option${s==='First message sent'?' selected':''}>${s}</option>`).join('');
+  document.getElementById('addContactOffer').innerHTML =
+    OFFER_OPTIONS.map(o=>`<option value="${o.replace(/"/g,'&quot;')}">${o||'— select offer (optional) —'}</option>`).join('');
   loadSettings().then(()=>loadData());
   loadTrackerData();
 setInterval(()=>{loadData();},60000);});
