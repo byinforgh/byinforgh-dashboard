@@ -153,7 +153,7 @@ select:focus{border-color:var(--gold);}
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v13</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v14.4</span></div>
   <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
 </div>
 <div class="shabbat-banner" id="shabbatBanner">
@@ -188,7 +188,34 @@ select:focus{border-color:var(--gold);}
     <div><div class="section-title">&#128293; ACTION REQUIRED TODAY</div><div id="todayActions"></div></div>
     <div><div class="section-title">&#128202; WA BOARD &mdash; CRM + KOFORIDUA COMBINED <span style="font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(tap any to open)</span></div><div class="wa-grid" id="waBoard"></div></div>
   </div>
-  <div class="section-title">&#128308; CALL LIST &mdash; 1 TICK</div><div id="callList"></div>
+  <div class="two-col">
+    <div>
+      <div class="section-title">&#128308; CALL LIST — 1 TICK</div>
+      <div id="callList"></div>
+    </div>
+    <div>
+      <div class="section-title">&#10133; ADD NEW CONTACT</div>
+      <div class="card">
+        <input id="addContactBusiness" class="search-input" placeholder="Business name*" style="margin-bottom:8px">
+        <input id="addContactNumber" class="search-input" placeholder="WhatsApp number* (0XXXXXXXXX)" style="margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="addContactTown" class="search-input" style="margin:0" placeholder="Town">
+          <input id="addContactCategory" class="search-input" style="margin:0" placeholder="Category">
+        </div>
+        <input id="addContactName" class="search-input" placeholder="Contact person name" style="margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <select id="addContactSource">
+            <option>Walk-In</option><option>Referral</option><option>Social Media</option>
+            <option>Cold Outreach</option><option selected>Dashboard Manual Entry</option><option>Other</option>
+          </select>
+          <select id="addContactStage"></select>
+        </div>
+        <textarea id="addContactNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
+        <button class="refresh-btn" onclick="submitManualContact()" style="background:var(--gold);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">+ ADD CONTACT</button>
+        <div id="addContactResult" style="margin-top:8px;font-size:12px"></div>
+      </div>
+    </div>
+  </div>
   <div class="section-title" style="margin-top:20px">&#128205; KOFORIDUA PRIORITY VISITS</div><div id="kofVisitList"></div>
 </div>
 
@@ -859,9 +886,10 @@ function renderFollowUps(){
     const sb=c.Business.replace(/'/g,"\\'");const ss=(c.Stage||'').replace(/'/g,"\\'");
     const sn=(c.Notes||'').substring(0,200).replace(/'/g,"\\'");const src=(c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
     const sm=msg.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+    const sourceTag=c.Source&&c.Source.toLowerCase().includes('landing')?'<span style="font-size:9px;color:var(--blue);border:1px solid var(--blue);border-radius:3px;padding:1px 5px;margin-left:6px">🌐 WEB LEAD</span>':(c.Source&&c.Source.toLowerCase().includes('manual')?'<span style="font-size:9px;color:var(--gold);border:1px solid var(--gold);border-radius:3px;padding:1px 5px;margin-left:6px">📝 MANUAL</span>':'');
     return `<div class="followup-item" style="${daysOv>0?'border-color:#2a1500;border-left:3px solid var(--red)':''}">
       <div class="followup-header"><div style="flex:1">
-        <div class="followup-name" style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}${ovTag}${dtTag}${freqBadge}${depInfo} <span style="color:var(--muted);font-size:10px">▼</span></div>
+        <div class="followup-name" style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag} <span style="color:var(--muted);font-size:10px">▼</span></div>
         <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgCount}</div>
         <textarea
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
@@ -1017,6 +1045,48 @@ async function updateContactField(business, field, value, el, sheetSource) {
     showToast('Connection error \u2014 change not saved');
     if (el && !isTextInput) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
   }
+}
+
+// v14.4: MANUAL CONTACT ADD — Today tab "+ ADD NEW CONTACT" form. Mirrors the
+// landing page's phone normalisation client-side so a bad number is caught
+// before it ever reaches the sheet (server also re-normalises defensively).
+function normalizePhoneClient(raw){
+  var n=(raw||'').toString().trim().replace(/[\s-]/g,'');
+  if(!n)return'';
+  if(n.charAt(0)==='+')n=n.substring(1);
+  if(/^233\d{9}$/.test(n))return'0'+n.substring(3);
+  if(/^0\d{9}$/.test(n))return n;
+  if(/^\d{9}$/.test(n))return'0'+n;
+  return n;
+}
+async function submitManualContact(){
+  const business=document.getElementById('addContactBusiness').value.trim();
+  const number=normalizePhoneClient(document.getElementById('addContactNumber').value);
+  const town=document.getElementById('addContactTown').value.trim();
+  const category=document.getElementById('addContactCategory').value.trim();
+  const contactName=document.getElementById('addContactName').value.trim();
+  const source=document.getElementById('addContactSource').value;
+  const stage=document.getElementById('addContactStage').value;
+  const notes=document.getElementById('addContactNotes').value.trim();
+  const result=document.getElementById('addContactResult');
+  if(!business||!number){result.innerHTML='<span style="color:var(--red)">Business name and number are required.</span>';return;}
+  if(!/^0\d{9}$/.test(number)){result.innerHTML='<span style="color:var(--red)">Number looks wrong — should be 10 digits starting with 0 (e.g. 0241234567).</span>';return;}
+  result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
+  try{
+    const url=API_URL+'?action=addManualContact&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)
+      +'&town='+encodeURIComponent(town)+'&category='+encodeURIComponent(category)+'&contactName='+encodeURIComponent(contactName)
+      +'&source='+encodeURIComponent(source)+'&stage='+encodeURIComponent(stage)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    const res=await fetch(url);const data=await res.json();
+    if(data.success){
+      state.contacts.push({ID:data.id,WA_Label:'🟡 2 Tick No Read Delivered, unread follow up in 3 days',Business:business,Number:number,Town:town,Category:category,Contact_Name:contactName,Source:source,Stage:stage,Offer:'',Last_Contact:'',Next_Follow_Up:'',Notes:notes,Extra_Notes:'',Created_Date:'',Sheet_Source:'Master CRM'});
+      result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added — '+data.id+'</span>';
+      showToast('Added — '+business);
+      ['addContactBusiness','addContactNumber','addContactTown','addContactCategory','addContactName','addContactNotes'].forEach(id=>document.getElementById(id).value='');
+      renderToday();
+    }else{
+      result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not add')+'</span>';
+    }
+  }catch(e){result.innerHTML='<span style="color:var(--red)">Connection error — try again</span>';}
 }
 
 // v10.3 FIX: rejectContact now takes the sheetSource and forwards it to the
@@ -2036,6 +2106,8 @@ async function loadSettings(){try{const r=await fetch(API_URL+'?action=getSettin
 
 document.addEventListener('DOMContentLoaded',()=>{
   checkShabbat();
+  document.getElementById('addContactStage').innerHTML =
+    STAGE_OPTIONS.map(s=>`<option${s==='First message sent'?' selected':''}>${s}</option>`).join('');
   loadSettings().then(()=>loadData());
   loadTrackerData();
 setInterval(()=>{loadData();},60000);});
