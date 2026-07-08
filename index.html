@@ -148,12 +148,15 @@ select:focus{border-color:var(--gold);}
 .pkg-card-sub{font-size:10px;color:var(--text-dim);margin-bottom:8px}
 .pkg-tier-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid #1a1a1a;font-size:11px}
 .pkg-tier-row:first-of-type{border-top:none}
+.edit-name-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;vertical-align:middle}
+.edit-name-btn:hover{color:var(--gold)}
+.edit-name-input{background:#1c1c1c;border:1px solid var(--gold);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:3px 6px;border-radius:4px;outline:none;width:180px}
 @media(max-width:768px){.cal-wrap{padding:10px;border-radius:8px}.cal-grid{grid-template-columns:repeat(7,1fr);gap:4px}.cal-cell{min-height:74px;padding:4px;border-radius:5px}.cal-pill{font-size:9px;padding:2px 4px}.cal-dow{font-size:9px}.cal-daynum{font-size:10px}.cal-month-label{font-size:14px;min-width:120px}.call-mid{border-left:none;border-right:none;padding:0}.call-item-row{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v15.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v16.0</span></div>
   <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
 </div>
 <div class="shabbat-banner" id="shabbatBanner">
@@ -280,8 +283,9 @@ select:focus{border-color:var(--gold);}
 <!-- FOLLOW-UPS -->
 <div class="tab-content" id="tab-followup">
   <div style="background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#4a8a4a;line-height:1.6">
-    <strong>SHOWING:</strong> Only contacts due today or overdue. Messages rotate daily — different version each day automatically. Set deployment target before tapping DONE to track what you are selling.
+    <strong>SHOWING:</strong> Only contacts due today or overdue. Messages rotate daily — different version each day automatically. Set deployment target before tapping DONE to track what you are selling. Anything you resolve (DONE / REJECT / moved to Client, Rejected, etc) stays off this list for the rest of your session, even if you switch message versions or filters.
   </div>
+  <input id="followupSearch" class="search-input" placeholder="&#128269; Search business, number, category, notes..." oninput="followupSearchQuery=this.value;followupPage=0;renderFollowUps()">
   <div class="filter-row" id="labelFilters">
     <button class="filter-btn active" onclick="setFilter('all',this)">ALL DUE TODAY</button>
     <button class="filter-btn" onclick="setFilter('🟡',this)">🟡 2-TICK UNREAD</button>
@@ -306,9 +310,10 @@ select:focus{border-color:var(--gold);}
       <button class="ver-btn" id="verB" onclick="setMsgVersion('B',this)">B</button>
       <button class="ver-btn" id="verC" onclick="setMsgVersion('C',this)">C</button>
       <button class="ver-btn" id="verD" onclick="setMsgVersion('D',this)">D</button>
-      <span style="font-size:10px;color:var(--text-dim)">auto-rotates daily</span>
+      <span style="font-size:10px;color:var(--text-dim)">auto-rotates daily &mdash; switching here never resets your progress</span>
     </div>
   </div>
+  <div class="pagination-bar" id="followupPaginationTop"></div>
   <div id="followupList"></div>
   <div class="pagination-bar" id="followupPagination"></div>
 </div>
@@ -648,6 +653,19 @@ let followupAllContacts=[],activityAllItems=[],aiHistory=[],trackerData={activit
 const contactSearchState={};
 const callInlineState={}; // v12: per-contact inline call-outcome state on Calls tab, keyed by business name
 
+// v16.0: session-level "resolved" tracker for Follow-Ups. Anything the
+// person marks DONE, REJECTs, or moves to a terminal Stage/WA_Label
+// (Client, Rejected, Outdated-cleared etc) during this browser session is
+// added here and permanently excluded from renderFollowUps() regardless of
+// what state.contacts still says. Previously the card was only removed from
+// the DOM, so switching message version (A/B/C/D), switching filters, or
+// leaving and returning to the Follow-Ups tab re-ran renderFollowUps() from
+// state.contacts and brought every "cleared" contact straight back — this
+// is the fix for that whole class of complaints.
+let sessionResolvedContacts=new Set();
+// v16.0: free-text search across the Follow-Ups list.
+let followupSearchQuery='';
+
 // Order must match the .tab buttons in the header exactly — used by activateTab()
 // so metric cards / WA board items can jump straight to a tab from code.
 const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','analytics','contacts','tracker','archive'];
@@ -702,6 +720,19 @@ const REVENUE_PACKAGES=[
   ]},
   {key:'custom',name:'🎨 Custom Package',color:'var(--text-dim)',match:p=>/custom/i.test(p||'')}
 ];
+
+// v16.0: FIRST-TOUCH OPENERS — used instead of MSG_VERSIONS whenever a
+// contact has never actually been messaged yet (0 logged outreach AND still
+// sitting on "First message sent"/no stage). Previously every follow-up
+// card showed a follow-up-toned message ("following up on...", "I know my
+// last message came through...") even for contacts who had never been
+// messaged at all — these open with a genuine first question instead.
+const OPENER_VERSIONS={
+  A:"Hey [NAME], quick question — how are customers currently finding your business?",
+  B:"Hey [NAME], someone searched for [CATEGORY] in your area this week. Did your business come up?",
+  C:"Hey [NAME], my name is YJ from BYINFORGH — what's the biggest challenge in your business right now?",
+  D:"Hey [NAME], if 20 new customers reached out to you this month, could your business handle them properly?"
+};
 
 const MSG_VERSIONS={
 '🟡':{A:'Hey [NAME], hope all is well.\n\nSomeone searched for [CATEGORY] in your area this week. Your business did not come up.\n\nI can fix that today — free to start. Want me to?',B:'Hey [NAME], quick one.\n\nHow are customers currently finding your business?',C:'Hey [NAME].\n\nA [CATEGORY] business near you just went live on BYINFORGH and started getting enquiries.\n\nYour spot is still open. Want me to set it up? Free to start.',D:'Hey [NAME].\n\nNot here to pitch anything. One question — what is the biggest challenge in getting customers to find you?'},
@@ -879,21 +910,26 @@ function renderToday(){
 function setFilter(f,btn){currentFilter=f;followupPage=0;document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
 function setMsgVersion(ver,btn){currentMsgVersion=ver;document.querySelectorAll('[id^="ver"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
 
-// v15.0: confirms an inline change AND, if the new WA Label/Stage resolves the
-// contact (Client, Rejected, Not Interested, etc), fades the card out of the
-// Follow-Ups list instead of leaving it sitting there unchanged. itemEl may
-// be null when called from Pipeline/All Contacts tables (no card to fade).
+// v16.0: updateFollowupStage FIX. Previously the "terminal" check combined
+// BOTH the field just changed AND the contact's *other*, possibly stale,
+// field — e.g. if Stage had ever been left on "Not Interested" while only
+// WA_Label was being edited, then later picking Hot Lead or Outdated on the
+// WA_Label dropdown would still get judged terminal because of the old
+// Stage value, and the card would silently vanish, LOOKING like the change
+// failed to save (this is what happened with TigerNut). Fixed by judging
+// terminal-ness only from the field that was actually just changed.
+// Also now permanently removes resolved contacts via sessionResolvedContacts
+// instead of just fading the DOM node, so they stay gone across message
+// version switches, filter switches, and tab revisits (see notes on that
+// Set above) — and re-renders immediately so the next due contact fills the
+// gap instead of leaving an empty hole in the list.
 async function updateFollowupStage(business,field,value,el,sheetSource,itemEl){
   await updateContactField(business,field,value,el,sheetSource);
-  const c=state.contacts.find(x=>x.Business===business);
-  const terminal=(field==='Stage'&&isTerminalStage(value))||(field==='WA_Label'&&isTerminalWaLabel(value))||(c&&(isTerminalStage(c.Stage)||isTerminalWaLabel(c.WA_Label)));
+  const terminal=(field==='Stage'&&isTerminalStage(value))||(field==='WA_Label'&&isTerminalWaLabel(value));
   if(terminal){
     showToast(business+' — moved out of Follow-Ups');
-    if(itemEl){
-      itemEl.style.background='#001a00';itemEl.style.borderColor='var(--green)';itemEl.style.opacity='0.35';
-      followupAllContacts=followupAllContacts.filter(x=>x.Business!==business);
-      setTimeout(()=>itemEl.remove(),700);
-    }
+    sessionResolvedContacts.add(business);
+    setTimeout(()=>renderFollowUps(),500);
   }
 }
 
@@ -915,8 +951,49 @@ async function logFollowupCall(business,number,sheetSource,notes,btn){
   if(btn){btn.textContent='📞 CALLED';btn.disabled=false;}
 }
 
+// v16.0: EDIT BUSINESS NAME — inline pencil on each Follow-Ups card. Swaps
+// the name into a text input, saves via updateContactField (server-side
+// v16.0 change adds Business to the editable column map), then does a full
+// data reload since the business name is the key used everywhere else in
+// the dashboard (state.messageCounts, sessionResolvedContacts, etc) — safer
+// to resync everything than try to patch every reference in place.
+function startEditBusinessName(oldBusiness,sheetSource){
+  const safe=oldBusiness.replace(/[^a-zA-Z0-9]/g,'_');
+  const span=document.getElementById('bizname-'+safe);
+  if(!span)return;
+  const current=oldBusiness;
+  span.innerHTML=`<input type="text" class="edit-name-input" id="bizedit-'+safe+'" value="${current.replace(/"/g,'&quot;')}" onkeydown="if(event.key==='Enter')saveEditBusinessName('${oldBusiness.replace(/'/g,"\\'")}','${sheetSource.replace(/'/g,"\\'")}');if(event.key==='Escape')renderFollowUps();">
+    <button class="copy-btn" style="padding:3px 8px;font-size:9px" onclick="saveEditBusinessName('${oldBusiness.replace(/'/g,"\\'")}','${sheetSource.replace(/'/g,"\\'")}')">SAVE</button>
+    <button class="copy-btn" style="padding:3px 8px;font-size:9px;background:none" onclick="renderFollowUps()">CANCEL</button>`;
+  const inp=document.getElementById('bizedit-'+safe);
+  if(inp){inp.focus();inp.select();}
+}
+async function saveEditBusinessName(oldBusiness,sheetSource){
+  const safe=oldBusiness.replace(/[^a-zA-Z0-9]/g,'_');
+  const inp=document.getElementById('bizedit-'+safe);
+  if(!inp)return;
+  const newName=inp.value.trim();
+  if(!newName||newName===oldBusiness){renderFollowUps();return;}
+  showToast('Saving name...');
+  try{
+    const res=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(oldBusiness)+'&field=Business&value='+encodeURIComponent(newName)+'&sheetSource='+encodeURIComponent(sheetSource||'Master CRM')+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      const c=state.contacts.find(x=>x.Business===oldBusiness);
+      if(c)c.Business=newName;
+      if(sessionResolvedContacts.has(oldBusiness)){sessionResolvedContacts.delete(oldBusiness);sessionResolvedContacts.add(newName);}
+      if(state.messageCounts&&state.messageCounts[oldBusiness]!==undefined){state.messageCounts[newName]=state.messageCounts[oldBusiness];delete state.messageCounts[oldBusiness];}
+      showToast('✓ Renamed to '+newName);
+      renderFollowUps();
+    }else{
+      showToast('Error: '+(data.error||'could not rename'));
+      renderFollowUps();
+    }
+  }catch(e){showToast('Connection error — rename not saved');renderFollowUps();}
+}
+
 function renderFollowUps(){
-  let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅'));
+  let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business));
   const today=new Date();today.setHours(0,0,0,0);
   if(currentFilter==='monthly')contacts=contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes('monthly'));
   else if(currentFilter==='quarterly')contacts=contacts.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('quarterly')||c.Stage.toLowerCase().includes('3 month')));
@@ -924,33 +1001,51 @@ function renderFollowUps(){
   else contacts=contacts.filter(c=>!c.WA_Label.includes('🔴'));
   // Only show due today or overdue
   contacts=contacts.filter(c=>{const d=parseFollowUpDate(c.Next_Follow_Up);return !d||d<=today;});
+  // v16.0: free-text search across business/number/category/notes
+  if(followupSearchQuery&&followupSearchQuery.trim()){
+    const sq=followupSearchQuery.trim().toLowerCase();
+    contacts=contacts.filter(c=>(c.Business||'').toLowerCase().includes(sq)||(c.Number||'').includes(sq)||(c.Category||'').toLowerCase().includes(sq)||(c.Notes||'').toLowerCase().includes(sq));
+  }
   contacts.sort((a,b)=>{const gd=c=>{const d=parseFollowUpDate(c.Next_Follow_Up);return d||new Date('2099-01-01');};return gd(a)-gd(b);});
   followupAllContacts=contacts;
   const total=contacts.length,totalPages=Math.ceil(total/FOLLOWUP_PAGE_SIZE);
+  if(followupPage>=totalPages)followupPage=Math.max(0,totalPages-1); // v16.0: keep page in range as the list shrinks
   const start=followupPage*FOLLOWUP_PAGE_SIZE,page=contacts.slice(start,start+FOLLOWUP_PAGE_SIZE);
-  if(page.length===0){document.getElementById('followupList').innerHTML='<div class="empty">No contacts due today for this filter</div>';document.getElementById('followupPagination').innerHTML='';return;}
+  if(page.length===0){
+    document.getElementById('followupList').innerHTML=followupSearchQuery?'<div class="empty">No contacts match this search</div>':'<div class="empty">No contacts due today for this filter — nice work!</div>';
+    document.getElementById('followupPagination').innerHTML='';
+    document.getElementById('followupPaginationTop').innerHTML='';
+    return;
+  }
   document.getElementById('followupList').innerHTML=page.map((c,pi)=>{
     const emoji=getWAEmoji(c.WA_Label);
-    const tmpl=(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||'';
+    const msgCount=state.messageCounts[c.Business]||0;
+    // v16.0: use a genuine opener for contacts who have never actually been
+    // messaged yet (0 logged outreach and still on an unstarted stage),
+    // instead of a follow-up-toned template that assumes prior contact.
+    const stageLower=(c.Stage||'').toLowerCase();
+    const isFirstTouch=msgCount===0&&(!c.Stage||stageLower.includes('first message')||stageLower===''||stageLower==='new'||stageLower==='lead');
+    const tmpl=isFirstTouch?(OPENER_VERSIONS[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||'');
     const msg=tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
     const fd=parseFollowUpDate(c.Next_Follow_Up);
     const daysOv=fd?Math.floor((today-fd)/(1000*60*60*24)):0;
     const ovTag=daysOv>0?`<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:8px">⚠ ${daysOv}d overdue</span>`:'';
     const dtTag=daysOv===0&&fd&&fd<=today?`<span style="color:var(--gold);font-size:10px;font-weight:700;margin-left:8px">DUE TODAY</span>`:'';
-    const msgCount=state.messageCounts[c.Business]||0;
     let freqBadge='';
     if(c.Stage&&c.Stage.toLowerCase().includes('quarterly'))freqBadge='<span class="freq-badge freq-quarterly">QUARTERLY</span>';
     else if(c.Stage&&c.Stage.toLowerCase().includes('monthly'))freqBadge='<span class="freq-badge freq-monthly">MONTHLY</span>';
     else if(msgCount>=3)freqBadge=`<span class="freq-badge freq-monthly">${msgCount} msgs</span>`;
+    else if(isFirstTouch)freqBadge='<span class="freq-badge" style="background:#001a00;color:var(--green);border:1px solid var(--green)">FIRST TOUCH</span>';
     const depInfo=currentDeployment?`<span style="font-size:10px;color:var(--gold);margin-left:8px;font-weight:700">↗ ${currentDeployment}</span>`:'';
     const idx=start+pi;
     const sb=c.Business.replace(/'/g,"\\'");const ss=(c.Stage||'').replace(/'/g,"\\'");
     const sn=(c.Notes||'').substring(0,200).replace(/'/g,"\\'");const src=(c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
     const sm=msg.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
     const sourceTag=c.Source&&c.Source.toLowerCase().includes('landing')?'<span style="font-size:9px;color:var(--blue);border:1px solid var(--blue);border-radius:3px;padding:1px 5px;margin-left:6px">🌐 WEB LEAD</span>':(c.Source&&c.Source.toLowerCase().includes('manual')?'<span style="font-size:9px;color:var(--gold);border:1px solid var(--gold);border-radius:3px;padding:1px 5px;margin-left:6px">📝 MANUAL</span>':'');
+    const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_');
     return `<div class="followup-item" style="${daysOv>0?'border-color:#2a1500;border-left:3px solid var(--red)':''}">
       <div class="followup-header"><div style="flex:1">
-        <div class="followup-name" style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag} <span style="color:var(--muted);font-size:10px">▼</span></div>
+        <div class="followup-name"><span id="bizname-${bizSafe}"><span style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}</span> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}')">&#9998;</button>${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag}</span></div>
         <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgCount}</div>
         <textarea
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
@@ -1000,7 +1095,10 @@ function renderFollowUps(){
     for(let i=Math.max(0,followupPage-2);i<=Math.min(totalPages-1,followupPage+2);i++)pagHtml+=`<button class="page-btn ${i===followupPage?'active':''}" onclick="followupPage=${i};renderFollowUps();scrollToTabTop('tab-followup')">${i+1}</button>`;
     if(followupPage<totalPages-1)pagHtml+=`<button class="page-btn" onclick="followupPage++;renderFollowUps();scrollToTabTop('tab-followup')">Next →</button>`;
   }else if(total>0)pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} contacts due today</span>`;
+  // v16.0: pagination now shown both above AND below the list, so the person
+  // never has to scroll to the bottom just to move to the next page.
   document.getElementById('followupPagination').innerHTML=pagHtml;
+  document.getElementById('followupPaginationTop').innerHTML=pagHtml;
 }
 
 // v11: Stage options matching Master CRM data validation — verify against your sheet dropdown
@@ -1171,21 +1269,21 @@ async function submitManualContact(){
   }catch(e){result.innerHTML='<span style="color:var(--red)">Connection error — try again</span>';}
 }
 
-// v10.3 FIX: rejectContact now takes the sheetSource and forwards it to the
-// archiveRejected endpoint, so contacts from Koforidua Master are actually
-// found and removed instead of silently failing.
+// v16.0: rejectContact now also adds the business to sessionResolvedContacts
+// (was only removing the DOM node before), so a rejected contact stays off
+// Follow-Ups across filter/version switches and tab revisits within this
+// session, same fix as markFollowUpDone/updateFollowupStage below.
 async function rejectContact(business,sheetSource,btn){
   if(!confirm('Reject '+business+'? This archives them and removes from active pipeline.'))return;
   btn.textContent='Rejecting...';btn.disabled=true;
-  const item=btn.closest('.followup-item');
   try{
     const res=await fetch(API_URL+'?action=archiveRejected&business='+encodeURIComponent(business)+'&sheetSource='+encodeURIComponent(sheetSource||'Master CRM')+'&reason='+encodeURIComponent('Rejected from dashboard')+'&t='+Date.now());
     const data=await res.json();
     if(data.success){
       state.contacts=state.contacts.filter(c=>c.Business!==business);
-      followupAllContacts=followupAllContacts.filter(c=>c.Business!==business);
-      if(item){item.style.background='#1a0000';item.style.borderColor='var(--red)';item.style.opacity='0.3';setTimeout(()=>item.remove(),500);}
+      sessionResolvedContacts.add(business);
       showToast('Rejected — '+business);
+      renderFollowUps();
     }else{
       showToast('Error: '+(data.error||'could not reject'));
       btn.textContent='✕ REJECT';btn.disabled=false;
@@ -1196,31 +1294,37 @@ async function rejectContact(business,sheetSource,btn){
   }
 }
 
+// v16.0: markFollowUpDone now adds the business to sessionResolvedContacts
+// and re-renders the whole list instead of only removing/fading the single
+// DOM card. This is what makes the list "refill from below" as you clear
+// contacts — the next due contact moves up into view immediately instead of
+// leaving a gap — and stops cleared/DONE contacts reappearing when you
+// switch message version, switch filters, or leave and return to the tab.
 async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
   btn.textContent='Logging...';btn.disabled=true;
-  const item=btn.closest('.followup-item');
   try{
     const url=API_URL+'?action=logFollowUpDone&business='+encodeURIComponent(business)+'&stage='+encodeURIComponent(stage)+'&sheetSource='+encodeURIComponent(sheetSource||'Master CRM')+'&message='+encodeURIComponent(message.replace(/\\n/g,'\n'))+'&deployment='+encodeURIComponent(currentDeployment)+'&t='+Date.now();
     const res=await fetch(url);const data=await res.json();
     state.todayOutreach=(state.todayOutreach||0)+1;
-    if(item){item.style.background='#001a00';item.style.borderColor='var(--green)';}
-    btn.textContent='✓ DONE';btn.style.background='var(--green)';btn.style.color='var(--black)';btn.disabled=true;
+    const c=state.contacts.find(x=>x.Business===business);
     if(data.success){
-      const info=document.createElement('div');
-      info.style.cssText='font-size:11px;margin-top:8px;padding:8px 10px;background:var(--black);border-radius:4px;border:1px solid #1a2a1a;';
-      let it='';
-      if(data.movedToQuarterly)it=`<span style="color:#6366f1;font-weight:700">→ QUARTERLY</span><br>`;
-      else if(data.movedToMonthly)it=`<span style="color:var(--purple);font-weight:700">→ MONTHLY (3-msg rule)</span><br>`;
-      it+=`<span style="color:var(--green);font-weight:700">✓ Msg #${data.msgCount||'?'}</span><span style="color:var(--text-dim)"> · Next: ${data.nextFollowUp||'—'}</span>`;
-      if(data.deployment)it+=`<br><span style="color:var(--gold);font-size:10px">Target: ${data.deployment}</span>`;
-      info.innerHTML=it;if(item)btn.parentElement.appendChild(info);
-      setTimeout(()=>{if(item){item.style.opacity='0.3';setTimeout(()=>item.remove(),500);}},2800);
+      if(c){
+        if(data.nextFollowUp)c.Next_Follow_Up=data.nextFollowUp;
+        if(data.movedToMonthly)c.Stage='Monthly';
+        else if(data.movedToQuarterly)c.Stage='Quarterly';
+      }
+      sessionResolvedContacts.add(business);
       showToast((data.movedToQuarterly?'→Quarterly: ':data.movedToMonthly?'→Monthly: ':'')+business+' · next: '+(data.nextFollowUp||'—'));
-    }else{setTimeout(()=>{if(item){item.style.opacity='0.3';setTimeout(()=>item.remove(),500);}},1500);showToast('Logged — '+business);}
+    }else{
+      sessionResolvedContacts.add(business);
+      showToast('Logged — '+business);
+    }
+    renderFollowUps();
   }catch(err){
     state.todayOutreach=(state.todayOutreach||0)+1;
-    if(item){item.style.background='#001a00';item.style.borderColor='var(--green)';btn.textContent='✓ LOGGED';btn.style.background='var(--green)';btn.style.color='var(--black)';setTimeout(()=>{item.style.opacity='0.3';setTimeout(()=>item.remove(),500);},1500);}
+    sessionResolvedContacts.add(business);
     showToast('Logged locally — '+business);
+    renderFollowUps();
   }
 }
 
@@ -1641,6 +1745,10 @@ async function restoreContact(business,number,btn){
     const data=await res.json();
     if(data.success){
       btn.textContent='✓ RESTORED';btn.style.background='var(--gold)';
+      // v16.0: a restored contact is a genuinely fresh pipeline entry, so
+      // make sure it isn't still sitting in sessionResolvedContacts from an
+      // earlier reject/done this session (edge case, but cheap to guard).
+      sessionResolvedContacts.delete(business);
       showToast(business+' restored — '+data.newId);
       setTimeout(()=>loadData(),1000);
     }else{
