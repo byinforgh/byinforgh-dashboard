@@ -434,6 +434,35 @@ select:focus{border-color:var(--gold);}
   <div style="background:#001020;border:1px solid var(--blue);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.7">
     <strong style="color:var(--blue)">COLUMNS:</strong> A=Business · B=Package · C=Joined · D=Renewal · <strong style="color:var(--purple)">E=One-Time</strong> · F=Payment Date · <strong style="color:var(--green)">G=Status</strong> · <strong style="color:var(--gold)">H=Monthly Amount</strong> · I=Number · J=Notes
   </div>
+  <div class="section-title">&#10133; ADD NEW CLIENT</div>
+  <div class="card" style="margin-bottom:20px">
+    <input id="addClientBusiness" class="search-input" placeholder="Business name*" style="margin-bottom:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <select id="addClientPackage" onchange="toggleClientCustomPackage()">
+        <option value="Business Presence">Business Presence — Free</option>
+        <option value="Verified Business" selected>Verified Business</option>
+        <option value="Visibility Partner 250">Visibility Partner 250</option>
+        <option value="Visibility Partner 750">Visibility Partner 750</option>
+        <option value="Visibility Partner 1500">Visibility Partner 1500</option>
+        <option value="Business Authority">Business Authority</option>
+        <option value="Custom Package">Custom Package</option>
+      </select>
+      <select id="addClientStatus"><option>Active</option><option>Paused</option><option>Churned</option></select>
+    </div>
+    <input id="addClientCustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="addClientMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS (e.g. 80)">
+      <input id="addClientOneTime" type="number" class="search-input" style="margin:0" placeholder="One-time amount GHS (e.g. 180)">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="addClientJoined" class="search-input" style="margin:0" placeholder="Joined date DD/MM/YYYY (optional)">
+      <input id="addClientRenewal" class="search-input" style="margin:0" placeholder="Renewal date DD/MM/YYYY (optional)">
+    </div>
+    <input id="addClientNumber" class="search-input" placeholder="WhatsApp number (0XXXXXXXXX)" style="margin-bottom:8px">
+    <textarea id="addClientNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
+    <button class="refresh-btn" onclick="submitAddClient()" style="background:var(--gold);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">+ ADD CLIENT</button>
+    <div id="addClientResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
   <div class="section-title">ACTIVE CLIENTS</div>
   <div id="clientsList"></div>
   <div class="section-title" style="margin-top:20px">RENEWAL ALERTS</div>
@@ -447,6 +476,34 @@ select:focus{border-color:var(--gold);}
     <div style="font-size:12px;color:var(--text-dim);line-height:1.7">Businesses on active BBCS deployments. Sheet tab needed: <strong style="color:var(--teal)">SME Systems Members</strong><br>Columns: A=Business · B=Owner · C=Package · D=Joined · E=Monthly Amount · F=Status · G=Number · H=Notes</div>
   </div>
   <div class="metrics-grid" id="smeSummaryMetrics"></div>
+  <div class="section-title" style="margin-top:20px">&#10133; ADD NEW SME MEMBER</div>
+  <div class="card" style="margin-bottom:20px;border-color:var(--teal)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="addSMEBusiness" class="search-input" style="margin:0" placeholder="Business name*">
+      <input id="addSMEOwner" class="search-input" style="margin:0" placeholder="Owner name">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <select id="addSMEPackage" onchange="toggleSMECustomPackage()">
+        <option value="SME Systems — Starter 50">SME Systems — Starter (GHS 50)</option>
+        <option value="SME Systems — Growth 150">SME Systems — Growth (GHS 150)</option>
+        <option value="SME Systems — Authority 500">SME Systems — Authority (GHS 500)</option>
+        <option value="Custom Package">Custom Package</option>
+      </select>
+      <select id="addSMEStatus"><option>Active</option><option>Paused</option><option>Inactive</option></select>
+    </div>
+    <input id="addSMECustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="addSMEMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS*">
+      <input id="addSMENumber" class="search-input" style="margin:0" placeholder="WhatsApp number">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="addSMELocation" class="search-input" style="margin:0" placeholder="Location">
+      <input id="addSMEContactName" class="search-input" style="margin:0" placeholder="Contact person">
+    </div>
+    <textarea id="addSMENotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
+    <button class="refresh-btn" onclick="submitAddSMEMember()" style="background:var(--teal);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">+ ADD SME MEMBER</button>
+    <div id="addSMEResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
   <div class="section-title" style="margin-top:20px">SME MEMBERS</div>
   <div id="smeMembersList"></div>
 </div>
@@ -516,7 +573,7 @@ select:focus{border-color:var(--gold);}
 <!-- ALL CONTACTS -->
 <div class="tab-content" id="tab-contacts">
   <input class="search-input" type="text" id="contactSearch" placeholder="Search by name, business, number, stage..." oninput="filterContacts()">
-  <div class="scroll-table"><table class="contact-table"><thead><tr><th>#</th><th>BUSINESS</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="allContactsBody"></tbody></table></div>
+  <div class="scroll-table"><table class="contact-table"><thead><tr><th>#</th><th>BUSINESS</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>ACTION / LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="allContactsBody"></tbody></table></div>
 </div>
 
 <!-- TRACKER -->
@@ -756,6 +813,45 @@ objection:[{title:'OBJ1 — I will think about it',msg:"No pressure. While you t
 conversation:[{title:'CV1 — Discovery',msg:"Good to hear from you.\n\nQuick question — how are customers currently finding your business? WhatsApp, word of mouth, Google, or something else?"},{title:'CV2 — Find the Pain',msg:"Understood. So the main challenge right now is getting more customers?\n\nIf someone searched for [CATEGORY] near you on Google today — would they find you?"},{title:'CV3 — Position BYINFORGH',msg:"BYINFORGH is not social media and not ads.\n\nIt is a trusted directory — like a phonebook for local businesses. Customers who are already searching find you there, call you, and come to you."},{title:'CV4 — Bridge to Free Listing',msg:"Based on what you said — customers cannot find you when they search.\n\nThe Business Presence listing fixes that. It is free. Want me to set it up today?"},{title:'CV5 — Bridge to Verified',msg:"Based on what you said — you need customers to find you and trust you fast.\n\nThe Verified Business listing does both. Blue tick, profile, video, and promotion.\n\nGHS 180 setup. Shall we get it done today?"}],
 sme:[{title:'SME1 — Opening Question',msg:"Hey [NAME], quick question — if I asked you right now how much profit your business made last month, could you tell me the exact number?\n\nMost business owners cannot. That is the challenge I solve."},{title:'SME2 — Systems Gap',msg:"Hey [NAME], a lot of businesses in your space are making sales but losing money without knowing it.\n\nWrong prices. Wastage. Unpaid invoices. Dead stock.\n\nI can show you exactly where the leaks are."},{title:'SME3 — BBCS Intro',msg:"Hey [NAME], I work with businesses on a Business Control System — a complete operating tool built for your type of business.\n\nInventory. Daily sales. Profit tracking. Customer records. All in one place."},{title:'SME4 — Upsell from Visibility',msg:"Hey [NAME], you are already listed and verified on BYINFORGH. Customers can find you now.\n\nNext question — once they come in, does your business have a system to track sales, manage stock, and know your profit?\n\nThat is what I can help with next."}]
 };
+
+// v18.0: CONTEXT-AWARE FOLLOW-UP MESSAGING. Reads the contact's own Notes
+// for signals about what was ACTUALLY already sent/discussed, and returns
+// a specific message reflecting that — instead of always reaching for the
+// generic canned pitch templates regardless of history. Returns null when
+// there's no strong signal in the notes, so the caller falls back to the
+// existing opener/pitch logic unchanged.
+//
+// Two patterns handled based on direct feedback:
+// 1. Specific resources/guides already sent ("Signal", "EcoSystem guide",
+//    etc mentioned in notes) — the follow-up checks on progress with that
+//    named resource and offers help, rather than re-pitching.
+// 2. Multiple messages already sent with no reply (2+ logged outreach,
+//    still sitting unread/read-no-reply) — the follow-up is a gentle
+//    check-in acknowledging they may be busy and asking if the last
+//    message came through, not another sales pitch or repeated questions.
+function buildContextualFollowup(c,msgCount){
+  const notes=(c.Notes||'').toLowerCase();
+  const name=(c.Business||'').split(' ')[0];
+  if(!notes)return null;
+
+  // Pattern 1: named guides/resources already sent — check on progress.
+  const guideNames=[];
+  if(notes.includes('signal'))guideNames.push('Signal guide');
+  if(notes.includes('ecosystem'))guideNames.push('EcoSystem guide');
+  if(notes.includes('playbook'))guideNames.push('playbook');
+  if(guideNames.length>0){
+    const guideList=guideNames.length>1?(guideNames.slice(0,-1).join(', ')+' and '+guideNames[guideNames.length-1]):guideNames[0];
+    return `Hey ${name}, just checking in — how are you getting on with the ${guideList} I sent over?\n\nLet me know if anything is unclear or if you need a hand working through it.`;
+  }
+
+  // Pattern 2: several messages already sent (questions/pitches) with no
+  // reply yet — acknowledge that, don't repeat the questions or push again.
+  if(msgCount>=2){
+    return `Hey ${name}, just checking you received my last message about how we can work together / help your business.\n\nI know things get busy and messages get lost sometimes — no pressure, just following up.`;
+  }
+
+  return null;
+}
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function copyMsg(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.textContent='COPIED';btn.classList.add('copied');setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);showToast('Message copied');});}
@@ -1061,8 +1157,14 @@ function renderFollowUps(){
     // instead of a follow-up-toned template that assumes prior contact.
     const stageLower=(c.Stage||'').toLowerCase();
     const isFirstTouch=msgCount===0&&(!c.Stage||stageLower.includes('first message')||stageLower===''||stageLower==='new'||stageLower==='lead');
-    const tmpl=isFirstTouch?(OPENER_VERSIONS[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||'');
-    const msg=tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
+    // v18.0: check for a contextual message first — one based on what was
+    // actually already sent/discussed (per the contact's own notes), rather
+    // than always falling back to the generic canned pitch templates. Only
+    // used when there's a real signal in the notes; otherwise falls through
+    // to the existing opener/pitch logic unchanged.
+    const contextualMsg=buildContextualFollowup(c,msgCount);
+    const tmpl=contextualMsg?null:(isFirstTouch?(OPENER_VERSIONS[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||''));
+    const msg=contextualMsg||tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
     const fd=parseFollowUpDate(c.Next_Follow_Up);
     const daysOv=fd?Math.floor((today-fd)/(1000*60*60*24)):0;
     const ovTag=daysOv>0?`<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:8px">⚠ ${daysOv}d overdue</span>`:'';
@@ -1162,12 +1264,12 @@ const OFFER_OPTIONS = [
   'Verified Business — 180 GHS setup + 80 GHS/month',
   'Visibility Essential 250',
   'Visibility Partner 750',
-  'Growth Partner 1500',
+  'Visibility Partner 1500',
   'Authority Market 5000',
+  'SME Systems — Starter 50',
+  'SME Systems — Growth 150',
+  'SME Systems — Authority 500',
   'Custom Package',
-  'SME Starter 50',
-  'Growth 1500',
-  'Authority',
   'Tip Message',
   'Warm Message'
 ];
@@ -1728,7 +1830,111 @@ function renderSME(){
     <div class="metric-card green"><div class="metric-label">ACTIVE DEPLOYMENTS</div><div class="metric-value">${active.length}</div><div class="metric-sub">live BBCS systems</div></div>
     <div class="metric-card purple"><div class="metric-label">AVG FEE</div><div class="metric-value" style="font-size:22px">&#8373;${active.length>0?Math.round(smeMRR/active.length):0}</div><div class="metric-sub">per member/month</div></div>`;
   if(members.length===0){document.getElementById('smeMembersList').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px;text-align:center"><div style="font-size:14px;color:var(--text-dim);margin-bottom:10px">No SME Systems Members found</div><div style="font-size:12px;color:var(--muted)">Check the <strong style="color:var(--teal)">SME Systems Members</strong> sheet tab has data starting row 2, and that columns N (Monthly Amount) and O (Status) are filled in. These two columns are auto-created — set Status to Active for each live member.</div></div>`;return;}
-  document.getElementById('smeMembersList').innerHTML=members.map(m=>{const isAct=(m.Status||'').toLowerCase()==='active';return`<div class="sme-item" style="${!isAct?'border-color:var(--border);opacity:0.7':''}"><div style="flex:1"><div class="client-name">&#128295; ${m.Business}</div><div class="client-pkg">${m.ContactName?'Contact: '+m.ContactName+' · ':''}${m.Package||'—'}${m.Location?' · '+m.Location:''}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${m.Notes||'—'}</div></div><div style="text-align:right"><div class="client-amount" style="color:var(--teal)">&#8373;${m.Amount||0}</div><div class="pay-monthly" style="color:var(--teal)">MONTHLY</div><div class="${isAct?'active-tag':'overdue-tag'}" style="margin-top:4px">${m.Status||'—'}</div><div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;margin-top:2px">${m.Number||'—'}</div></div></div>`;}).join('');
+  const SME_STATUS_OPTIONS=['Active','Paused','Inactive'];
+  document.getElementById('smeMembersList').innerHTML=members.map(m=>{
+    const isAct=(m.Status||'').toLowerCase()==='active';
+    const stat=(m.Status||'').toLowerCase();
+    const sb=(m.Business||'').replace(/'/g,"\\'");
+    const statusOpts=SME_STATUS_OPTIONS.map(o=>`<option value="${o}"${o.toLowerCase()===stat?' selected':''}>${o}</option>`).join('');
+    return`<div class="sme-item" style="${!isAct?'border-color:var(--border);opacity:0.7':''}"><div style="flex:1"><div class="client-name">&#128295; ${m.Business}</div><div class="client-pkg">${m.ContactName?'Contact: '+m.ContactName+' · ':''}${m.Package||'—'}${m.Location?' · '+m.Location:''}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${m.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:9px;color:var(--teal);font-weight:700">GHS/MO</span>
+        <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--teal);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${m.Amount||0}" value="${m.Amount||0}" onchange="updateSMEField('${sb}','Amount',this.value,this)">
+      </div>
+      <select data-orig="${m.Status||''}" onchange="updateSMEField('${sb}','Status',this.value,this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;width:auto">${statusOpts}</select>
+      <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace">${m.Number||'—'}</div>
+    </div></div>`;
+  }).join('');
+}
+// v18.0: inline edit for SME member Amount/Status, mirrors updateClientField.
+async function updateSMEField(business,field,value,el){
+  const orig=el?el.dataset.orig:'';
+  if(el){el.disabled=true;el.style.opacity='0.6';}
+  try{
+    const res=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field='+encodeURIComponent(field)+'&value='+encodeURIComponent(value)+'&sheetSource='+encodeURIComponent('SME Systems Members')+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      const m=(state.smeMembers||[]).find(x=>x.Business===business);
+      if(m)m[field]=field==='Amount'?(parseFloat(value)||0):value;
+      if(el){el.dataset.orig=value;el.disabled=false;el.style.opacity='1';el.style.outline='2px solid var(--green)';setTimeout(()=>{if(el)el.style.outline='';},1800);}
+      showToast('✓ '+business+' — '+field+' updated');
+      renderSME();
+    }else{
+      showToast('Error: '+(data.error||'could not update'));
+      if(el){el.value=orig;el.disabled=false;el.style.opacity='1';}
+    }
+  }catch(e){
+    showToast('Connection error — change not saved');
+    if(el){el.value=orig;el.disabled=false;el.style.opacity='1';}
+  }
+}
+
+// v18.0: ADD NEW CLIENT / ADD SME MEMBER forms
+function toggleClientCustomPackage(){
+  document.getElementById('addClientCustomName').style.display=document.getElementById('addClientPackage').value==='Custom Package'?'block':'none';
+}
+async function submitAddClient(){
+  const business=document.getElementById('addClientBusiness').value.trim();
+  const pkg=document.getElementById('addClientPackage').value;
+  const customPackageName=document.getElementById('addClientCustomName').value.trim();
+  const monthlyAmount=document.getElementById('addClientMonthly').value||'0';
+  const oneTimeAmount=document.getElementById('addClientOneTime').value||'0';
+  const status=document.getElementById('addClientStatus').value;
+  const joined=document.getElementById('addClientJoined').value.trim();
+  const renewal=document.getElementById('addClientRenewal').value.trim();
+  const number=normalizePhoneClient(document.getElementById('addClientNumber').value);
+  const notes=document.getElementById('addClientNotes').value.trim();
+  const result=document.getElementById('addClientResult');
+  if(!business){result.innerHTML='<span style="color:var(--red)">Business name is required.</span>';return;}
+  result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
+  try{
+    const url=API_URL+'?action=addClient&business='+encodeURIComponent(business)+'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
+      +'&monthlyAmount='+encodeURIComponent(monthlyAmount)+'&oneTimeAmount='+encodeURIComponent(oneTimeAmount)+'&status='+encodeURIComponent(status)
+      +'&joined='+encodeURIComponent(joined)+'&renewal='+encodeURIComponent(renewal)+'&number='+encodeURIComponent(number)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    const res=await fetch(url);const data=await res.json();
+    if(data.success){
+      state.clients.push({Business:business,Package:data.package,Joined:joined,Renewal:renewal,Amount:parseFloat(monthlyAmount)||0,Status:status,Number:number,Notes:notes,OneTimeAmount:parseFloat(oneTimeAmount)||0,PaymentType:(parseFloat(monthlyAmount)>0&&parseFloat(oneTimeAmount)>0)?'Both':(parseFloat(monthlyAmount)>0?'Monthly':'One-Time'),Sheet_Source:'Clients'});
+      result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added as '+data.package+'</span>';
+      showToast('Client added — '+business);
+      ['addClientBusiness','addClientCustomName','addClientMonthly','addClientOneTime','addClientJoined','addClientRenewal','addClientNumber','addClientNotes'].forEach(id=>document.getElementById(id).value='');
+      renderClients();renderToday();
+    }else{
+      result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not add')+'</span>';
+    }
+  }catch(e){result.innerHTML='<span style="color:var(--red)">Connection error — try again</span>';}
+}
+function toggleSMECustomPackage(){
+  document.getElementById('addSMECustomName').style.display=document.getElementById('addSMEPackage').value==='Custom Package'?'block':'none';
+}
+async function submitAddSMEMember(){
+  const business=document.getElementById('addSMEBusiness').value.trim();
+  const owner=document.getElementById('addSMEOwner').value.trim();
+  const pkg=document.getElementById('addSMEPackage').value;
+  const customPackageName=document.getElementById('addSMECustomName').value.trim();
+  const monthlyAmount=document.getElementById('addSMEMonthly').value||'0';
+  const status=document.getElementById('addSMEStatus').value;
+  const number=normalizePhoneClient(document.getElementById('addSMENumber').value);
+  const location=document.getElementById('addSMELocation').value.trim();
+  const contactName=document.getElementById('addSMEContactName').value.trim();
+  const notes=document.getElementById('addSMENotes').value.trim();
+  const result=document.getElementById('addSMEResult');
+  if(!business){result.innerHTML='<span style="color:var(--red)">Business name is required.</span>';return;}
+  result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
+  try{
+    const url=API_URL+'?action=addSMEMember&business='+encodeURIComponent(business)+'&owner='+encodeURIComponent(owner)+'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
+      +'&monthlyAmount='+encodeURIComponent(monthlyAmount)+'&status='+encodeURIComponent(status)+'&number='+encodeURIComponent(number)
+      +'&location='+encodeURIComponent(location)+'&contactName='+encodeURIComponent(contactName)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    const res=await fetch(url);const data=await res.json();
+    if(data.success){
+      state.smeMembers.push({Business:business,Owner:owner,Package:data.package,Joined:'',Amount:parseFloat(monthlyAmount)||0,Status:status,Number:number,Notes:notes,Location:location,ContactName:contactName,Source:'Dashboard Manual Entry',NextFollowUp:''});
+      result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added as '+data.package+'</span>';
+      showToast('SME member added — '+business);
+      ['addSMEBusiness','addSMEOwner','addSMECustomName','addSMEMonthly','addSMENumber','addSMELocation','addSMEContactName','addSMENotes'].forEach(id=>document.getElementById(id).value='');
+      renderSME();renderToday();
+    }else{
+      result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not add')+'</span>';
+    }
+  }catch(e){result.innerHTML='<span style="color:var(--red)">Connection error — try again</span>';}
 }
 
 // ===== SWEEP ARCHIVE =====
@@ -1805,6 +2011,7 @@ async function restoreContact(business,number,btn){
 // it still counts toward MRR; Paused/Churned stop counting toward MRR (only
 // "Active" is summed in getVisMRR()).
 const CLIENT_STATUS_OPTIONS=['Active','Paused','Churned'];
+const CLIENT_FIELD_TO_STATE_KEY={OneTime:'OneTimeAmount'};
 async function updateClientField(business,field,value,el){
   const orig=el?el.dataset.orig:'';
   if(el){el.disabled=true;el.style.opacity='0.6';}
@@ -1813,7 +2020,13 @@ async function updateClientField(business,field,value,el){
     const data=await res.json();
     if(data.success){
       const c=state.clients.find(x=>x.Business===business);
-      if(c)c[field]=value;
+      const stateKey=CLIENT_FIELD_TO_STATE_KEY[field]||field;
+      if(c){
+        c[stateKey]=(field==='Amount'||field==='OneTime')?(parseFloat(value)||0):value;
+        if(field==='Amount'||field==='OneTime'){
+          c.PaymentType=(c.Amount>0&&c.OneTimeAmount>0)?'Both':(c.Amount>0?'Monthly':(c.OneTimeAmount>0?'One-Time':'Monthly'));
+        }
+      }
       if(el){el.dataset.orig=value;el.disabled=false;el.style.opacity='1';el.style.outline='2px solid var(--green)';setTimeout(()=>{if(el)el.style.outline='';},1800);}
       showToast('✓ '+business+' — '+field+' updated');
       renderClients();
@@ -1847,14 +2060,21 @@ async function markClientRenewed(business,el){
 
 function renderClients(){
   document.getElementById('clientsList').innerHTML=state.clients.map(c=>{
-    const pt=c.PaymentType||'Monthly';let ah='';
-    if(pt==='One-Time')ah=`<div class="client-amount" style="color:var(--purple)">&#8373;${c.OneTimeAmount||0}</div><div class="pay-onetime">ONE-TIME</div>`;
-    else if(pt==='Both')ah=`<div class="client-amount">&#8373;${c.Amount||0}</div><div class="pay-both">MONTHLY+1x</div>`;
-    else ah=`<div class="client-amount">&#8373;${c.Amount||0}</div><div class="pay-monthly">MONTHLY</div>`;
     const stat=(c.Status||'').toLowerCase();
     const sb=(c.Business||'').replace(/'/g,"\\'");
     const statusOpts=CLIENT_STATUS_OPTIONS.map(o=>`<option value="${o}"${o.toLowerCase()===stat?' selected':''}>${o}</option>`).join('');
-    return`<div class="client-item ${stat==='churned'?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">${ah}
+    // v18.0: both Monthly and One-Time amounts are now directly editable
+    // inline (previously only shown as read-only text), with a small label
+    // showing which one(s) apply to this client.
+    return`<div class="client-item ${stat==='churned'?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:9px;color:var(--gold);font-weight:700">MONTHLY GHS</span>
+        <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${c.Amount||0}" value="${c.Amount||0}" onchange="updateClientField('${sb}','Amount',this.value,this)">
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:9px;color:var(--purple);font-weight:700">ONE-TIME GHS</span>
+        <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--purple);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${c.OneTimeAmount||0}" value="${c.OneTimeAmount||0}" onchange="updateClientField('${sb}','OneTime',this.value,this)">
+      </div>
       <select data-orig="${c.Status||''}" onchange="updateClientField('${sb}','Status',this.value,this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;width:auto">${statusOpts}</select>
       <div style="display:flex;gap:6px;align-items:center">
         <input type="date" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${sheetDateToInputFormat(c.Renewal)}" onchange="updateClientField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)">
@@ -2057,8 +2277,54 @@ function filterContacts(){
     const sb=c.Business.replace(/'/g,"\\'");
     const src=(c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span></td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:10px;white-space:nowrap;color:var(--text-dim)">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${ov?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:140px;min-height:30px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:10px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span></td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
+      <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
+      <div style="display:flex;gap:4px;align-items:center">
+        <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
+        <button class="copy-btn" style="padding:3px 6px;font-size:9px" onclick="logAllContactsAction('${sb}','${src}','${bizSafe}')">LOG</button>
+      </div>
+      <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Last: ${cleanDate(c.Last_Contact)}</div>
+    </td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${ov?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:140px;min-height:30px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:10px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
+}
+
+// v18.0: ALL CONTACTS — "what's been done" logger. Lets you record what
+// action was taken (WhatsApp sent, called, replied, etc) along with a
+// specific date, without leaving the All Contacts table. Sets Last_Contact
+// server-side to the chosen date via logContactActionGET, and — for the
+// two negative outcomes — runs through the same auto-archive path as the
+// WA_Label dropdown (so "Not Interested"/"Wrong Number" logged here behaves
+// identically, including moving the row to Archive).
+const ALL_CONTACTS_ACTION_OPTIONS=['','WhatsApp Message Sent','Phone Call Made','Physical Visit','Replied — Interested','Replied — Not Interested','No Answer / No Reply','Wrong Number'];
+async function logAllContactsAction(business,sheetSource,bizSafe){
+  const sel=document.getElementById('actionpick-'+bizSafe);
+  const dateInput=document.getElementById('actiondate-'+bizSafe);
+  const action=sel?sel.value:'';
+  if(!action){showToast('Pick what was done first');return;}
+  if((action==='Replied — Not Interested'||action==='Wrong Number')){
+    if(!confirm('This will archive '+business+' as Rejected. Continue?'))return;
+  }
+  const chosenDate=dateInput&&dateInput.value?dateInputToSheetFormat(dateInput.value):'';
+  showToast('Logging...');
+  try{
+    const res=await fetch(API_URL+'?action=logContactAction&business='+encodeURIComponent(business)+'&actionTaken='+encodeURIComponent(action==='Replied — Not Interested'||action==='Wrong Number'?'Not Interested':action)+'&sheetSource='+encodeURIComponent(sheetSource||'Master CRM')+'&date='+encodeURIComponent(chosenDate)+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      if(data.archived){
+        state.contacts=state.contacts.filter(c=>c.Business!==business);
+        sessionResolvedContacts.add(business);
+        showToast('Archived — '+business);
+        renderAllContacts();
+      }else{
+        const c=state.contacts.find(x=>x.Business===business);
+        if(c)c.Last_Contact=data.lastContact;
+        showToast('✓ Logged — '+business+' — '+action);
+        renderAllContacts();
+      }
+    }else{
+      showToast('Error: '+(data.error||'could not log'));
+    }
+  }catch(e){showToast('Connection error — not logged');}
 }
 
 const QUICK_PROMPTS=['Who should I contact first today?','Why am I not converting?','What should I say after they read but did not reply?','How do I close a Verified today?','Pipeline overview'];
