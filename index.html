@@ -156,7 +156,7 @@ select:focus{border-color:var(--gold);}
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v17.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v20.0</span></div>
   <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
 </div>
 <div class="shabbat-banner" id="shabbatBanner">
@@ -280,7 +280,10 @@ select:focus{border-color:var(--gold);}
   <div style="background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
     <strong style="color:var(--red)">ARCHIVED CONTACTS</strong> · Rejected, expired proposals, 3x-no-reply, and dead leads live here. Nothing is ever deleted. Search and tap RESTORE to bring a business back into the active pipeline as a fresh contact.
   </div>
-  <input class="search-input" type="text" id="archiveSearch" placeholder="Search archived business name, number, category..." oninput="filterArchiveList()">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+    <input class="search-input" type="text" id="archiveSearch" placeholder="Search archived business name, number, category..." oninput="filterArchiveList()" style="margin-bottom:0;flex:1">
+    <button class="refresh-btn" onclick="exportArchive()">&#8681; EXPORT CSV</button>
+  </div>
   <div class="metrics-grid" id="archiveMetrics" style="margin-bottom:20px"></div>
   <div id="archiveList"></div>
 </div>
@@ -290,7 +293,10 @@ select:focus{border-color:var(--gold);}
   <div style="background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#4a8a4a;line-height:1.6">
     <strong>SHOWING:</strong> Only contacts due today or overdue. Messages rotate daily — different version each day automatically. Set deployment target before tapping DONE to track what you are selling. Anything you resolve (DONE / REJECT / moved to Client, Rejected, etc) stays off this list for the rest of your session, even if you switch message versions or filters.
   </div>
-  <input id="followupSearch" class="search-input" placeholder="&#128269; Search business, number, category, notes..." oninput="followupSearchQuery=this.value;followupPage=0;renderFollowUps()">
+  <div style="display:flex;gap:8px;align-items:center">
+    <input id="followupSearch" class="search-input" placeholder="&#128269; Search business, number, category, notes..." oninput="followupSearchQuery=this.value;followupPage=0;renderFollowUps()" style="margin-bottom:0;flex:1">
+    <button class="refresh-btn" onclick="exportFollowups()" style="margin-bottom:14px">&#8681; EXPORT CSV</button>
+  </div>
   <div class="filter-row" id="labelFilters">
     <button class="filter-btn active" onclick="setFilter('all',this)">ALL DUE TODAY</button>
     <button class="filter-btn" onclick="setFilter('🟡',this)">🟡 2-TICK UNREAD</button>
@@ -463,7 +469,10 @@ select:focus{border-color:var(--gold);}
     <button class="refresh-btn" onclick="submitAddClient()" style="background:var(--gold);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">+ ADD CLIENT</button>
     <div id="addClientResult" style="margin-top:8px;font-size:12px"></div>
   </div>
-  <div class="section-title">ACTIVE CLIENTS</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="section-title" style="margin-bottom:0">ACTIVE CLIENTS</div>
+    <button class="refresh-btn" onclick="exportClients()">&#8681; EXPORT CSV</button>
+  </div>
   <div id="clientsList"></div>
   <div class="section-title" style="margin-top:20px">RENEWAL ALERTS</div>
   <div id="renewalsList"></div>
@@ -504,7 +513,10 @@ select:focus{border-color:var(--gold);}
     <button class="refresh-btn" onclick="submitAddSMEMember()" style="background:var(--teal);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">+ ADD SME MEMBER</button>
     <div id="addSMEResult" style="margin-top:8px;font-size:12px"></div>
   </div>
-  <div class="section-title" style="margin-top:20px">SME MEMBERS</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:20px">
+    <div class="section-title" style="margin-bottom:0">SME MEMBERS</div>
+    <button class="refresh-btn" onclick="exportSME()">&#8681; EXPORT CSV</button>
+  </div>
   <div id="smeMembersList"></div>
 </div>
 
@@ -572,8 +584,23 @@ select:focus{border-color:var(--gold);}
 
 <!-- ALL CONTACTS -->
 <div class="tab-content" id="tab-contacts">
-  <input class="search-input" type="text" id="contactSearch" placeholder="Search by name, business, number, stage..." oninput="filterContacts()">
-  <div class="scroll-table"><table class="contact-table"><thead><tr><th>#</th><th>BUSINESS</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>ACTION / LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="allContactsBody"></tbody></table></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input class="search-input" type="text" id="contactSearch" placeholder="Search by name, business, number, stage..." oninput="filterContacts()" style="margin-bottom:0;flex:1">
+    <button class="refresh-btn" onclick="exportAllContacts()" style="margin-bottom:14px">&#8681; EXPORT CSV</button>
+  </div>
+  <div id="bulkActionBar" style="display:none;background:var(--surface);border:1px solid var(--gold);border-radius:6px;padding:10px 14px;margin-bottom:14px;align-items:center;gap:10px;flex-wrap:wrap">
+    <span id="bulkSelectedCount" style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px">0 SELECTED</span>
+    <select id="bulkField" onchange="renderBulkValueField()">
+      <option value="Stage">Set Stage</option>
+      <option value="WA_Label">Set WA Label</option>
+      <option value="Next_Follow_Up">Set Next Follow-Up Date</option>
+    </select>
+    <span id="bulkValueWrap"></span>
+    <button class="refresh-btn" onclick="applyBulkAction()" style="background:var(--gold);color:var(--black);font-weight:800">APPLY TO SELECTED</button>
+    <button class="refresh-btn" onclick="exportSelectedContacts()">&#8681; EXPORT SELECTED</button>
+    <button class="refresh-btn" onclick="clearContactSelection()">CLEAR SELECTION</button>
+  </div>
+  <div class="scroll-table"><table class="contact-table"><thead><tr><th><input type="checkbox" id="selectAllContacts" onchange="toggleSelectAllContacts(this)"></th><th>#</th><th>BUSINESS</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>ACTION / LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="allContactsBody"></tbody></table></div>
 </div>
 
 <!-- TRACKER -->
@@ -851,6 +878,218 @@ function buildContextualFollowup(c,msgCount){
   }
 
   return null;
+}
+
+// v19.0: CLICK-TO-CALL. A web dashboard can't place a phone call itself —
+// browsers have no telephony access — but a tel: link hands off to
+// whatever calling app is registered on the device (the phone dialer on
+// mobile, or apps like Skype/Google Voice on desktop), pre-filled with the
+// number, one tap from calling. This is the standard, only way a web page
+// can trigger an actual call.
+function toTelHref(number){
+  let n=(number||'').toString().trim().replace(/[\s-]/g,'');
+  if(!n)return'';
+  if(n.charAt(0)==='+')return'tel:'+n;
+  if(/^0\d{9}$/.test(n))return'tel:+233'+n.substring(1);
+  if(/^233\d{9}$/.test(n))return'tel:+'+n;
+  return'tel:'+n;
+}
+function callLinkHtml(number,extraStyle){
+  if(!number)return'';
+  return `<a href="${toTelHref(number)}" style="display:inline-flex;align-items:center;gap:4px;background:var(--green);color:var(--black);padding:5px 10px;border-radius:4px;font-size:10px;font-weight:800;text-decoration:none;letter-spacing:1px;${extraStyle||''}" onclick="event.stopPropagation()">&#128222; CALL</a>`;
+}
+// =====================================================
+// v20.0: CSV EXPORT — generic exporter used by every "EXPORT CSV" button.
+// Builds a CSV client-side (Blob + object URL) and triggers a download; no
+// server round-trip needed since we already have the data loaded.
+// =====================================================
+function exportToCSV(rows,columns,filename){
+  if(!rows||!rows.length){showToast('Nothing to export');return;}
+  const esc=v=>{
+    if(v===null||v===undefined)v='';
+    v=String(v).replace(/"/g,'""');
+    if(/[",\n]/.test(v))v='"'+v+'"';
+    return v;
+  };
+  const header=columns.map(c=>esc(c.label)).join(',');
+  const lines=rows.map(r=>columns.map(c=>esc(typeof c.get==='function'?c.get(r):r[c.key])).join(','));
+  const csv=[header,...lines].join('\r\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('Exported '+rows.length+' row'+(rows.length!==1?'s':'')+' — '+filename);
+}
+const CONTACT_EXPORT_COLUMNS=[
+  {key:'ID',label:'ID'},{key:'Business',label:'Business'},{key:'Number',label:'Number'},
+  {key:'Town',label:'Town'},{key:'Category',label:'Category'},{key:'Stage',label:'Stage'},
+  {key:'WA_Label',label:'WA Label'},{key:'Last_Contact',label:'Last Contact'},
+  {key:'Next_Follow_Up',label:'Next Follow-Up'},{key:'Notes',label:'Notes'},{key:'Sheet_Source',label:'Source Sheet'}
+];
+function exportAllContacts(){
+  exportToCSV(lastFilteredContacts.length?lastFilteredContacts:allContactsData,CONTACT_EXPORT_COLUMNS,'byinforgh-all-contacts-'+todayFileStamp()+'.csv');
+}
+function exportSelectedContacts(){
+  const rows=state.contacts.filter(c=>selectedContactsSet.has(c.Business));
+  exportToCSV(rows,CONTACT_EXPORT_COLUMNS,'byinforgh-selected-contacts-'+todayFileStamp()+'.csv');
+}
+function exportFollowups(){
+  exportToCSV(followupAllContacts,CONTACT_EXPORT_COLUMNS,'byinforgh-followups-'+todayFileStamp()+'.csv');
+}
+function exportArchive(){
+  const q=(document.getElementById('archiveSearch').value||'').toLowerCase();
+  const rows=archiveData.filter(a=>!q||(a.business||'').toLowerCase().includes(q)||(a.number||'').includes(q)||(a.category||'').toLowerCase().includes(q)||(a.town||'').toLowerCase().includes(q));
+  exportToCSV(rows,[
+    {key:'archivedDate',label:'Archived Date'},{key:'business',label:'Business'},{key:'number',label:'Number'},
+    {key:'category',label:'Category'},{key:'town',label:'Town'},{key:'stage',label:'Stage'},{key:'waLabel',label:'WA Label'},
+    {key:'reason',label:'Reason'},{key:'notes',label:'Notes'},{key:'sourceSheet',label:'Source Sheet'}
+  ],'byinforgh-archive-'+todayFileStamp()+'.csv');
+}
+function exportClients(){
+  exportToCSV(state.clients,[
+    {key:'Business',label:'Business'},{key:'Package',label:'Package'},{key:'Joined',label:'Joined'},{key:'Renewal',label:'Renewal'},
+    {key:'Amount',label:'Monthly GHS'},{key:'OneTimeAmount',label:'One-Time GHS'},{key:'Status',label:'Status'},
+    {key:'Number',label:'Number'},{key:'Notes',label:'Notes'}
+  ],'byinforgh-clients-'+todayFileStamp()+'.csv');
+}
+function exportSME(){
+  exportToCSV(state.smeMembers||[],[
+    {key:'Business',label:'Business'},{key:'Owner',label:'Owner'},{key:'Package',label:'Package'},{key:'Amount',label:'Monthly GHS'},
+    {key:'Status',label:'Status'},{key:'Number',label:'Number'},{key:'Location',label:'Location'},{key:'ContactName',label:'Contact'},{key:'Notes',label:'Notes'}
+  ],'byinforgh-sme-members-'+todayFileStamp()+'.csv');
+}
+function todayFileStamp(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+let lastFilteredContacts=[];
+
+// =====================================================
+// v20.0: WHATSAPP DEEP LINK — opens wa.me with the number and message
+// pre-filled, so tapping actually opens WhatsApp ready to send instead of
+// requiring copy-then-paste. Reads the message live from the message box
+// at click time (so it reflects any Personalise edit made beforehand).
+// =====================================================
+function toWaHref(number,text){
+  let n=(number||'').toString().trim().replace(/[\s-]/g,'');
+  if(n.charAt(0)==='+')n=n.substring(1);
+  else if(/^0\d{9}$/.test(n))n='233'+n.substring(1);
+  return 'https://wa.me/'+n+(text?('?text='+encodeURIComponent(text)):'');
+}
+function openWhatsApp(number,idx){
+  if(!number){showToast('No number on file for this contact');return;}
+  const box=document.getElementById('msgbox-'+idx);
+  const text=box?box.textContent:'';
+  window.open(toWaHref(number,text),'_blank','noopener');
+}
+
+// =====================================================
+// v20.0: BULK ACTIONS — All Contacts. Select any number of contacts via
+// checkboxes, then apply one field change (Stage / WA_Label / Next Follow-
+// Up) to all of them in one go, in chunks of 5 concurrent requests so it
+// doesn't hammer the Apps Script endpoint on large selections.
+// =====================================================
+let selectedContactsSet=new Set();
+function toggleContactSelect(business,checked){
+  if(checked)selectedContactsSet.add(business);else selectedContactsSet.delete(business);
+  updateBulkBar();
+}
+function toggleSelectAllContacts(cb){
+  const checked=cb.checked;
+  document.querySelectorAll('.contact-select-cb').forEach(el=>{
+    el.checked=checked;
+    if(checked)selectedContactsSet.add(el.getAttribute('data-biz'));else selectedContactsSet.delete(el.getAttribute('data-biz'));
+  });
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const bar=document.getElementById('bulkActionBar');
+  const count=selectedContactsSet.size;
+  document.getElementById('bulkSelectedCount').textContent=count+' SELECTED';
+  bar.style.display=count>0?'flex':'none';
+  if(count>0&&!document.getElementById('bulkValue'))renderBulkValueField();
+}
+function clearContactSelection(){
+  selectedContactsSet.clear();
+  document.querySelectorAll('.contact-select-cb').forEach(el=>el.checked=false);
+  const sa=document.getElementById('selectAllContacts');if(sa)sa.checked=false;
+  updateBulkBar();
+}
+function renderBulkValueField(){
+  const field=document.getElementById('bulkField').value;
+  const wrap=document.getElementById('bulkValueWrap');
+  if(field==='Stage')wrap.innerHTML=`<select id="bulkValue">${buildStageOptionsHtml('')}</select>`;
+  else if(field==='WA_Label')wrap.innerHTML=`<select id="bulkValue">${buildWaLabelOptionsHtml('')}</select>`;
+  else if(field==='Next_Follow_Up')wrap.innerHTML=`<input type="date" id="bulkValue">`;
+}
+async function applyBulkAction(){
+  const field=document.getElementById('bulkField').value;
+  const valEl=document.getElementById('bulkValue');
+  let value=valEl?valEl.value:'';
+  if(!value){showToast('Pick a value first');return;}
+  if(field==='Next_Follow_Up')value=dateInputToSheetFormat(value);
+  const businesses=[...selectedContactsSet];
+  if(!businesses.length)return;
+  const isRejectBulk=field==='WA_Label'&&value.indexOf('⬛')!==-1;
+  const confirmMsg=isRejectBulk
+    ? 'Set WA Label to Rejected for '+businesses.length+' contacts?\n\nThis archives ALL of them immediately and removes them from the active pipeline. Continue?'
+    : 'Apply "'+value+'" to '+businesses.length+' selected contact'+(businesses.length!==1?'s':'')+'?';
+  if(!confirm(confirmMsg))return;
+  showToast('Applying to '+businesses.length+' contacts...');
+  let done=0,failed=0;
+  const chunkSize=5;
+  for(let i=0;i<businesses.length;i+=chunkSize){
+    const chunk=businesses.slice(i,i+chunkSize);
+    const results=await Promise.all(chunk.map(biz=>{
+      const c=state.contacts.find(x=>x.Business===biz);
+      const src=c?c.Sheet_Source:'Master CRM';
+      return fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(biz)+'&field='+encodeURIComponent(field)+'&value='+encodeURIComponent(value)+'&sheetSource='+encodeURIComponent(src||'Master CRM')+'&t='+Date.now())
+        .then(r=>r.json()).then(data=>({biz,c,data})).catch(()=>({biz,c,data:{error:'network'}}));
+    }));
+    results.forEach(({biz,c,data})=>{
+      if(data&&data.success){
+        if(data.archived){state.contacts=state.contacts.filter(x=>x.Business!==biz);sessionResolvedContacts.add(biz);}
+        else if(c)c[field]=value;
+        done++;
+      }else failed++;
+    });
+  }
+  clearContactSelection();
+  showToast('Bulk update done — '+done+' updated'+(failed?', '+failed+' failed':''));
+  renderAllContacts();
+}
+
+// =====================================================
+// v20.0: DUPLICATE DETECTION — checked before adding a new contact/client/
+// SME member. Two signals: same phone number under a different name (most
+// reliable — catches a re-added or renamed contact), or same/near-identical
+// business name under a different number. Either one shows a confirm
+// dialog naming the existing match; the person can still proceed if it's
+// genuinely a new, separate contact.
+// =====================================================
+function normalizeNameForCompare(s){return(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function findPossibleDuplicateContact(business,number){
+  const normNum=normalizePhoneClient(number);
+  const normName=normalizeNameForCompare(business);
+  const all=(state.contacts||[]);
+  for(const c of all){
+    const cNum=normalizePhoneClient(c.Number||'');
+    const cName=normalizeNameForCompare(c.Business||'');
+    if(normNum&&cNum&&normNum===cNum&&cName!==normName)return{type:'number',match:c};
+    if(normName&&cName&&normName===cName&&cNum!==normNum)return{type:'name',match:c};
+  }
+  return null;
+}
+function confirmIfDuplicateContact(business,number){
+  const dup=findPossibleDuplicateContact(business,number);
+  if(!dup)return true;
+  const msg=dup.type==='number'
+    ? 'This WhatsApp number is already used by "'+dup.match.Business+'" ('+dup.match.Sheet_Source+'). Add "'+business+'" anyway as a separate contact?'
+    : 'A business named "'+dup.match.Business+'" already exists with a different number ('+dup.match.Number+'). Add "'+business+'" anyway?';
+  return confirm(msg);
+}
+function findPossibleDuplicateByName(business,list){
+  const normName=normalizeNameForCompare(business);
+  return (list||[]).find(x=>normalizeNameForCompare(x.Business)===normName)||null;
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -1220,7 +1459,9 @@ function renderFollowUps(){
       <div class="message-box" id="msgbox-${idx}">${msg}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="copy-btn" onclick="copyMsg(document.getElementById('msgbox-${idx}').textContent,this)">COPY</button>
+        <button class="copy-btn" style="background:#25D366;color:#fff" onclick="openWhatsApp('${c.Number||''}',${idx})">&#128172; WHATSAPP</button>
         <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${sb}','${sn}','${c.Category||''}','${emoji}','${ss}',this,${idx})">✨ PERSONALISE</button>
+        ${callLinkHtml(c.Number)}
         <button class="copy-btn" style="background:#001a20;color:var(--blue);border:1px solid var(--blue)" onclick="logFollowupCall('${sb}','${c.Number||''}','${src}',this.closest('.followup-item').querySelector('textarea').value,this)">📞 CALLED</button>
         <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
         <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}','${src}',this)">✕ REJECT</button>
@@ -1386,6 +1627,7 @@ async function submitManualContact(){
   const result=document.getElementById('addContactResult');
   if(!business||!number){result.innerHTML='<span style="color:var(--red)">Business name and number are required.</span>';return;}
   if(!/^0\d{9}$/.test(number)){result.innerHTML='<span style="color:var(--red)">Number looks wrong — should be 10 digits starting with 0 (e.g. 0241234567).</span>';return;}
+  if(!confirmIfDuplicateContact(business,number)){result.innerHTML='<span style="color:var(--muted)">Cancelled — possible duplicate.</span>';return;}
   result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
   try{
     const url=API_URL+'?action=addManualContact&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)
@@ -1687,7 +1929,7 @@ function renderCallTab(){
     const lastCall=getLastCallNote(c.Notes).replace(/</g,'&lt;');
     return `<div class="call-item" id="callrow-${key}">
       <div class="call-item-row">
-        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number}</div>${lastCall?`<div style="font-size:10px;color:var(--gold);margin-top:5px;font-style:italic;line-height:1.4">&#128220; Last: ${lastCall.substring(0,140)}</div>`:''}</div>
+        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number}</div><div style="margin-top:6px">${callLinkHtml(c.Number)}</div>${lastCall?`<div style="font-size:10px;color:var(--gold);margin-top:5px;font-style:italic;line-height:1.4">&#128220; Last: ${lastCall.substring(0,140)}</div>`:''}</div>
         <div class="call-mid">
           <select onchange="callInlineUpdate('${key}','outcome',this.value)">${callOutcomeOptionsHtml('')}</select>
           <div class="call-mid-row">
@@ -1802,18 +2044,35 @@ function renderKofList(){
   else f=kof.filter(c=>c.Area&&c.Area.trim()===currentKofArea);
   f=[...f].sort((a,b)=>{const score=c=>{const s=(c.Stage||'').toLowerCase();if(s.includes('b1')||s.includes('active'))return 0;if(s.includes('b2')||s.includes('warm'))return 1;return 2;};return score(a)-score(b);});
   if(!f.length){document.getElementById('kofList').innerHTML='<div class="empty">No contacts for this area</div>';return;}
+  // v19.0: Koforidua now has the same editing surface as All Contacts —
+  // editable business name (pencil), Stage dropdown (was a read-only badge
+  // before), editable Number/Area/Category fields (previously had no save
+  // path at all on this sheet), click-to-call, and the same "what was
+  // done + date" action logger used on All Contacts.
   document.getElementById('kofList').innerHTML=f.map((c,i)=>{
     const sb=(c.Business||'').replace(/'/g,"\\'");
+    const bizSafe=(c.Business||'').replace(/[^a-zA-Z0-9]/g,'_')+'-kof'+i;
     return `<div class="followup-item" style="${(c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active')))?'border-left:3px solid var(--green)':c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))?'border-left:3px solid var(--orange)':''}">
     <div class="followup-header"><div style="flex:1">
-      <div class="followup-name">${i+1}. ${c.Business||c.Name||'—'} ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
-      <div class="followup-meta" style="margin-top:3px">${c.Number?`<span style="font-family:'Space Mono',monospace;color:var(--gold)">${c.Number}</span> · `:''}${c.Sells||c.Category||'—'} · &#128205; ${c.Area||'—'}</div>
-      <textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" placeholder="No notes — tap to add" style="width:100%;min-height:40px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-family:Syne,sans-serif;font-size:11px;margin-top:6px;padding:7px;border-radius:5px;resize:vertical;outline:none" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
+      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Koforidua Master','bizname-${bizSafe}')">&#9998;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">NUMBER</span><input type="text" data-orig="${c.Number||''}" value="${c.Number||''}" onchange="updateContactField('${sb}','Number',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Space Mono',monospace;width:120px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">AREA / VISITING PLACE</span><input type="text" data-orig="${c.Area||''}" value="${c.Area||''}" onchange="updateContactField('${sb}','Town',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">SELLS / CATEGORY</span><input type="text" data-orig="${c.Sells||c.Category||''}" value="${c.Sells||c.Category||''}" onchange="updateContactField('${sb}','Category',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
+        <div style="align-self:flex-end">${callLinkHtml(c.Number)}</div>
+      </div>
+      <textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" placeholder="No notes — tap to add" style="width:100%;min-height:40px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-family:Syne,sans-serif;font-size:11px;margin-top:8px;padding:7px;border-radius:5px;resize:vertical;outline:none" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">
+        <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;max-width:160px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
+        <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:'Space Mono',monospace;width:120px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
+        <button class="copy-btn" onclick="logAllContactsAction('${sb}','Koforidua Master','${bizSafe}')">LOG VISIT</button>
+        <span style="font-size:10px;color:var(--text-dim)">Last: ${cleanDate(c.Last_Contact)}</span>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-      <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage||'—'}</span>
+      <select data-orig="${c.Stage||''}" onchange="updateContactField('${sb}','Stage',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select>
       <select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Koforidua Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:12px;cursor:pointer;max-width:150px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select>
-      <input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none">
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font-size:9px;color:var(--muted);font-weight:700">NEXT FOLLOW-UP</span><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none"></div>
     </div>
     </div>
   </div>`;
@@ -1886,6 +2145,8 @@ async function submitAddClient(){
   const notes=document.getElementById('addClientNotes').value.trim();
   const result=document.getElementById('addClientResult');
   if(!business){result.innerHTML='<span style="color:var(--red)">Business name is required.</span>';return;}
+  const dupClient=findPossibleDuplicateByName(business,state.clients);
+  if(dupClient&&!confirm('"'+dupClient.Business+'" already exists in Clients. Add "'+business+'" anyway as a separate entry?')){result.innerHTML='<span style="color:var(--muted)">Cancelled — possible duplicate.</span>';return;}
   result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
   try{
     const url=API_URL+'?action=addClient&business='+encodeURIComponent(business)+'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
@@ -1894,6 +2155,13 @@ async function submitAddClient(){
     const res=await fetch(url);const data=await res.json();
     if(data.success){
       state.clients.push({Business:business,Package:data.package,Joined:joined,Renewal:renewal,Amount:parseFloat(monthlyAmount)||0,Status:status,Number:number,Notes:notes,OneTimeAmount:parseFloat(oneTimeAmount)||0,PaymentType:(parseFloat(monthlyAmount)>0&&parseFloat(oneTimeAmount)>0)?'Both':(parseFloat(monthlyAmount)>0?'Monthly':'One-Time'),Sheet_Source:'Clients'});
+      const totalAmt=(parseFloat(monthlyAmount)||0)+(parseFloat(oneTimeAmount)||0);
+      if(totalAmt>0){
+        const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+        trackerData.conversions=[{timestamp:new Date().toString(),date:ds,business,number,offer:data.package,amount:totalAmt,notes:'Auto-logged on client add'},...(trackerData.conversions||[])];
+        trackerData.totalConversions=(trackerData.totalConversions||0)+1;
+        trackerData.totalConversionRevenue=(trackerData.totalConversionRevenue||0)+totalAmt;
+      }
       result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added as '+data.package+'</span>';
       showToast('Client added — '+business);
       ['addClientBusiness','addClientCustomName','addClientMonthly','addClientOneTime','addClientJoined','addClientRenewal','addClientNumber','addClientNotes'].forEach(id=>document.getElementById(id).value='');
@@ -1919,6 +2187,8 @@ async function submitAddSMEMember(){
   const notes=document.getElementById('addSMENotes').value.trim();
   const result=document.getElementById('addSMEResult');
   if(!business){result.innerHTML='<span style="color:var(--red)">Business name is required.</span>';return;}
+  const dupSme=findPossibleDuplicateByName(business,state.smeMembers);
+  if(dupSme&&!confirm('"'+dupSme.Business+'" already exists in SME Systems Members. Add "'+business+'" anyway as a separate entry?')){result.innerHTML='<span style="color:var(--muted)">Cancelled — possible duplicate.</span>';return;}
   result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
   try{
     const url=API_URL+'?action=addSMEMember&business='+encodeURIComponent(business)+'&owner='+encodeURIComponent(owner)+'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
@@ -1927,6 +2197,13 @@ async function submitAddSMEMember(){
     const res=await fetch(url);const data=await res.json();
     if(data.success){
       state.smeMembers.push({Business:business,Owner:owner,Package:data.package,Joined:'',Amount:parseFloat(monthlyAmount)||0,Status:status,Number:number,Notes:notes,Location:location,ContactName:contactName,Source:'Dashboard Manual Entry',NextFollowUp:''});
+      const smeAmt=parseFloat(monthlyAmount)||0;
+      if(smeAmt>0){
+        const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+        trackerData.conversions=[{timestamp:new Date().toString(),date:ds,business,number,offer:data.package,amount:smeAmt,notes:'Auto-logged on SME member add'},...(trackerData.conversions||[])];
+        trackerData.totalConversions=(trackerData.totalConversions||0)+1;
+        trackerData.totalConversionRevenue=(trackerData.totalConversionRevenue||0)+smeAmt;
+      }
       result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added as '+data.package+'</span>';
       showToast('SME member added — '+business);
       ['addSMEBusiness','addSMEOwner','addSMECustomName','addSMEMonthly','addSMENumber','addSMELocation','addSMEContactName','addSMENotes'].forEach(id=>document.getElementById(id).value='');
@@ -2156,9 +2433,37 @@ function getPeriodRange(period){
   else if(period==='q4'){ start=new Date(y,9,1); end=new Date(y,11,31,23,59,59); }
   else if(period==='6m'){ start=new Date(now); start.setMonth(start.getMonth()-6); }
   else if(period==='year'){ start=new Date(y,0,1); }
-  else if(period==='all'){ start=new Date(2000,0,1); }
+  else if(period==='all'){
+    // v19.0 FIX: this previously hardcoded start=Jan 2000, which made the
+    // prorated revenue target for "All Time" astronomically large (dailyTarget
+    // × ~9000 days) — the Summary tab's All Time card always showed "BELOW
+    // TARGET" at ~0%, regardless of actual performance, because the target
+    // was nonsense, not because performance was actually bad. Anchor to the
+    // earliest real date we know about instead (earliest contact creation
+    // date or earliest logged conversion), falling back to 90 days ago only
+    // if there's genuinely no data yet.
+    const knownDates=[];
+    (state.contacts||[]).forEach(c=>{ const d=parseAnyDateSafe(c.Created_Date); if(d) knownDates.push(d); });
+    (trackerData.conversions||[]).forEach(cv=>{ const d=parseAnyDateSafe(cv.date||cv.timestamp); if(d) knownDates.push(d); });
+    if(knownDates.length){
+      start=new Date(Math.min(...knownDates.map(d=>d.getTime())));
+    } else {
+      start=new Date(now); start.setDate(start.getDate()-90);
+    }
+  }
   end.setHours(23,59,59,999);
   return {start,end};
+}
+// v19.0: small safe wrapper — parseAnyDate is defined further down (after
+// getPeriodRange in source order isn't an issue since functions hoist, but
+// keeping a locally-safe copy avoids any load-order surprises).
+function parseAnyDateSafe(str){
+  if(!str) return null;
+  try{
+    const d1=parseFollowUpDate(str); if(d1) return d1;
+    const d2=new Date(str); if(!isNaN(d2.getTime())) return d2;
+  }catch(e){}
+  return null;
 }
 function parseAnyDate(str){
   if(!str) return null;
@@ -2268,6 +2573,7 @@ function renderAllContacts(){allContactsData=state.contacts;filterContacts();}
 function filterContacts(){
   const q=(document.getElementById('contactSearch').value||'').toLowerCase();
   const filtered=allContactsData.filter(c=>!q||(c.Business||'').toLowerCase().includes(q)||(c.Number||'').includes(q)||(c.Stage||'').toLowerCase().includes(q)||(c.Town||'').toLowerCase().includes(q)||(c.Category||'').toLowerCase().includes(q)||(c.Notes||'').toLowerCase().includes(q));
+  lastFilteredContacts=filtered;
   document.getElementById('allContactsBody').innerHTML=filtered.map((c,fi)=>{
     let daysInDB='—';if(c.Created_Date){const cr=new Date(c.Created_Date);if(!isNaN(cr.getTime()))daysInDB=Math.floor((new Date()-cr)/(1000*60*60*24))+'d';}
     const ov=isOverdue(c.Next_Follow_Up);const msgCount=state.messageCounts[c.Business]||0;
@@ -2277,7 +2583,7 @@ function filterContacts(){
     const sb=c.Business.replace(/'/g,"\\'");
     const src=(c.Sheet_Source||'Master CRM').replace(/'/g,"\\'");
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span></td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
+    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
       <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
       <div style="display:flex;gap:4px;align-items:center">
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
