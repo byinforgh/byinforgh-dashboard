@@ -280,20 +280,22 @@
    CONFIG — fill these in before going live
    ========================================================= */
 const CONFIG = {
-  // Live Apps Script /exec URL — CONFIRMED 4 July 2026 against the Apps
-  // Script editor's Deploy > Manage deployments, matching the ACTIVE
-  // deployment named "NEW 4 JULY" (Deployment ID starting AKfycbzEUdWF...).
-  //
-  // IMPORTANT: every prior URL used here (including the AKfycbwGQMkmh9Cw...
-  // one this replaces) pointed at an older/different deployment — that's
-  // why Stage/Offer were showing stale values like "Listed Business" /
-  // "Free Listing — 0 GHS" instead of the current Conversation/Interested
-  // + Warm Message logic, and why the phone-number and duplicate-matching
-  // fixes weren't taking effect. This URL MUST always match whatever
-  // deployment is Active in Deploy > Manage deployments — if you deploy a
-  // new version under a NEW deployment (not "Manage deployments > Edit >
-  // Deploy" on the existing one), this URL will need updating again.
-  GAS_URL: "https://script.google.com/macros/s/AKfycbzEUdWFKIqhKsM9LBYyzGv-JBJdI0wTboH1GvGIUSrLYeBGzdITHmRCDTOGFN3HnwGq/exec",
+  // v21.0 FIX — LIKELY ROOT CAUSE OF MISSING LEADS: this URL previously
+  // pointed at a DIFFERENT Apps Script deployment than the one the
+  // Command Centre dashboard uses (API_URL in the dashboard's index.html).
+  // Google Apps Script deployments are frozen at whatever code existed at
+  // the moment they were created — editing Code.gs later does NOT update
+  // an existing deployment unless you explicitly re-deploy a "new version"
+  // onto it. If the landing page's deployment was left on an older
+  // version (or a completely different deployment) while the dashboard's
+  // was kept current, landing page submissions could run stale code,
+  // write to a different result, or fail in ways the dashboard never
+  // showed. Both files now point at the SAME URL — the one already
+  // confirmed working through every dashboard iteration — to remove that
+  // whole class of drift. If you ever redeploy Code.gs under a brand new
+  // deployment (not "Manage deployments > Edit > this deployment"), BOTH
+  // this URL and the dashboard's API_URL must be updated together.
+  GAS_URL: "https://script.google.com/macros/s/AKfycby9X4OTmZERFAsLlHXf80G3C59rlHeyshTD6eKF-l0azZjWp_SHagxi8L7E4yUenEH1/exec",
 
   REGISTER_URL: "https://byinforgh.com/my-account-2/?register",
   WHATSAPP_NUMBER: "233509960980", // used for wa.me links, no leading zero, no +
@@ -496,19 +498,48 @@ function setConfirmCopy(){
   }
 }
 
+// v21.0: fire-and-forget log of a submission the anti-bot checks flagged.
+// Never awaited, never blocks or delays the outcome screen — if it fails
+// (offline, blocked, whatever) that's fine, it was a best-effort safety
+// net, not a required step.
+function logSuspectedBot(reason){
+  try{
+    const qs = 'action=logLandingRaw&reason='+encodeURIComponent(reason)
+      +'&business='+encodeURIComponent(document.getElementById('business')?.value.trim()||'')
+      +'&number='+encodeURIComponent(document.getElementById('number')?.value.trim()||'')
+      +'&town='+encodeURIComponent(document.getElementById('town')?.value.trim()||'')
+      +'&category='+encodeURIComponent(document.getElementById('category')?.value.trim()||'')
+      +'&contactName='+encodeURIComponent(document.getElementById('contactName')?.value.trim()||'')
+      +'&source='+encodeURIComponent(document.getElementById('source')?.value||'')
+      +'&notes='+encodeURIComponent(document.getElementById('notes')?.value.trim()||'')
+      +'&quizStage='+encodeURIComponent(state.stage||'')
+      +'&quizApproach='+encodeURIComponent(state.approach||'');
+    fetch(CONFIG.GAS_URL + '?' + qs).catch(()=>{});
+  }catch(e){ /* best effort only, never block the visitor */ }
+}
+
 async function submitLead(){
   const errEl = document.getElementById('err5');
   errEl.textContent = '';
 
-  // honeypot check — silently "succeed" without writing anything
+  // honeypot check — v21.0: previously "silently succeeded" with NO record
+  // anywhere. If a browser's autofill/password manager ever populated this
+  // hidden field for a real visitor, their lead vanished completely with
+  // no way to recover it. Now it's logged (fire-and-forget, doesn't block
+  // the outcome screen) so it can be reviewed and manually added if it
+  // turns out to be a real person, not a bot.
   if(document.getElementById('website').value.trim() !== ''){
+    logSuspectedBot('honeypot_filled');
     showOutcome();
     return;
   }
   // timing check — a real person needs at least a few seconds to read and
   // fill 5 fields across 2 screens; bots that auto-fill and submit instantly
-  // get silently "succeeded" the same way the honeypot does, no writing.
+  // get flagged the same way — logged as suspected-bot instead of silently
+  // dropped, then shown the same success screen (bots don't care, but a
+  // false-positive human submission is now recoverable).
   if(Date.now() - PAGE_LOAD_TIME < 4000){
+    logSuspectedBot('too_fast_' + (Date.now()-PAGE_LOAD_TIME) + 'ms');
     showOutcome();
     return;
   }
