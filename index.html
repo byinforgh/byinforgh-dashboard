@@ -1113,6 +1113,11 @@ async function applyBulkAction(){
 
 // =====================================================
 // v20.0: DUPLICATE DETECTION
+// v22.0: widened to also catch the exact-match case (both number and
+// normalized name matching an existing contact) — previously this only
+// flagged a PARTIAL match and explicitly skipped the exact-match case on
+// the assumption the server would always catch it. That is precisely the
+// case that slipped through with landing-page leads re-entered manually.
 // =====================================================
 function normalizeNameForCompare(s){return(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');}
 function findPossibleDuplicateContact(business,number){
@@ -1122,6 +1127,7 @@ function findPossibleDuplicateContact(business,number){
   for(const c of all){
     const cNum=normalizePhoneClient(c.Number||'');
     const cName=normalizeNameForCompare(c.Business||'');
+    if(normNum&&cNum&&normNum===cNum&&cName===normName)return{type:'both',match:c};
     if(normNum&&cNum&&normNum===cNum&&cName!==normName)return{type:'number',match:c};
     if(normName&&cName&&normName===cName&&cNum!==normNum)return{type:'name',match:c};
   }
@@ -1130,7 +1136,9 @@ function findPossibleDuplicateContact(business,number){
 function confirmIfDuplicateContact(business,number){
   const dup=findPossibleDuplicateContact(business,number);
   if(!dup)return true;
-  const msg=dup.type==='number'
+  const msg=dup.type==='both'
+    ? 'This looks like the exact same contact already in the system: "'+dup.match.Business+'" ('+dup.match.Number+', '+dup.match.Sheet_Source+') — it may have already come in through the landing page. Add it again anyway as a separate duplicate contact?'
+    : dup.type==='number'
     ? 'This WhatsApp number is already used by "'+dup.match.Business+'" ('+dup.match.Sheet_Source+'). Add "'+business+'" anyway as a separate contact?'
     : 'A business named "'+dup.match.Business+'" already exists with a different number ('+dup.match.Number+'). Add "'+business+'" anyway?';
   return confirm(msg);
