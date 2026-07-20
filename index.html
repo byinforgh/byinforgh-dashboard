@@ -243,7 +243,14 @@ select:focus{border-color:var(--gold);}
     <div class="card-title" style="color:var(--teal)">&#128172; CONVERSATION REVIEW</div>
     <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Paste a conversation summary. Get feedback: what worked, what missed, score /10, exact next message.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">BUSINESS NAME</div><input id="convReviewBusiness" class="search-input" style="margin:0" placeholder="e.g. Spice and Sizzle Food"></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">BUSINESS NAME <span style="color:var(--teal)">(search — auto-fills history below)</span></div>
+        <div class="contact-search-wrap">
+          <input class="contact-search-input" id="convReviewContactInput" placeholder="Type to search..." autocomplete="off" oninput="filterContactSearch('convReview',this.value)" onfocus="openContactSearch('convReview')" onblur="setTimeout(()=>closeContactSearch('convReview'),200)">
+          <div class="contact-search-dropdown" id="convReviewContactDropdown"></div>
+        </div>
+        <div class="contact-selected" id="convReviewContactSelected"><span id="convReviewContactLabel">&mdash;</span><span class="contact-selected-clear" onclick="clearContactSearch('convReview')">&#x2715;</span></div>
+        <input type="hidden" id="convReviewContact" value="">
+      </div>
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">OUTCOME</div><select id="convReviewOutcome"><option value="no_reply">No reply yet</option><option value="replied">They replied</option><option value="interested">Showed interest</option><option value="objection">Raised objection</option><option value="closed">Closed / converted</option><option value="rejected">Rejected</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -542,10 +549,10 @@ select:focus{border-color:var(--gold);}
 <div class="tab-content" id="tab-revenue">
   <div class="section-title">ACTUAL REVENUE</div>
   <div class="metrics-grid" id="revenueActual" style="margin-bottom:24px"></div>
-  <div class="section-title">PROJECTED REVENUE — DOUBLING PLAN</div>
-  <div class="proj-grid" id="projCards"></div>
-  <div class="two-col">
-    <div class="card"><div class="card-title">WEEKLY DOUBLING TRAJECTORY</div><div class="chart-wrap"><div class="chart-bars" id="weekChart"></div></div><div style="margin-top:12px;font-size:11px;color:var(--text-dim);display:flex;gap:16px"><span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;margin-right:4px"></span>Base</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px"></span>Doubling</span></div></div>
+  <div class="section-title">REVENUE PROJECTIONS — ALL DEPARTMENTS COMBINED (current run-rate)</div>
+  <div class="proj-grid" id="revenueProjectionGrid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div>
+  <div class="two-col" style="margin-top:16px">
+    <div class="card"><div class="card-title">GROWTH TARGETS (if you double closes)</div><div class="proj-grid" id="projCards" style="margin-bottom:0"></div></div>
     <div class="card"><div class="card-title">CONVERSION TRACKER — BY PACKAGE</div><div id="conversionTracker"></div></div>
   </div>
   <div class="card" style="margin-top:16px"><div class="card-title">CLOSES NEEDED TO HIT TARGETS</div><div id="closesNeeded"></div></div>
@@ -1035,6 +1042,7 @@ function openWhatsApp(number,idx){
     state.messageCounts[contact.Business]=(state.messageCounts[contact.Business]||0)+1;
     state.todayOutreach=(state.todayOutreach||0)+1;
     showToast('WhatsApp opened — logged as sent');
+    refreshTodayIfVisible();
   }
 }
 
@@ -1177,6 +1185,14 @@ function toggleCheck(el){el.classList.toggle('done');const txt=el.parentElement.
 function handleConversionOfferChange(){const val=document.getElementById('conversionOffer').value;const cf=document.getElementById('conversionCustomPackageName');const amt=document.getElementById('conversionAmount');const presets={'Business Presence':0,'Verified Business':180,'Visibility Partner 250':250,'Visibility Partner 750':750,'Visibility Partner 1500':1500,'Business Authority':5000,'SME Systems Starter':50,'SME Systems Growth':150,'SME Systems Authority':500,'Command Centre Starter':25000,'Command Centre Growth':50000,'Command Centre Authority':90000};if(val==='Custom Package'){cf.style.display='block';}else{cf.style.display='none';if(presets[val]!==undefined)amt.value=presets[val];}}
 function setDeployment(dep,btn){currentDeployment=dep;document.querySelectorAll('[id^="dep"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
+// v23.0: outreach-count fix — logging outreach only updated in-memory
+// state, but the Today tab metric card doesn't re-render until the next
+// full refresh, so it looked like the count "stayed at 0" right after
+// sending, even though the send was logged. This forces an immediate
+// re-render of the Today metrics whenever that tab is the one visible.
+function refreshTodayIfVisible(){
+  if(document.getElementById('tab-today')?.classList.contains('active'))renderToday();
+}
 function activateTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
@@ -1301,6 +1317,20 @@ function renderToday(){
   const today=new Date();today.setHours(0,0,0,0);
   const dueF=state.contacts.filter(c=>{if(!c.Next_Follow_Up)return false;const d=parseFollowUpDate(c.Next_Follow_Up);return d&&d<=today&&c.WA_Label&&!c.WA_Label.includes('⬛');});
   const callC=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
+  // v23.0: SHABBAT — no outreach/follow-up/call actions shown on the rest
+  // day. Previously this section rendered exactly the same actionable
+  // outreach list every day of the week, including Saturday.
+  if(isShabbat()){
+    document.getElementById('todayActions').innerHTML=`<div class="card"><div style="text-align:center;padding:20px 10px">
+      <div style="font-size:28px;margin-bottom:8px">&#128335;</div>
+      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:6px">Shabbat — Rest Day</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7">No outreach, follow-ups, or call targets are shown today.<br>Yahuah holds it. Resume Sunday.</div>
+    </div></div>`;
+    document.getElementById('waBoard').innerHTML=`<div class="empty" style="grid-column:1/-1">WA Board resumes Sunday — rest day</div>`;
+    document.getElementById('callList').innerHTML='<div class="empty">No call targets on Shabbat</div>';
+    document.getElementById('kofVisitList').innerHTML='<div class="empty">No visits on Shabbat</div>';
+    return;
+  }
   document.getElementById('todayActions').innerHTML=`<div class="card">
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Ask discovery question to 5 new contacts — how are customers finding you?</div><div class="action-tag tag-outreach">OUTREACH</div></div>
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text" style="cursor:pointer" onclick="goFollowupFilter('all')">Follow up ${dueF.length} contacts due today — Follow-Ups tab</div><div class="action-tag tag-followup">FOLLOW-UP</div></div>
@@ -1402,6 +1432,14 @@ async function saveEditBusinessName(oldBusiness,sheetSource,containerId){
 }
 
 function renderFollowUps(){
+  // v23.0: SHABBAT — no follow-up messaging or targets shown on the rest day.
+  if(isShabbat()){
+    document.getElementById('followupList').innerHTML=`<div class="empty" style="padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">&#128335;</div><div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:6px">Shabbat — Rest Day</div><div style="font-size:12px;color:var(--text-dim)">No follow-ups shown today. Resume Sunday.</div></div>`;
+    document.getElementById('followupPagination').innerHTML='';
+    document.getElementById('followupPaginationTop').innerHTML='';
+    followupAllContacts=[];
+    return;
+  }
   let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business));
   const today=new Date();today.setHours(0,0,0,0);
   if(currentFilter==='monthly')contacts=contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes('monthly'));
@@ -1714,6 +1752,7 @@ async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
     const url=API_URL+'?action=logFollowUpDone&business='+encodeURIComponent(business)+'&stage='+encodeURIComponent(stage)+'&sheetSource='+encodeURIComponent(sheetSource||'Master CRM')+'&message='+encodeURIComponent(message.replace(/\\n/g,'\n'))+'&deployment='+encodeURIComponent(currentDeployment)+'&skipOutreachLog='+(skipOutreachLog?'1':'0')+'&t='+Date.now();
     const res=await fetch(url);const data=await res.json();
     if(!skipOutreachLog)state.todayOutreach=(state.todayOutreach||0)+1;
+    refreshTodayIfVisible();
     const c=state.contacts.find(x=>x.Business===business);
     if(data.success){
       if(c){
@@ -1730,6 +1769,7 @@ async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
     renderFollowUps();
   }catch(err){
     if(!skipOutreachLog)state.todayOutreach=(state.todayOutreach||0)+1;
+    refreshTodayIfVisible();
     sessionResolvedContacts.add(business);
     showToast('Logged locally — '+business);
     renderFollowUps();
@@ -2319,6 +2359,30 @@ async function markClientRenewed(business,el){
   }catch(e){showToast('Connection error — not saved');}
 }
 
+// v23.0: ARCHIVE OUTDATED CLIENT — removes a client who is no longer with
+// us from the active Clients sheet (and therefore from Renewal Alerts,
+// which was previously showing them permanently as OVERDUE) without
+// deleting their history — the record moves to an "Archived Clients" sheet.
+async function archiveClientTap(business,btn){
+  if(!confirm('Archive '+business+'?\n\nThis removes them from the active Clients list and Renewal Alerts — use this for clients who are no longer with us. Their record is kept, not deleted.'))return;
+  if(btn){btn.textContent='Archiving...';btn.disabled=true;}
+  try{
+    const res=await fetch(API_URL+'?action=archiveClient&business='+encodeURIComponent(business)+'&reason='+encodeURIComponent('No longer a client — archived from dashboard')+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      state.clients=state.clients.filter(c=>c.Business!==business);
+      state.renewals=state.renewals.filter(r=>r.Business!==business);
+      showToast('Archived — '+business+' removed from active clients');
+      renderClients();renderToday();
+    }else{
+      showToast('Error: '+(data.error||'could not archive'));
+      if(btn){btn.textContent='🗑 ARCHIVE — NO LONGER A CLIENT';btn.disabled=false;}
+    }
+  }catch(e){
+    showToast('Connection error — not archived');
+    if(btn){btn.textContent='🗑 ARCHIVE — NO LONGER A CLIENT';btn.disabled=false;}
+  }
+}
 function renderClients(){
   document.getElementById('clientsList').innerHTML=state.clients.map(c=>{
     const stat=(c.Status||'').toLowerCase();
@@ -2338,6 +2402,7 @@ function renderClients(){
         <input type="date" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${sheetDateToInputFormat(c.Renewal)}" onchange="updateClientField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)">
         <button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 8px;font-size:9px" onclick="markClientRenewed('${sb}',this)">↻ RENEW</button>
       </div>
+      <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);padding:4px 8px;font-size:9px" onclick="archiveClientTap('${sb}',this)">&#128465; ARCHIVE — NO LONGER A CLIENT</button>
     </div></div>`;
   }).join('')||'<div class="empty">No clients loaded</div>';
   document.getElementById('renewalsList').innerHTML=state.renewals.filter(r=>r.Status!=='UPCOMING').map(r=>`<div class="client-item overdue"><div style="flex:1"><div class="client-name">${r.Business}</div><div class="client-pkg">${r.Package}</div></div><div style="text-align:right"><div class="overdue-tag">${r.Status}</div><div style="font-size:11px;color:var(--text-dim)">${Math.abs(r.Days||0)}d ${(r.Days||0)<0?'overdue':'until renewal'}</div></div></div>`).join('')||'<div class="empty">No overdue renewals</div>';
@@ -2358,6 +2423,14 @@ function matchPackageStats(matchFn){
   });
   return {count,revenue};
 }
+// v23.0: real combined-department (Visibility MRR + SME MRR, run-rate)
+// revenue projections across time buckets — replaces the old "doubling
+// plan" fantasy chart with straight-line real numbers at today's run rate.
+function renderRevenueProjections(mrr){
+  const daily=mrr/30, weekly=mrr/4.345, monthly=mrr, quarterly=mrr*3, sixMo=mrr*6, yearly=mrr*12, y2=mrr*24, y3=mrr*36;
+  const rows=[{l:'DAILY',v:daily},{l:'WEEKLY',v:weekly},{l:'MONTHLY',v:monthly},{l:'QUARTERLY',v:quarterly},{l:'6 MONTHS',v:sixMo},{l:'YEARLY',v:yearly},{l:'2 YEARS',v:y2},{l:'3 YEARS',v:y3}];
+  document.getElementById('revenueProjectionGrid').innerHTML=rows.map(r=>`<div class="proj-card"><div class="proj-period">${r.l}</div><div class="proj-amount">&#8373;${Math.round(r.v).toLocaleString()}</div><div class="proj-clients">at current combined MRR</div></div>`).join('');
+}
 function renderRevenue(){
   const mrr=getMRR(),visMRR=getVisMRR(),smeMRR=getSmeMRR(),oneTime=getOneTimeRevenue();
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
@@ -2370,10 +2443,7 @@ function renderRevenue(){
     <div class="metric-card purple"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">&#8373;${oneTime}</div><div class="metric-sub">playbooks / custom</div></div>
     <div class="metric-card orange"><div class="metric-label">TOTAL MRR</div><div class="metric-value" style="font-size:24px">&#8373;${mrr}</div><div class="metric-sub">vis + sme combined</div></div>`;
   document.getElementById('projCards').innerHTML=[{p:'THIS MONTH',a:mrr,s:active+' active'},{p:'MONTH 2',a:mrr*2,s:'Target: '+(active*2)},{p:'MONTH 3',a:mrr*4,s:'Target: '+(active*4)},{p:'MONTH 6',a:mrr*8,s:'Target: '+(active*8)}].map(x=>`<div class="proj-card"><div class="proj-period">${x.p}</div><div class="proj-amount">&#8373;${x.a.toLocaleString()}</div><div class="proj-clients">${x.s}</div></div>`).join('');
-  const weeks=['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7','Wk8'];
-  const doubling=[mrr||180];for(let i=1;i<8;i++)doubling.push(doubling[i-1]*2);
-  const maxV=Math.max(...doubling);
-  document.getElementById('weekChart').innerHTML=weeks.map((w,i)=>`<div class="chart-bar-group"><div style="display:flex;gap:2px;align-items:flex-end;height:130px"><div class="chart-bar base" style="height:${Math.round(((mrr||180)/maxV)*120)+4}px;width:14px"></div><div class="chart-bar double" style="height:${Math.round((doubling[i]/maxV)*120)+2}px;width:14px"></div></div><div class="chart-label">${w}</div><div class="chart-label" style="color:var(--gold)">&#8373;${doubling[i]>=1000?(doubling[i]/1000).toFixed(1)+'k':doubling[i]}</div></div>`).join('');
+  renderRevenueProjections(mrr);
 
   const presenceStats={count:0,revenue:0};
   (state.clients||[]).forEach(c=>{if((c.Status||'').trim().toLowerCase()==='active'&&/presence/i.test(c.Package||''))presenceStats.count++;});
@@ -2519,8 +2589,8 @@ function renderAnalytics(){
     <div class="metric-card green"><div class="metric-label">CONVERSIONS</div><div class="metric-value">${A.conversions.length}</div><div class="metric-sub">${A.periodConvRate.toFixed(1)}% of period outreach</div></div>
     <div class="metric-card blue"><div class="metric-label">OUTREACH SENT</div><div class="metric-value">${A.outreach.length}</div><div class="metric-sub">calls logged: ${A.calls.length}</div></div>
     <div class="metric-card teal"><div class="metric-label">NEW CONTACTS</div><div class="metric-value">${A.newContacts}</div><div class="metric-sub">added this period</div></div>
-    <div class="metric-card purple"><div class="metric-label">AVG MSGS &#8594; CONVERT</div><div class="metric-value">${A.avgOutreachBeforeConv!==null?A.avgOutreachBeforeConv:'—'}</div><div class="metric-sub">messages before close (all-time)</div></div>
-    <div class="metric-card orange"><div class="metric-label">OVERALL CONV RATE</div><div class="metric-value">${A.conversionRate.toFixed(1)}%</div><div class="metric-sub">of ${A.totalContacts} total contacts</div></div>`;
+    <div class="metric-card purple"><div class="metric-label">AVG MSGS &#8594; CONVERT</div><div class="metric-value">${A.avgOutreachBeforeConv!==null?A.avgOutreachBeforeConv:'—'}</div><div class="metric-sub">messages before close (this period)</div></div>
+    <div class="metric-card orange"><div class="metric-label">CONV RATE — THIS PERIOD</div><div class="metric-value">${A.periodConvRate.toFixed(1)}%</div><div class="metric-sub">${A.conversions.length} conv. of ${A.outreach.length} msgs sent, this period</div></div>`;
 
   document.getElementById('analyticsTargetBar').innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -2635,6 +2705,16 @@ async function logAllContactsAction(business,sheetSource,bizSafe){
 const QUICK_PROMPTS=['Who should I contact first today?','Why am I not converting?','What should I say after they read but did not reply?','How do I close a Verified today?','Pipeline overview'];
 
 function renderAI(){
+  // v23.0: SHABBAT — no outreach/close targets surfaced on the rest day.
+  if(isShabbat()){
+    const restMsg=`<div style="text-align:center;padding:20px 10px"><div style="font-size:28px;margin-bottom:8px">&#128335;</div><div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:6px">Shabbat — Rest Day</div><div style="font-size:12px;color:var(--text-dim);line-height:1.7">No conversion tips or pipeline targets today.<br>Resume Sunday.</div></div>`;
+    document.getElementById('aiConversionTips').innerHTML=restMsg;
+    document.getElementById('aiPipelineHealth').innerHTML=restMsg;
+    document.getElementById('aiSuggestions').innerHTML=restMsg;
+    document.getElementById('aiQuickPrompts').innerHTML=QUICK_PROMPTS.map(p=>`<button class="filter-btn" onclick="document.getElementById('aiInput').value='${p}';sendAI()" style="font-size:10px;padding:5px 10px">${p}</button>`).join('');
+    if(aiHistory.length===0)setTimeout(()=>addAIMessage('assistant',"Shabbat — rest day. No outreach or close targets today. The AI Assistant is still here if you want to ask a question, plan ahead, or just think something through — resume active selling Sunday."),500);
+    return;
+  }
   const blue=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
   const green=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢'));
   const red=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
@@ -2667,6 +2747,7 @@ function renderAI(){
 }
 
 function buildDailyBriefing(){
+  if(isShabbat())return"Shabbat — rest day. No outreach, follow-up, or close targets today. The pipeline will be here Sunday.";
   const mrr=getMRR(),total=state.contacts.length;
   const blue=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length;
   const green=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length;
@@ -2717,6 +2798,9 @@ function getSmartLocalReply(question){
   }
   if(q.includes('contact first')||q.includes('who should i')||q.includes('start with')){if(blue.length>0)return`Contact ${blue[0].Business} first.\n\nNumber: ${blue[0].Number||'—'}\nNotes: ${blue[0].Notes?blue[0].Notes.substring(0,120):'Verbal yes'}\n\nMessage: "Hey, I have everything ready to get you listed today. GHS 180, done in 24 hours. Shall we?"`;if(green.length>0)return`Hottest conversation: ${green[0].Business}\n\nNumber: ${green[0].Number||'—'}\n\nAsk: "How are customers finding your business?" Then bridge to Business Presence.`;return`No hot leads right now. Follow-Ups tab → 🟢 Conversation filter.`;}
   if(q.includes('not converting')||q.includes('conversion rate')||q.includes('why am i')){const rate=total>0?((active/total)*100).toFixed(1):0;return`Conversion rate: ${rate}% (${active} clients of ${total})\n\n1. ${red.length} 1-tick — call these (Calls tab)\n2. ${orange.length} read-no-reply — Google Maps drop, not same message\n3. Leading with visibility not their problem — start: "How are customers finding you?"`;}
+  if(q.match(/how (do|can) i convert|how to convert|how do i close|how to close|how do i get (more )?(clients|customers|sales)|make more sales|get more (clients|customers) to say yes|convert (more|better)/)){
+    return`HOW TO CONVERT:\n\n1. Discovery first — always ask "How are customers finding your business?" before pitching anything.\n2. Bridge to the free Business Presence listing — zero cost removes the biggest objection.\n3. Once they see value, offer Verified Business (GHS 180) — position it as solving exactly the problem they described.\n4. For hesitation, use urgency: "I can set this up in 24 hours — shall we start today?"\n5. Never repeat the same message twice — add something new each time (a Google Maps screenshot, a direct question, or a nearby business example).\n6. Prioritise 🔵 hot leads and 🟢 active conversations — they convert fastest, cold outreach converts slowest.\n\nRight now you have ${blue.length} hot lead${blue.length!==1?'s':''} and ${green.length} active conversation${green.length!==1?'s':''} ready to close.`;
+  }
   if(q.includes('read')&&q.includes('no reply')){return`For ${orange.length} read-no-reply:\n\n1. Do NOT send the same message\n2. Google Maps drop — screenshot their business, send it\n3. Or: "What is the biggest challenge in your business right now?"`;}
   if(q.includes('close')||q.includes('verified')){return`Close Verified today:\n\n1. Follow-Ups → 🟢 Conversation\n2. Discovery: "How are customers finding you?"\n3. "Verified listing solves exactly that. GHS 180, 24 hours. Shall we today?"\n4. Hesitation: "Start free first. Upgrade any time."\n\nYou have ${green.length} active conversations.`;}
   if(q.includes('sme')||q.includes('systems')||q.includes('bbcs')){return`SME SYSTEMS:\nActive: ${smeActive} · MRR: GHS ${getSmeMRR()}\n\nTarget: Verified clients that need stock tracking, profit tracking, or CRM.\nEntry: "How much profit did your business make last month? Exact number?"\n\nSME Systems tab for full list.`;}
@@ -2749,7 +2833,7 @@ async function sendAI(){
     aiHistory.push({role:'assistant',content:reply});addAIMessage('assistant',reply);
   }catch(e){
     loading.remove();
-    const fb=`Couldn't reach the AI backend (${e.message||'connection error'}).\n\nIf this keeps happening, check that ANTHROPIC_API_KEY is set in the Apps Script's Script Properties and the script is redeployed — see the note at the top of Code.gs.\n\nMeanwhile: Pipeline: ${state.contacts.length} contacts · GHS ${mrr} MRR · ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} hot leads.\n\nTry: "Who should I contact first?" · "Hot leads" · "Revenue" · type any business name.`;
+    const fb=`I can answer that from your live pipeline data even without the AI backend right now:\n\nPipeline: ${state.contacts.length} contacts · GHS ${mrr} MRR · ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} hot leads · ${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length} active conversations.\n\nTry asking: "Who should I contact first?" · "How do I convert?" · "Hot leads" · "Revenue" · "Pipeline overview" · or type any business name to pull up its record.\n\n(For open-ended AI answers beyond these, confirm ANTHROPIC_API_KEY is set in Script Properties and the script is redeployed.)`;
     aiHistory.push({role:'assistant',content:fb});addAIMessage('assistant',fb);
   }
 }
@@ -2813,7 +2897,8 @@ function generatePersonalMsgLocal(business,notes,category,emoji,stage,idx){
 }
 
 async function sendConvReview(){
-  const business=document.getElementById('convReviewBusiness').value.trim();
+  const convH=document.getElementById('convReviewContact');
+  const business=(convH&&convH.value?convH.value.split('|')[0]:'').trim();
   const summary=document.getElementById('convReviewSummary').value.trim();
   const outcome=document.getElementById('convReviewOutcome').value;
   const pkg=document.getElementById('convReviewPackage').value;
@@ -2886,6 +2971,26 @@ function selectContact(field,business,number,waLabel){
   const i=document.getElementById(field+'ContactInput');if(i){i.value='';i.style.display='none';}
   const d=document.getElementById(field+'ContactDropdown');if(d)d.classList.remove('open');
   contactSearchState[field]={business,number,waLabel};
+  if(field==='convReview')prefillConvReview(business);
+}
+
+// v23.0: pull the contact's real notes + recent call/activity history into
+// the Conversation Review "what happened" box automatically, instead of
+// requiring the business name AND the conversation summary to be typed by
+// hand — the notes and logged history already exist in the CRM.
+function prefillConvReview(business){
+  const c=state.contacts.find(x=>x.Business===business);
+  if(!c)return;
+  const calls=(trackerData.callLogs||[]).filter(cl=>cl.business===business).slice(0,3);
+  const acts=(trackerData.activities||[]).filter(a=>a.business===business).slice(0,3);
+  const lines=[];
+  if(c.Notes)lines.push('NOTES: '+c.Notes);
+  if(c.Stage)lines.push('Current stage: '+c.Stage);
+  calls.forEach(cl=>lines.push('[CALL '+(cl.date||'')+'] '+(cl.notes||'—')));
+  acts.forEach(a=>lines.push('['+ (a.action||'').replace(/_/g,' ')+'] '+(a.oldValue||'')+' → '+(a.newValue||'')+(a.notes?' — '+a.notes:'')));
+  document.getElementById('convReviewSummary').value=lines.length?lines.join('\n'):'(No notes or history logged yet for this contact — describe what happened.)';
+  const msgCount=state.messageCounts[business]||0;
+  if(msgCount>=2)document.getElementById('convReviewOutcome').value='replied';
 }
 function clearContactSearch(field){
   const h=document.getElementById(field+'Contact');if(h)h.value='';
@@ -3017,7 +3122,7 @@ async function logOutreachTap(){
   trackerData.todayOutreachCount=(trackerData.todayOutreachCount||0)+1;trackerData.totalOutreachCount=(trackerData.totalOutreachCount||0)+1;
   const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   trackerData.outreachLog=[{timestamp:new Date().toString(),date:ds,business:b,number:n,type},...(trackerData.outreachLog||[])];
-  renderOutreachCounter();showToast('Outreach logged — '+b);clearContactSearch('outreach');
+  renderOutreachCounter();showToast('Outreach logged — '+b);clearContactSearch('outreach');refreshTodayIfVisible();
 }
 
 async function logStatusViewTap(){
