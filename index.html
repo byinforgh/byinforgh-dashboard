@@ -298,7 +298,7 @@ select:focus{border-color:var(--gold);}
 
 <!-- FOLLOW-UPS -->
 <div class="tab-content" id="tab-followup">
-  <div style="background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#4a8a4a;line-height:1.6">
+  <div id="followupBanner" style="background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#4a8a4a;line-height:1.6">
     <strong>SHOWING:</strong> Only contacts due today or overdue. Messages rotate daily — different version each day automatically, but picking A/B/C/D yourself always wins until you refresh into a new day. Set deployment target before tapping DONE to track what you are selling. Anything you resolve (DONE / REJECT / moved to Client, Rejected, etc) stays off this list for the rest of your session, even if you switch message versions or filters.
   </div>
   <div style="display:flex;gap:8px;align-items:center">
@@ -552,7 +552,7 @@ select:focus{border-color:var(--gold);}
   <div class="section-title">REVENUE PROJECTIONS — ALL DEPARTMENTS COMBINED (current run-rate)</div>
   <div class="proj-grid" id="revenueProjectionGrid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div>
   <div class="two-col" style="margin-top:16px">
-    <div class="card"><div class="card-title">GROWTH TARGETS (if you double closes)</div><div class="proj-grid" id="projCards" style="margin-bottom:0"></div></div>
+    <div class="card"><div class="card-title">GROWTH TARGETS (if you double closes)</div><div class="proj-grid" id="projCards" style="margin-bottom:0"></div><div id="revenueQuickWins" style="margin-top:18px"></div></div>
     <div class="card"><div class="card-title">CONVERSION TRACKER — BY PACKAGE</div><div id="conversionTracker"></div></div>
   </div>
   <div class="card" style="margin-top:16px"><div class="card-title">CLOSES NEEDED TO HIT TARGETS</div><div id="closesNeeded"></div></div>
@@ -585,6 +585,7 @@ select:focus{border-color:var(--gold);}
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">WEEKLY TREND — ACTUAL vs TARGET (last 12 weeks)</div>
     <div class="chart-wrap" style="height:180px"><div class="chart-bars" id="analyticsChart"></div></div>
+    <div id="analyticsChartNote" style="text-align:center;color:var(--muted);font-size:11px;padding-top:8px"></div>
     <div style="margin-top:10px;font-size:11px;color:var(--text-dim);display:flex;gap:16px">
       <span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;margin-right:4px"></span>Target</span>
       <span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px"></span>Actual revenue</span>
@@ -783,6 +784,15 @@ function escJs(s){
 let sessionResolvedContacts=new Set();
 // v16.0: free-text search across the Follow-Ups list.
 let followupSearchQuery='';
+// v24.0: when true, Follow-Ups shows EVERY contact matching the current
+// label/filter regardless of Next_Follow_Up date. Previously every entry
+// point into Follow-Ups (including clicking a Today-tab metric like "6 Hot
+// Leads") was hard-restricted to "due today or overdue", so clicking a
+// count of 6 could land on an empty "no contacts due today" screen even
+// though all 6 hot leads exist — the person just couldn't see who they
+// were without switching a date. Metric/WA-board taps from Today now set
+// this true; the daily work-queue filter chips reset it back to false.
+let followupShowAllMode=false;
 // v21.0: this session already sent a WhatsApp message for these businesses
 // (via the WhatsApp button click) — used so DONE doesn't double-log outreach.
 let waSentThisSession=new Set();
@@ -855,22 +865,22 @@ const REVENUE_PACKAGES=[
 // messaged at all — these open with a genuine first question instead.
 const OPENER_VERSIONS={
   A:"Hey [NAME], quick question — how are customers currently finding your business?",
-  B:"Hey [NAME], someone searched for [CATEGORY] in your area this week. Did your business come up?",
+  B:"Hey [NAME], quick question — if someone searched for [CATEGORY] near you right now, would they find your business?",
   C:"Hey [NAME], my name is YJ from BYINFORGH — what's the biggest challenge in your business right now?",
   D:"Hey [NAME], if 20 new customers reached out to you this month, could your business handle them properly?"
 };
 
 const MSG_VERSIONS={
-'🟡':{A:'Hey [NAME], hope all is well.\n\nSomeone searched for [CATEGORY] in your area this week. Your business did not come up.\n\nI can fix that today — free to start. Want me to?',B:'Hey [NAME], quick one.\n\nHow are customers currently finding your business?',C:'Hey [NAME].\n\nA [CATEGORY] business near you just went live on BYINFORGH and started getting enquiries.\n\nYour spot is still open. Want me to set it up? Free to start.',D:'Hey [NAME].\n\nNot here to pitch anything. One question — what is the biggest challenge in getting customers to find you?'},
+'🟡':{A:'Hey [NAME], hope all is well.\n\nQuick question — if someone searches for [CATEGORY] near you right now, would they find your business?\n\nIf not, I can fix that today — free to start. Want me to?',B:'Hey [NAME], quick one.\n\nHow are customers currently finding your business?',C:'Hey [NAME].\n\nWe are onboarding [CATEGORY] businesses in your area onto BYINFORGH this month so customers can find them easily.\n\nWant me to set yours up? Free to start.',D:'Hey [NAME].\n\nNot here to pitch anything. One question — what is the biggest challenge in getting customers to find you?'},
 '🟠':{A:"Hey [NAME], I know my last message came through.\n\nNo pressure. One question — if someone searched for [CATEGORY] near you right now, would they find you or your competitor?",B:"Hey [NAME].\n\nSearch your business on Google right now and tell me what comes up.\n\nI already know the answer. I can fix it today. Free.",C:"Hey [NAME], not coming back to push anything.\n\nJust one question — what is the biggest challenge in your business right now?",D:"Hey [NAME].\n\nYou saw my message. Something stopped you from replying.\n\nWas it price? Timing? Just not sure yet? I can work with any of those."},
 '🟢':{A:"Hey [NAME], following up on our conversation.\n\nBased on what you told me — the Business Presence listing is the right first step. Free, takes 60 seconds from you.\n\nShall I set it up today?",B:"Hey [NAME].\n\nReady to get your business live on BYINFORGH?\n\nBusiness name, what you sell, your WhatsApp number. That is all I need. I do the rest.",C:"Hey [NAME], Q3 is here. Businesses getting set up now are the ones customers find this quarter.\n\nWant to be one of them?",D:"Hey [NAME], just circling back.\n\nWhere are you at with this? I can move fast once you say yes."},
-'🔄':{A:"Hey [NAME], hope all is well. It has been a while.\n\nNot reaching out about the old offer. Just checking in — how is business going these days?",B:"Hey [NAME].\n\nWe updated how we help businesses. The free listing is still free — but the reach is better now.\n\nWorth a quick chat?",C:"Hey [NAME], halfway through the year. A lot of businesses are making moves for Q3.\n\nWant me to run a free visibility check on your business?",D:"Hey [NAME].\n\nI have helped a few [CATEGORY] businesses in your area get found this month.\n\nWanted to check — is your business set up online yet?"},
+'🔄':{A:"Hey [NAME], hope all is well. It has been a while.\n\nNot reaching out about the old offer. Just checking in — how is business going these days?",B:"Hey [NAME].\n\nWe updated how we help businesses. The free listing is still free — but the reach is better now.\n\nWorth a quick chat?",C:"Hey [NAME], halfway through the year. A lot of businesses are making moves for Q3.\n\nWant me to run a free visibility check on your business?",D:"Hey [NAME].\n\nChecking in — is your [CATEGORY] business set up online yet?\n\nIf not, I can get you listed on BYINFORGH so customers can find you. Free to start."},
 '🔵':{A:"Hey [NAME], following up.\n\nI have everything ready to get you listed as Verified. GHS 180 setup — done in 24 hours.\n\nShall we lock it in today?",B:"Hey [NAME], just checking in.\n\nOne question, one answer — shall I lock you in today? Yes or not yet?",C:"Hey [NAME], I started preparing your profile already.\n\nLet us confirm the details today so you go live this week.",D:"Hey [NAME].\n\nEvery day without a Verified listing is customers finding your competitor first.\n\nGHS 180. Done in 24 hours. Today?"}
 };
 
 const MSG_LIBRARY={
-cold:[{title:'C1 — Problem First (start here)',msg:'Hey, quick question — how are customers finding your business right now?'},{title:'C2 — Google Search Hook',msg:"Hey, someone in your area searched for [CATEGORY] on Google today.\n\nDid your business come up?\n\nIf not, I can fix that. Free to start."},{title:'C3 — Honest Opener',msg:"Hey, my name is YJ from BYINFORGH. I work with local businesses in Ghana on getting found by customers.\n\nQuick question — what is the main challenge in your business right now?"},{title:'C4 — Capacity Question',msg:"Hey, hope all is well.\n\nIf 20 new customers contacted you this month, could your business handle them properly?"},{title:'C5 — WhatsApp Business Angle',msg:"Hey, I noticed your WhatsApp does not have a business profile set up.\n\nThat alone is costing you customers who check before they call. Want me to show you what is missing?"}],
-warm:[{title:'W1 — Re-enter After Read No Reply',msg:"Hey [NAME], I know my last message came through.\n\nNo pressure. One question — if a customer searched for [CATEGORY] in your area right now, would they find you or your competitor?"},{title:'W2 — Google Maps Drop',msg:"Hey [NAME].\n\n[Search their business on Google Maps. Screenshot what comes up. Send the screenshot.]\n\nThis is what your customers see when they search for you.\n\nI can fix this today. Free to start. Want me to?"},{title:'W3 — Reconnect After Silence',msg:"Hey [NAME], hope things are good.\n\nNot coming back to push anything. Just checking in — how has business been this week?"},{title:'W4 — New Lead Nearby',msg:"Hey [NAME].\n\nA [CATEGORY] business near you just went live on BYINFORGH this week.\n\nThought you should know. Your spot is still open."}],
+cold:[{title:'C1 — Problem First (start here)',msg:'Hey, quick question — how are customers finding your business right now?'},{title:'C2 — Google Search Hook',msg:"Hey, quick question — if someone searched for [CATEGORY] near you on Google right now, would they find your business?\n\nIf not, I can fix that. Free to start."},{title:'C3 — Honest Opener',msg:"Hey, my name is YJ from BYINFORGH. I work with local businesses in Ghana on getting found by customers.\n\nQuick question — what is the main challenge in your business right now?"},{title:'C4 — Capacity Question',msg:"Hey, hope all is well.\n\nIf 20 new customers contacted you this month, could your business handle them properly?"},{title:'C5 — WhatsApp Business Angle',msg:"Hey, I noticed your WhatsApp does not have a business profile set up.\n\nThat alone is costing you customers who check before they call. Want me to show you what is missing?"}],
+warm:[{title:'W1 — Re-enter After Read No Reply',msg:"Hey [NAME], I know my last message came through.\n\nNo pressure. One question — if a customer searched for [CATEGORY] in your area right now, would they find you or your competitor?"},{title:'W2 — Google Maps Drop',msg:"Hey [NAME].\n\n[Search their business on Google Maps. Screenshot what comes up. Send the screenshot.]\n\nThis is what your customers see when they search for you.\n\nI can fix this today. Free to start. Want me to?"},{title:'W3 — Reconnect After Silence',msg:"Hey [NAME], hope things are good.\n\nNot coming back to push anything. Just checking in — how has business been this week?"},{title:'W4 — Re-check In',msg:"Hey [NAME].\n\nWe are onboarding [CATEGORY] businesses in your area onto BYINFORGH.\n\nWanted to check — is yours set up yet? Free to start."}],
 close:[{title:'CL1 — Direct Close (Verified GHS 180)',msg:"Hey [NAME], I have everything ready to get your business listed as Verified on BYINFORGH.\n\nGHS 180 setup. Done in 24 hours. Includes your profile, video, and promotion.\n\nShall I lock you in today?"},{title:'CL2 — Problem to Solution Close',msg:"Hey [NAME], based on what you told me —\n\nThe Verified Business listing solves exactly that. Customers who search for [CATEGORY] will find you first.\n\nGHS 180 setup. Shall we sort it today?"},{title:'CL3 — Free First, Upgrade Later',msg:"Hey [NAME], let me start you on the free Business Presence listing — no cost, no strings.\n\nOnce you see what it does, we can talk about the Verified upgrade.\n\nBusiness name, what you sell, WhatsApp number. That is all I need."},{title:'CL4 — Handle the Delay',msg:"Hey [NAME], timing is not right yet — understood.\n\nLet me put the free listing live now. It costs nothing and works while you decide.\n\nYou can upgrade any time. Want me to start today?"}],
 objection:[{title:'OBJ1 — I will think about it',msg:"No pressure. While you think, let me put the free listing live — costs nothing. If you decide not, we remove it.\n\nWhat is your business name?"},{title:'OBJ2 — Too expensive',msg:"The free listing costs zero. Start there.\n\nVerified setup at GHS 180 is 4 cedis 60 a day. One extra customer pays for two months.\n\nWant to start with the free one?"},{title:'OBJ3 — No time',msg:"You do not need any time. Give me your business name, what you sell, and your WhatsApp number. I do everything else. 60 seconds from you."},{title:'OBJ4 — Already tried online',msg:"That is exactly the problem. Ads need money. Followers need time. This is different — your listing lives there permanently.\n\nWhat did not work before?"}],
 conversation:[{title:'CV1 — Discovery',msg:"Good to hear from you.\n\nQuick question — how are customers currently finding your business? WhatsApp, word of mouth, Google, or something else?"},{title:'CV2 — Find the Pain',msg:"Understood. So the main challenge right now is getting more customers?\n\nIf someone searched for [CATEGORY] near you on Google today — would they find you?"},{title:'CV3 — Position BYINFORGH',msg:"BYINFORGH is not social media and not ads.\n\nIt is a trusted directory — like a phonebook for local businesses. Customers who are already searching find you there, call you, and come to you."},{title:'CV4 — Bridge to Free Listing',msg:"Based on what you said — customers cannot find you when they search.\n\nThe Business Presence listing fixes that. It is free. Want me to set it up today?"},{title:'CV5 — Bridge to Verified',msg:"Based on what you said — you need customers to find you and trust you fast.\n\nThe Verified Business listing does both. Blue tick, profile, video, and promotion.\n\nGHS 180 setup. Shall we get it done today?"}],
@@ -1219,9 +1229,10 @@ function activateTab(name){
 }
 function switchTab(name,evt){activateTab(name);}
 
-function goFollowupFilter(val){
+function goFollowupFilter(val,showAll){
   activateTab('followup');
   currentFilter=val;followupPage=0;
+  followupShowAllMode=!!showAll;
   const order=['all','🟡','🟠','🟢','🔄','🔵','monthly','quarterly'];
   const idx=order.indexOf(val);
   document.querySelectorAll('#labelFilters .filter-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
@@ -1230,7 +1241,10 @@ function goFollowupFilter(val){
 function goToWA(emoji){
   const routeMap={'🔴':'calls','✅':'clients','⬛':'archive','📍':'koforidua'};
   if(routeMap[emoji]){activateTab(routeMap[emoji]);return;}
-  if(['🟡','🟠','🟢','🔄','🔵'].includes(emoji)){goFollowupFilter(emoji);return;}
+  // v24.0: these counts on Today/WA Board are TOTALS for the label, not
+  // "due today" counts — so tapping them must show every matching contact,
+  // not just the ones due today, or the number tapped won't match what's shown.
+  if(['🟡','🟠','🟢','🔄','🔵'].includes(emoji)){goFollowupFilter(emoji,true);return;}
   activateTab('contacts'); // ⬜ non-business, ❔ unlabeled, and anything else — just show full list
 }
 
@@ -1298,8 +1312,8 @@ function renderToday(){
   document.getElementById('topMetrics').innerHTML=`
     <div class="metric-card gold clickable" onclick="activateTab('revenue')"><div class="metric-label">TOTAL MRR</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
     <div class="metric-card green clickable" onclick="activateTab('contacts')"><div class="metric-label">TOTAL CONTACTS</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM:${state.crmCount||0}</span><span style="color:var(--teal)">Kof:${state.kofCount||0}</span></div></div>
-    <div class="metric-card orange clickable" onclick="goFollowupFilter('🔵')"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
-    <div class="metric-card blue clickable" onclick="goFollowupFilter('🟢')"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
+    <div class="metric-card orange clickable" onclick="goFollowupFilter('🔵',true)"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
+    <div class="metric-card blue clickable" onclick="goFollowupFilter('🟢',true)"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
     <div class="metric-card teal clickable" onclick="activateTab('sme')"><div class="metric-label">SME MEMBERS</div><div class="metric-value">${smeActive}</div><div class="metric-sub">${(state.smeMembers||[]).length} total · GHS ${smeMRR}/mo</div></div>
     <div class="metric-card red clickable" onclick="activateTab('clients')"><div class="metric-label">RENEWALS OVERDUE</div><div class="metric-value">${overdue}</div><div class="metric-sub">urgent attention</div></div>
     <div class="metric-card purple clickable" onclick="activateTab('tracker')"><div class="metric-label">TODAY OUTREACH</div><div class="metric-value">${todayOut}</div><div class="metric-sub">logged today</div></div>`;
@@ -1347,7 +1361,7 @@ function renderToday(){
   document.getElementById('kofVisitList').innerHTML=kofPri.length?kofPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal);cursor:pointer" onclick="activateTab('koforidua')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Koforidua'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
 }
 
-function setFilter(f,btn){currentFilter=f;followupPage=0;document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
+function setFilter(f,btn){currentFilter=f;followupPage=0;followupShowAllMode=(f==='monthly'||f==='quarterly');document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
 // v21.0 fix: this is the second root cause of "version switch doesn't
 // work" — the button previously only updated currentMsgVersion, so the
 // very next loadData() (60s auto-refresh, or pressing REFRESH right after
@@ -1446,8 +1460,20 @@ function renderFollowUps(){
   else if(currentFilter==='quarterly')contacts=contacts.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('quarterly')||c.Stage.toLowerCase().includes('3 month')));
   else if(currentFilter!=='all')contacts=contacts.filter(c=>c.WA_Label&&c.WA_Label.includes(currentFilter));
   else contacts=contacts.filter(c=>!c.WA_Label.includes('🔴'));
-  // Only show due today or overdue
-  contacts=contacts.filter(c=>{const d=parseFollowUpDate(c.Next_Follow_Up);return !d||d<=today;});
+  // v24.0: only restrict to "due today or overdue" in the normal daily
+  // work-queue mode. When arriving via a Today-tab metric/WA-board tap (or
+  // the Monthly/Quarterly chips), followupShowAllMode shows every matching
+  // contact regardless of date — otherwise a "6 Hot Leads" tap could land
+  // on an empty screen just because none happened to be due today.
+  if(!followupShowAllMode){
+    contacts=contacts.filter(c=>{const d=parseFollowUpDate(c.Next_Follow_Up);return !d||d<=today;});
+  }
+  const banner=document.getElementById('followupBanner');
+  if(banner){
+    banner.innerHTML=followupShowAllMode
+      ? '<strong>SHOWING:</strong> All matching contacts for this filter, regardless of follow-up date. Anything you resolve (DONE / REJECT / moved to Client, Rejected, etc) stays off this list for the rest of your session.'
+      : '<strong>SHOWING:</strong> Only contacts due today or overdue. Messages rotate daily — different version each day automatically, but picking A/B/C/D yourself always wins until you refresh into a new day. Set deployment target before tapping DONE to track what you are selling. Anything you resolve (DONE / REJECT / moved to Client, Rejected, etc) stays off this list for the rest of your session, even if you switch message versions or filters.';
+  }
   if(followupSearchQuery&&followupSearchQuery.trim()){
     const sq=followupSearchQuery.trim().toLowerCase();
     contacts=contacts.filter(c=>(c.Business||'').toLowerCase().includes(sq)||(c.Number||'').includes(sq)||(c.Category||'').toLowerCase().includes(sq)||(c.Notes||'').toLowerCase().includes(sq));
@@ -1458,7 +1484,7 @@ function renderFollowUps(){
   if(followupPage>=totalPages)followupPage=Math.max(0,totalPages-1);
   const start=followupPage*FOLLOWUP_PAGE_SIZE,page=contacts.slice(start,start+FOLLOWUP_PAGE_SIZE);
   if(page.length===0){
-    document.getElementById('followupList').innerHTML=followupSearchQuery?'<div class="empty">No contacts match this search</div>':'<div class="empty">No contacts due today for this filter — nice work!</div>';
+    document.getElementById('followupList').innerHTML=followupSearchQuery?'<div class="empty">No contacts match this search</div>':(followupShowAllMode?'<div class="empty">No contacts match this label right now</div>':'<div class="empty">No contacts due today for this filter — nice work!</div>');
     document.getElementById('followupPagination').innerHTML='';
     document.getElementById('followupPaginationTop').innerHTML='';
     return;
@@ -1533,7 +1559,7 @@ function renderFollowUps(){
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="copy-btn" onclick="copyMsg(document.getElementById('msgbox-${idx}').textContent,this)">COPY</button>
         <button class="copy-btn" style="background:#25D366;color:#fff" onclick="openWhatsApp('${c.Number||''}',${idx})">&#128172; WHATSAPP</button>
-        <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${sb}','${sn}','${c.Category||''}','${emoji}','${ss}',this,${idx})">✨ PERSONALISE</button>
+        <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${sb}','${sn}','${c.Category||''}','${emoji}','${ss}',this,${idx},'${escJs(c.Town||c.Area||'')}')">✨ PERSONALISE</button>
         ${callLinkHtml(c.Number)}
         <button class="copy-btn" style="background:#001a20;color:var(--blue);border:1px solid var(--blue)" onclick="logFollowupCall('${sb}','${c.Number||''}','${src}',this.closest('.followup-item').querySelector('textarea').value,this)">📞 CALLED</button>
         <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
@@ -1541,12 +1567,13 @@ function renderFollowUps(){
       </div></div>`;
   }).join('');
   let pagHtml='';
+  const totalLabel=followupShowAllMode?'total':'due today';
   if(totalPages>1){
-    pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} due today · Page ${followupPage+1}/${totalPages}</span>`;
+    pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} ${totalLabel} · Page ${followupPage+1}/${totalPages}</span>`;
     if(followupPage>0)pagHtml+=`<button class="page-btn" onclick="followupPage--;renderFollowUps();scrollToTabTop('tab-followup')">← Prev</button>`;
     for(let i=Math.max(0,followupPage-2);i<=Math.min(totalPages-1,followupPage+2);i++)pagHtml+=`<button class="page-btn ${i===followupPage?'active':''}" onclick="followupPage=${i};renderFollowUps();scrollToTabTop('tab-followup')">${i+1}</button>`;
     if(followupPage<totalPages-1)pagHtml+=`<button class="page-btn" onclick="followupPage++;renderFollowUps();scrollToTabTop('tab-followup')">Next →</button>`;
-  }else if(total>0)pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} contacts due today</span>`;
+  }else if(total>0)pagHtml=`<span style="font-size:11px;color:var(--muted)">${total} contacts ${totalLabel}</span>`;
   document.getElementById('followupPagination').innerHTML=pagHtml;
   document.getElementById('followupPaginationTop').innerHTML=pagHtml;
 }
@@ -1755,6 +1782,13 @@ async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
     refreshTodayIfVisible();
     const c=state.contacts.find(x=>x.Business===business);
     if(data.success){
+      if(data.autoRejected){
+        state.contacts=state.contacts.filter(x=>x.Business!==business);
+        sessionResolvedContacts.add(business);
+        showToast('⬛ '+business+' — auto-rejected (completed full quarterly cycle, no conversion)');
+        renderFollowUps();
+        return;
+      }
       if(c){
         if(data.nextFollowUp)c.Next_Follow_Up=data.nextFollowUp;
         if(data.movedToMonthly)c.Stage='Monthly';
@@ -2423,6 +2457,29 @@ function matchPackageStats(matchFn){
   });
   return {count,revenue};
 }
+// v24.0: fills the blank space under Growth Targets with real, computed
+// revenue-improvement actions — every number here comes straight from the
+// live pipeline (hot leads, active conversations, upsell gaps, overdue
+// renewals), nothing invented or estimated beyond simple multiplication by
+// the real Verified price.
+function renderRevenueQuickWins(mrr){
+  const hot=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵'));
+  const conv=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢'));
+  const verifiedClients=(state.clients||[]).filter(c=>(c.Status||'').trim().toLowerCase()==='active'&&/verified/i.test(c.Package||''));
+  const smeNames=new Set((state.smeMembers||[]).map(m=>(m.Business||'').toLowerCase()));
+  const smeUpsellCandidates=verifiedClients.filter(c=>!smeNames.has((c.Business||'').toLowerCase()));
+  const overdueRenewals=(state.renewals||[]).filter(r=>r.Status==='OVERDUE');
+  const hotPotential=hot.length*180;
+  const convPotential=conv.length*180;
+  const items=[];
+  if(hot.length>0)items.push(`🔵 ${hot.length} hot lead${hot.length!==1?'s':''} — closing all at Verified (GHS 180) would add up to GHS ${hotPotential.toLocaleString()} one-time`);
+  if(conv.length>0)items.push(`🟢 ${conv.length} active conversation${conv.length!==1?'s':''} — worth up to GHS ${convPotential.toLocaleString()} if bridged to Verified`);
+  if(smeUpsellCandidates.length>0)items.push(`🔧 ${smeUpsellCandidates.length} Verified client${smeUpsellCandidates.length!==1?'s':''} not yet on SME Systems — real upsell opportunity, they already trust you`);
+  if(overdueRenewals.length>0)items.push(`⚠ ${overdueRenewals.length} renewal${overdueRenewals.length!==1?'s':''} overdue — resolve these first to protect the GHS ${mrr}/mo you already have`);
+  if(items.length===0)items.push('No urgent revenue actions right now — keep the daily outreach cadence going.');
+  const el=document.getElementById('revenueQuickWins');
+  if(el)el.innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:10px">QUICK WINS TO GROW REVENUE</div>`+items.map(i=>`<div style="padding:9px 12px;background:var(--surface);border-left:3px solid var(--gold);border-radius:5px;margin-bottom:8px;font-size:12px;line-height:1.6">${i}</div>`).join('');
+}
 // v23.0: real combined-department (Visibility MRR + SME MRR, run-rate)
 // revenue projections across time buckets — replaces the old "doubling
 // plan" fantasy chart with straight-line real numbers at today's run rate.
@@ -2443,6 +2500,7 @@ function renderRevenue(){
     <div class="metric-card purple"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">&#8373;${oneTime}</div><div class="metric-sub">playbooks / custom</div></div>
     <div class="metric-card orange"><div class="metric-label">TOTAL MRR</div><div class="metric-value" style="font-size:24px">&#8373;${mrr}</div><div class="metric-sub">vis + sme combined</div></div>`;
   document.getElementById('projCards').innerHTML=[{p:'THIS MONTH',a:mrr,s:active+' active'},{p:'MONTH 2',a:mrr*2,s:'Target: '+(active*2)},{p:'MONTH 3',a:mrr*4,s:'Target: '+(active*4)},{p:'MONTH 6',a:mrr*8,s:'Target: '+(active*8)}].map(x=>`<div class="proj-card"><div class="proj-period">${x.p}</div><div class="proj-amount">&#8373;${x.a.toLocaleString()}</div><div class="proj-clients">${x.s}</div></div>`).join('');
+  renderRevenueQuickWins(mrr);
   renderRevenueProjections(mrr);
 
   const presenceStats={count:0,revenue:0};
@@ -2517,10 +2575,45 @@ function inRange(dateStr,range){
 }
 function daysBetween(a,b){ return Math.max(1,Math.round((b-a)/(1000*60*60*24))); }
 
+// v24.0: WEEKLY TREND / PERIOD REVENUE FIX. The Weekly Trend chart and
+// Period Breakdown were built purely from the Conversions log — but any
+// client or SME member added straight into the Google Sheet (or from
+// before the dashboard existed) never went through "Log Conversion", so
+// their revenue never appeared there, leaving the chart looking empty
+// even with real paying clients on the books. This merges the real
+// Conversions log with active clients/SME members that have NO matching
+// logged conversion (matched by business name), using their real Joined
+// date as the event date — every figure still traces back to an actual
+// row in the sheet, nothing is invented.
+function getAllRevenueEvents(){
+  const events=[];
+  const loggedBiz=new Set();
+  (trackerData.conversions||[]).forEach(c=>{
+    const d=c.date||c.timestamp;
+    if(!d)return;
+    events.push({date:d,business:c.business||'',amount:parseFloat(c.amount)||0,source:'logged'});
+    if(c.business)loggedBiz.add(c.business.toLowerCase());
+  });
+  (state.clients||[]).forEach(c=>{
+    const key=(c.Business||'').toLowerCase();
+    if(!key||loggedBiz.has(key)||!c.Joined)return;
+    const amt=(parseFloat(c.Amount)||0)+(parseFloat(c.OneTimeAmount)||0);
+    if(amt<=0)return;
+    events.push({date:c.Joined,business:c.Business,amount:amt,source:'client_joined'});
+  });
+  (state.smeMembers||[]).forEach(m=>{
+    const key=(m.Business||'').toLowerCase();
+    if(!key||loggedBiz.has(key)||!m.Joined)return;
+    const amt=parseFloat(m.Amount)||0;
+    if(amt<=0)return;
+    events.push({date:m.Joined,business:m.Business,amount:amt,source:'sme_joined'});
+  });
+  return events.filter(e=>parseAnyDate(e.date));
+}
 function computeAnalytics(period){
   const range=getPeriodRange(period);
   const outreach=(trackerData.outreachLog||[]).filter(o=>inRange(o.date||o.timestamp,range));
-  const conversions=(trackerData.conversions||[]).filter(c=>inRange(c.date||c.timestamp,range));
+  const conversions=getAllRevenueEvents().filter(c=>inRange(c.date,range));
   const calls=(trackerData.callLogs||[]).filter(c=>inRange(c.date||c.timestamp,range));
   const revenue=conversions.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
   const newContacts=state.contacts.filter(c=>c.Created_Date&&inRange(c.Created_Date,range)).length;
@@ -2626,15 +2719,19 @@ function renderAnalytics(){
   if(advice.length===0) advice.push('No red flags in the numbers right now — keep the current cadence and prioritise hot leads.');
   document.getElementById('analyticsAdvice').innerHTML=advice.map(a=>`<div style="padding:9px 12px;background:var(--surface);border-left:3px solid var(--gold);border-radius:5px;margin-bottom:8px;font-size:12px;line-height:1.6">${a}</div>`).join('');
 
+  const weekRevEvents=getAllRevenueEvents();
   const weeks=[];
   for(let i=11;i>=0;i--){
     const wEnd=new Date(); wEnd.setDate(wEnd.getDate()-i*7);
     const wStart=new Date(wEnd); wStart.setDate(wStart.getDate()-6); wStart.setHours(0,0,0,0); wEnd.setHours(23,59,59,999);
-    const rev=(trackerData.conversions||[]).filter(c=>inRange(c.date||c.timestamp,{start:wStart,end:wEnd})).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+    const rev=weekRevEvents.filter(c=>inRange(c.date,{start:wStart,end:wEnd})).reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
     weeks.push({label:'W'+(12-i),rev,target:Math.round(dailyTarget*7)});
   }
   const maxV=Math.max(...weeks.map(w=>Math.max(w.rev,w.target)),1);
-  document.getElementById('analyticsChart').innerHTML=weeks.map(w=>`<div class="chart-bar-group"><div style="display:flex;gap:2px;align-items:flex-end;height:140px"><div class="chart-bar base" style="height:${Math.round((w.target/maxV)*130)+2}px;width:12px" title="Target GHS ${w.target}"></div><div class="chart-bar double" style="height:${Math.round((w.rev/maxV)*130)+2}px;width:12px" title="Actual GHS ${w.rev}"></div></div><div class="chart-label">${w.label}</div></div>`).join('');
+  const hasAnyWeekData=weeks.some(w=>w.rev>0);
+  document.getElementById('analyticsChart').innerHTML=weeks.map(w=>`<div class="chart-bar-group"><div style="display:flex;gap:2px;align-items:flex-end;height:140px"><div class="chart-bar base" style="height:${Math.round((w.target/maxV)*130)+2}px;width:12px" title="Target GHS ${w.target}"></div><div class="chart-bar double" style="height:${Math.round((w.rev/maxV)*130)+2}px;width:12px" title="Actual GHS ${w.rev}"></div></div><div class="chart-label">${w.label}</div><div class="chart-label" style="color:var(--gold)">&#8373;${w.rev>=1000?(w.rev/1000).toFixed(1)+'k':w.rev}</div></div>`).join('');
+  const chartNoteEl=document.getElementById('analyticsChartNote');
+  if(chartNoteEl)chartNoteEl.textContent=hasAnyWeekData?'':'No revenue events (Conversions log or client/SME Joined dates) fall in the last 12 weeks yet — revenue further back shows in Period Breakdown below.';
 
   const periods=['today','week','month','q1','q2','q3','q4','6m','year','all'];
   const labels={today:'Today',week:'This Week',month:'This Month',q1:'Q1',q2:'Q2',q3:'Q3',q4:'Q4','6m':'6 Months',year:'This Year',all:'All Time'};
@@ -2844,9 +2941,21 @@ async function sendAI(){
 // history — instead of a static local keyword guesser. The old heuristic
 // is kept as generatePersonalMsgLocal(), used automatically as an offline
 // fallback if the AI call fails for any reason (e.g. no API key set).
-async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx){
+// v24.0: PERSONALISE — fixed two real bugs reported: (1) the AI had no
+// idea where the business actually was, so with nothing grounding it, it
+// defaulted to guessing "Koforidua" (since that's the town BYINFORGH
+// operates from) even for a business in Kumasi. Town/Area is now passed
+// in explicitly and the model is told never to name a location that isn't
+// given here. (2) Templates and the AI prompt were allowing invented,
+// unverifiable claims ("someone searched for you this week", "a business
+// near you just went live") — these were lies, not personalisation. The
+// prompt now explicitly forbids fabricating any event, and the offline
+// fallback below only ever quotes the contact's real notes, never a
+// canned claim.
+async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx,town){
   btn.textContent='Personalising...';btn.disabled=true;
   const c=state.contacts.find(x=>x.Business===business)||{};
+  const realTown=town||c.Town||c.Area||'';
   const msgCount=state.messageCounts[business]||0;
   const acts=(trackerData.activities||[]).filter(a=>a.business===business).slice(0,6);
   const calls=(trackerData.callLogs||[]).filter(cl=>cl.business===business).slice(0,4);
@@ -2854,8 +2963,13 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx){
     ...acts.map(a=>`${a.action}: ${a.oldValue||''}→${a.newValue||''} ${a.notes||''}`),
     ...calls.map(cl=>`CALL ${cl.date||''}: ${cl.notes||''}`)
   ].join('\n')||'No logged history';
-  const context=`Business: ${business}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nFull notes: ${(c.Notes||notes||'No notes').substring(0,800)}\nRecent history:\n${history}`;
-  const sp=`You are writing the exact next WhatsApp message for a BYINFORGH sales contact in Ghana, based ONLY on the real history given — do not invent facts. Keep it 2-4 sentences, warm, specific (reference something real from the notes/history if relevant), end with one clear next step or question. Output ONLY the message text.`;
+  const context=`Business: ${business}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nFull notes: ${(c.Notes||notes||'No notes').substring(0,800)}\nRecent history:\n${history}`;
+  const sp=`You are writing the exact next WhatsApp message for a BYINFORGH sales contact in Ghana, based ONLY on the real facts given below.
+CRITICAL RULES — violating any of these makes the message unusable:
+- Never invent, assume, or fabricate any event or claim (no "someone searched for you", no "a business near you just went live", no made-up numbers or dates).
+- Never name a location other than the one explicitly given above. If no location is given, do not mention any place at all.
+- Base the message only on the actual notes/history given. If there is no notes/history, ask a plain honest discovery question instead of pretending to reference a conversation.
+Keep it 2-4 sentences, warm, specific to the real notes, end with one clear next step or question. Output ONLY the message text, nothing else.`;
   try{
     const res=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(context)+'&context='+encodeURIComponent(sp)+'&t='+Date.now());
     const data=await res.json();
@@ -2863,7 +2977,7 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx){
     const mb=document.getElementById('msgbox-'+idx);if(mb)mb.textContent=data.reply.trim();
     btn.textContent='✓ Personalised';
   }catch(e){
-    generatePersonalMsgLocal(business,notes,category,emoji,stage,idx);
+    generatePersonalMsgLocal(business,notes,category,emoji,stage,idx,realTown);
     btn.textContent='✓ Personalised (offline)';
   }
   btn.style.background='var(--green)';btn.style.color='var(--black)';
@@ -2872,8 +2986,9 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx){
 // v21.0: offline fallback — the old local heuristic, kept exactly as it
 // was but without the button-state lines (those now live in the wrapper
 // above so both the AI path and this fallback share one place for that).
-function generatePersonalMsgLocal(business,notes,category,emoji,stage,idx){
+function generatePersonalMsgLocal(business,notes,category,emoji,stage,idx,town){
   const n=(notes||'').toLowerCase(),s=(stage||'').toLowerCase(),name=business.split(' ')[0],cat=category||'business';
+  const loc=town?' near you in '+town:' near you';
   const hasPrize=n.includes('price')||n.includes('ghs')||n.includes('cost');
   const hasBusy=n.includes('busy')||n.includes('later')||n.includes('not now');
   const hasThink=n.includes('think')||n.includes('consider');
@@ -2892,7 +3007,8 @@ function generatePersonalMsgLocal(business,notes,category,emoji,stage,idx){
   else if(hasBusy)msg=`Hey ${name}, hope things have settled.\n\nJust a quick check in — how has business been this week?`;
   else if(isReEngage)msg=`Hey ${name}, it has been a while.\n\nNot coming back with the same pitch. One question — what is the biggest challenge in your business right now?`;
   else if(hasPrize)msg=`Hey ${name}.\n\nThe free Business Presence listing costs nothing at all.\n\nWant me to start you there? No commitment.`;
-  else{const opts=[`Hey ${name}.\n\nIf someone in Koforidua searched for ${cat} right now, would your business come up?`,`Hey ${name}, hope business is good.\n\nOne question — how are new customers finding you currently?`,`Hey ${name}.\n\nA ${cat} business near you just went live on BYINFORGH and started getting enquiries.\n\nYour spot is still open. Free to start.`];msg=opts[business.length%3];}
+  else if(n.trim())msg=`Hey ${name}, following up on where we left off.\n\n${notes.trim().substring(0,220)}\n\nWhat's the best next step from your side?`;
+  else{const opts=[`Hey ${name}.\n\nIf someone searched for ${cat}${loc} right now, would your business come up?`,`Hey ${name}, hope business is good.\n\nOne question — how are new customers finding you currently?`,`Hey ${name}.\n\nWe are onboarding ${cat} businesses${loc} onto BYINFORGH.\n\nWant me to set yours up? Free to start.`];msg=opts[business.length%3];}
   const mb=document.getElementById('msgbox-'+idx);if(mb)mb.textContent=msg;
 }
 
