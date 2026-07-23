@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>CORAZON — Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f0;--card:#ffffff;--ink:#16261f;--ink-dim:#5b6b64;--teal:#0d6e63;--teal-dim:#e4f0ed;--blue:#2f6fa3;--blue-dim:#e7f0f7;--coral:#b3402f;--coral-dim:#f7e9e6;--amber:#a97328;--amber-dim:#f5ecdd;--line:#d7e0dc;--line-soft:#e7ede9;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
+.mono{font-family:'IBM Plex Mono',monospace}
+.header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:36px;height:36px;border-radius:9px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700}
+.brand-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px}
+.brand-sub{font-size:10px;color:var(--ink-dim);letter-spacing:1.4px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:12px}
+.live-dot{width:7px;height:7px;background:var(--teal);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.last-refresh{font-size:11px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace}
+.btn{background:var(--teal);border:none;color:#fff;padding:8px 15px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:600}
+.btn:hover{background:#0a5850}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--teal);color:var(--teal)}
+.btn.small{padding:5px 10px;font-size:10.5px}
+.btn.coral{background:var(--coral)}
+.main{padding:18px 22px 60px;max-width:1440px;margin:0 auto}
+.tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--card);padding:6px;border-radius:10px;border:1px solid var(--line);overflow-x:auto}
+.tab{padding:9px 14px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:600;white-space:nowrap;color:var(--ink-dim);border:none;background:none;font-family:'Space Grotesk',sans-serif}
+.tab.active{background:var(--teal);color:#fff}
+.tab:hover:not(.active){background:var(--teal-dim);color:var(--teal)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.subtabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.subtab{padding:6px 12px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;color:var(--ink-dim);border:1px solid var(--line);background:var(--card)}
+.subtab.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.subtab-content{display:none}
+.subtab-content.active{display:block}
+.vitals{display:flex;background:var(--ink);border-radius:12px;overflow-x:auto;margin-bottom:16px}
+.vital{flex:1;min-width:150px;padding:15px 17px}
+.vital+.vital{border-left:1px dashed rgba(255,255,255,.18)}
+.vital-label{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:5px}
+.vital-value{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;color:#fff}
+.vital-value.teal{color:#5fd8c8}.vital-value.coral{color:#f0968a}.vital-value.amber{color:#e8bd77}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:7px 9px;color:var(--ink-dim);font-weight:600;font-size:10px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--line)}
+td{padding:7px 9px;border-bottom:1px solid var(--line-soft)}
+.scroll-table{overflow-x:auto;max-height:480px;overflow-y:auto}
+input,select,textarea{width:100%;background:#fbfcfb;border:1px solid var(--line);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+label{display:block;font-size:10px;color:var(--ink-dim);letter-spacing:.4px;text-transform:uppercase;margin:0 0 4px;font-weight:600}
+.field{margin-bottom:9px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+@media(max-width:600px){.field-row,.field-row3{grid-template-columns:1fr}}
+.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600}
+.badge.cleared{background:var(--teal-dim);color:var(--teal)}
+.badge.overdue{background:var(--coral-dim);color:var(--coral)}
+.badge.pending{background:var(--amber-dim);color:var(--amber)}
+.empty{text-align:center;padding:26px;color:var(--ink-dim);font-size:12.5px}
+.loading{text-align:center;padding:36px;color:var(--ink-dim);font-size:12.5px;font-family:'IBM Plex Mono',monospace}
+.loading::after{content:'...';animation:dots 1.4s infinite}
+@keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;opacity:0;transform:translateY(16px);transition:all .25s;z-index:999}
+.toast.show{opacity:1;transform:translateY(0)}
+.section-note{font-size:11.5px;color:var(--ink-dim);line-height:1.6;margin-bottom:12px}
+.status-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:700px){.status-board{grid-template-columns:repeat(2,1fr)}}
+.status-cell{background:var(--line-soft);border-radius:9px;padding:12px;text-align:center}
+.status-cell .num{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600}
+.status-cell .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-dim);margin-top:3px}
+.health-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:700px){.health-board{grid-template-columns:repeat(2,1fr)}}
+.health-cell{border-radius:9px;padding:12px;text-align:center;background:var(--line-soft)}
+.health-cell.active{background:var(--teal-dim)}.health-cell.due{background:var(--amber-dim)}.health-cell.overdue{background:var(--coral-dim)}.health-cell.dormant{background:#e6e6e6}
+.health-cell .num{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600}
+.health-cell .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-dim);margin-top:3px}
+.progress-outer{background:var(--line-soft);border-radius:20px;height:13px;overflow:hidden;margin:7px 0}
+.progress-inner{height:100%;background:var(--teal);border-radius:20px}
+.progress-inner.over{background:var(--coral)}
+.due-item{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-radius:9px;margin-bottom:7px;background:var(--line-soft);gap:9px}
+.due-item.overdue{background:var(--coral-dim)}.due-item.today{background:var(--amber-dim)}
+.due-left{font-size:12px}.due-left b{display:block}.due-left span{font-size:10.5px;color:var(--ink-dim)}
+.due-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.due-tag.overdue{background:var(--coral);color:#fff}.due-tag.today{background:var(--amber);color:#fff}.due-tag.soon{background:var(--blue);color:#fff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-dow{text-align:center;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-dim);padding-bottom:4px}
+.cal-cell{background:var(--line-soft);border-radius:8px;min-height:62px;padding:6px;font-size:11px;cursor:pointer;border:2px solid transparent}
+.cal-cell.empty{background:none;cursor:default}
+.cal-cell.today{border-color:var(--teal)}
+.cal-cell.selected{border-color:var(--blue);background:var(--blue-dim)}
+.cal-daynum{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px}
+.cal-dot-row{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
+.cal-dot{width:6px;height:6px;border-radius:50%}
+.cal-dot.overdue{background:var(--coral)}.cal-dot.appt{background:var(--blue)}.cal-dot.due{background:var(--amber)}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav button{width:auto;padding:6px 12px}
+.cal-month-label{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px}
+.agenda-item{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-radius:8px;margin-bottom:6px;background:var(--line-soft);font-size:12px}
+.agenda-item .agenda-del{width:auto;padding:3px 8px;font-size:10px}
+.summary-row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.summary-chip{flex:1;min-width:115px;background:var(--teal-dim);border-radius:9px;padding:11px 13px}
+.summary-chip.coral{background:var(--coral-dim)}.summary-chip.amber{background:var(--amber-dim)}.summary-chip.blue{background:var(--blue-dim)}
+.summary-chip-label{font-size:9.5px;color:var(--ink-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.summary-chip-value{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600}
+.chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{background:var(--teal-dim);color:var(--teal);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.byif-footer{text-align:center;padding:14px 0 4px;font-size:10px;color:var(--ink-dim);opacity:.7}
+.activity-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px}
+.activity-icon{width:25px;height:25px;border-radius:7px;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:130px;padding-top:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bar{width:100%;max-width:30px;background:var(--teal);border-radius:5px 5px 0 0}
+.bar-label{font-size:9px;color:var(--ink-dim);margin-top:5px}
+.bar-value{font-size:8.5px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;margin-bottom:3px}
+.aging-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.aging-label{width:66px;font-size:11px;color:var(--ink-dim);flex-shrink:0}
+.aging-bar-outer{flex:1;background:var(--line-soft);border-radius:6px;height:15px;overflow:hidden}
+.aging-bar-inner{height:100%;background:var(--teal)}
+.aging-bar-inner.warn{background:var(--amber)}.aging-bar-inner.danger{background:var(--coral)}
+.aging-value{width:76px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.chat-box{display:flex;flex-direction:column;height:340px}
+.chat-log{flex:1;overflow-y:auto;background:var(--line-soft);border-radius:9px;padding:10px;margin-bottom:9px}
+.chat-msg{margin-bottom:9px;font-size:12px;line-height:1.5}
+.chat-msg.user{text-align:right}
+.chat-msg .bubble{display:inline-block;padding:8px 11px;border-radius:10px;max-width:85%;text-align:left}
+.chat-msg.user .bubble{background:var(--teal);color:#fff}
+.chat-msg.assistant .bubble{background:#fff;border:1px solid var(--line)}
+.chat-input-row{display:flex;gap:8px}
+.chat-input-row input{flex:1}
+.chat-input-row button{flex-shrink:0;width:auto;padding:8px 15px}
+details summary{list-style:none;cursor:pointer}
+details summary::-webkit-details-marker{display:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-mark" id="brandMark">C</div>
+    <div><div class="brand-name" id="brandName">CORAZON</div><div class="brand-sub" id="brandSub">Command Centre</div></div>
+  </div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <span class="last-refresh" id="lastRefresh">Loading...</span>
+    <button class="btn" onclick="loadData()">&#8635; Refresh</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('home',this)">Home</button>
+    <button class="tab" onclick="switchTab('followups',this)">Follow-Ups</button>
+    <button class="tab" onclick="switchTab('calendar',this)">Calendar</button>
+    <button class="tab" onclick="switchTab('sales',this)">Daily Sales</button>
+    <button class="tab" onclick="switchTab('debtcred',this)">Debtors &amp; Creditors</button>
+    <button class="tab" onclick="switchTab('pipeline',this)">Client Pipeline</button>
+    <button class="tab" onclick="switchTab('tracker',this)">Tracker</button>
+    <button class="tab" onclick="switchTab('inventory',this)">Inventory</button>
+    <button class="tab" onclick="switchTab('purchases',this)">Purchases</button>
+    <button class="tab" onclick="switchTab('expenses',this)">Expenses</button>
+    <button class="tab" onclick="switchTab('clients',this)">Clients</button>
+    <button class="tab" onclick="switchTab('referrals',this)">Referrals</button>
+    <button class="tab" onclick="switchTab('callsmsgs',this)">Calls &amp; Messages</button>
+    <button class="tab" onclick="switchTab('archive',this)">Archive</button>
+    <button class="tab" onclick="switchTab('assistant',this)">AI Assistant</button>
+    <button class="tab" onclick="switchTab('setup',this)">Setup</button>
+  </div>
+
+  <!-- HOME -->
+  <div class="tab-content active" id="tab-home">
+    <div class="vitals" id="vitalsStrip"><div class="vital"><div class="vital-label">Loading</div><div class="vital-value">···</div></div></div>
+    <div class="grid3">
+      <div class="card"><div class="card-title">Revenue Target — this month</div><div id="revenueBlock"><div class="loading">Loading</div></div></div>
+      <div class="card"><div class="card-title">Due &amp; Overdue<span class="mono" id="followUpCountBadge"></span></div><div id="homeFollowUps"><div class="loading">Loading</div></div></div>
+      <div class="card"><div class="card-title">Reorder Alerts<span class="mono" id="reorderCountBadge"></span></div><div id="homeReorder"><div class="loading">Loading</div></div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="card-title">Accounts Status Board</div><div class="status-board" id="statusBoard"></div></div>
+      <div class="card"><div class="card-title">Client Reorder Pipeline<span class="mono" id="healthCountBadge"></span></div><div class="section-note">Auto-computed from real order dates — no manual tagging.</div><div class="health-board" id="homeHealthBoard"></div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="card-title">Recent Sales</div><div id="homeRecentSales"><div class="loading">Loading</div></div></div>
+      <div class="card"><div class="card-title">Recent Activity</div><div id="homeActivity"><div class="loading">Loading</div></div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="card-title">Quick — Log a Call</div>
+        <div class="field-row"><div class="field"><label>Business / Client</label><input id="hcBusiness"></div><div class="field"><label>Number</label><input id="hcNumber"></div></div>
+        <div class="field"><label>Notes</label><input id="hcNotes"></div>
+        <div class="field-row"><div class="field"><label>Next Action</label><input id="hcNextAction"></div><div class="field"><label>Next Follow-Up</label><input type="date" id="hcNextFollowUp"></div></div>
+        <button class="btn" style="width:100%" onclick="quickLogCall()">+ Log Call</button>
+        <div id="hcResult" style="margin-top:6px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">Quick — Log a Message</div>
+        <div class="field-row"><div class="field"><label>Business / Client</label><input id="hmBusiness"></div><div class="field"><label>Channel</label><select id="hmChannel"><option>WhatsApp</option><option>SMS</option><option>Email</option><option>Call</option><option>In Person</option></select></div></div>
+        <div class="field"><label>Summary</label><input id="hmSummary"></div>
+        <button class="btn" style="width:100%" onclick="quickLogMessage()">+ Log Message</button>
+        <div id="hmResult" style="margin-top:6px;font-size:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLLOW-UPS -->
+  <div class="tab-content" id="tab-followups">
+    <div class="card"><div class="card-title">Follow-Up Queue</div>
+      <div class="section-note">Every debtor/creditor payment due within 3 days (or overdue), any call with a next follow-up date, any dormant/overdue client, and any appointment within 3 days — one combined list.</div>
+      <div id="followUpsFull"><div class="loading">Loading</div></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="tab-content" id="tab-calendar">
+    <div class="grid">
+      <div class="card"><div class="card-title">Calendar</div>
+        <div class="cal-nav"><button class="btn ghost small" onclick="calShiftMonth(-1)">&larr; Prev</button><div class="cal-month-label" id="calMonthLabel">—</div><button class="btn ghost small" onclick="calShiftMonth(1)">Next &rarr;</button></div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="card"><div class="card-title">Add an Appointment</div>
+        <div class="field"><label>Title</label><input id="apptTitle"></div>
+        <div class="field-row"><div class="field"><label>Client / Business</label><input id="apptClient"></div><div class="field"><label>Date</label><input type="date" id="apptDate"></div></div>
+        <div class="field"><label>Notes</label><input id="apptNotes"></div>
+        <button class="btn" style="width:100%" onclick="submitAppointment()">+ Add to Calendar</button>
+        <div id="apptResult" style="margin-top:6px;font-size:12px"></div>
+        <div class="card-title" style="margin-top:16px">Agenda — <span id="agendaDayLabel">today</span></div>
+        <div id="agendaList"><div class="empty">Pick a day on the calendar</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY SALES -->
+  <div class="tab-content" id="tab-sales">
+    <div class="grid">
+      <div class="card"><div class="card-title">Log a Sale</div>
+        <div class="section-note">Product name, category, unit, cost, revenue, tax and margin are all computed automatically — nothing is left to a sheet formula.</div>
+        <div class="field-row"><div class="field"><label>Date</label><input type="date" id="saleDate"></div><div class="field"><label>Customer Name</label><input id="saleCustomer"></div></div>
+        <div class="field-row"><div class="field"><label>Stock Code</label><input id="saleStockCode" list="stockCodeList" oninput="autofillSalePrice()"></div><div class="field"><label>Qty Sold</label><input type="number" id="saleQty"></div></div>
+        <datalist id="stockCodeList"></datalist>
+        <div class="field-row3">
+          <div class="field"><label>Unit Price (GHS)</label><input type="number" id="saleUnitPrice"></div>
+          <div class="field"><label>Discount %</label><input type="number" id="saleDiscount" placeholder="0"></div>
+          <div class="field"><label>Tax Code</label><select id="saleTax"><option value="">No tax</option></select></div>
+        </div>
+        <div class="field"><label>Payment Method</label><select id="salePaymentMethod"><option value="">—</option><option>Cash</option><option>MoMo</option><option>Cheque</option><option>Bank Transfer</option></select></div>
+        <div class="field"><label>Notes</label><input id="saleNotes"></div>
+        <button class="btn" style="width:100%;margin-top:4px" onclick="submitSale()">+ Log Sale</button>
+        <div id="saleResult" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">Today &amp; All-Time</div><div class="summary-row" id="salesSummaryChips"></div>
+        <div class="section-note">Showing the most recent 500 entries below. Use the Archive tab to sweep entries older than 12 months.</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Recent Entries</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Revenue</th><th>Gross Profit</th><th>Payment</th></tr></thead><tbody id="salesTableBody"></tbody></table></div></div>
+  </div>
+
+  <!-- DEBTORS & CREDITORS -->
+  <div class="tab-content" id="tab-debtcred">
+    <div class="grid">
+      <div class="card"><div class="card-title">Debtors — owed TO you</div><div class="summary-row" id="debtorsSummaryChips"></div>
+        <details style="margin-bottom:10px"><summary style="font-size:12px;color:var(--teal);font-weight:600">+ Add a debtor</summary>
+          <div style="margin-top:9px">
+            <div class="field-row"><div class="field"><label>Client Name</label><input id="debtorName"></div><div class="field"><label>Contact</label><input id="debtorContact"></div></div>
+            <div class="field-row"><div class="field"><label>Amount Owed</label><input type="number" id="debtorAmountOwed"></div><div class="field"><label>Amount Paid</label><input type="number" id="debtorAmountPaid" value="0"></div></div>
+            <div class="field-row"><div class="field"><label>Invoice Date</label><input type="date" id="debtorInvoiceDate"></div><div class="field"><label>Due Date</label><input type="date" id="debtorDueDate"></div></div>
+            <div class="field"><label>Payment Method</label><select id="debtorPaymentMethod"><option value="">—</option><option>Cash</option><option>MoMo</option><option>Cheque</option></select></div>
+            <div class="field"><label>Notes</label><input id="debtorNotes"></div>
+            <button class="btn" style="width:100%" onclick="submitDC('debtor')">+ Add Debtor</button>
+            <div id="debtorResult" style="margin-top:6px;font-size:12px"></div>
+          </div>
+        </details>
+        <div class="scroll-table"><table><thead><tr><th>Name</th><th>Owed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="debtorsTableBody"></tbody></table></div>
+      </div>
+      <div class="card"><div class="card-title">Creditors — you OWE to suppliers</div><div class="summary-row" id="creditorsSummaryChips"></div>
+        <details style="margin-bottom:10px"><summary style="font-size:12px;color:var(--teal);font-weight:600">+ Add a creditor</summary>
+          <div style="margin-top:9px">
+            <div class="field-row"><div class="field"><label>Supplier</label><input id="creditorName"></div><div class="field"><label>Contact</label><input id="creditorContact"></div></div>
+            <div class="field-row"><div class="field"><label>Amount Owed</label><input type="number" id="creditorAmountOwed"></div><div class="field"><label>Amount Paid</label><input type="number" id="creditorAmountPaid" value="0"></div></div>
+            <div class="field-row"><div class="field"><label>Invoice Date</label><input type="date" id="creditorInvoiceDate"></div><div class="field"><label>Due Date</label><input type="date" id="creditorDueDate"></div></div>
+            <div class="field"><label>Payment Method</label><select id="creditorPaymentMethod"><option value="">—</option><option>Cash</option><option>MoMo</option><option>Cheque</option></select></div>
+            <div class="field"><label>Notes</label><input id="creditorNotes"></div>
+            <button class="btn" style="width:100%" onclick="submitDC('creditor')">+ Add Creditor</button>
+            <div id="creditorResult" style="margin-top:6px;font-size:12px"></div>
+          </div>
+        </details>
+        <div class="scroll-table"><table><thead><tr><th>Name</th><th>Owed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="creditorsTableBody"></tbody></table></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Keep this table fast — archive cleared accounts</div>
+      <div class="section-note">Cleared entries (balance = GHS 0) can be swept into the Archive tab in one click. Nothing is deleted.</div>
+      <button class="btn ghost" onclick="sweepArchive()">Sweep all cleared accounts to Archive</button>
+      <div id="sweepResult" style="margin-top:8px;font-size:12px"></div>
+    </div>
+  </div>
+
+  <!-- CLIENT PIPELINE -->
+  <div class="tab-content" id="tab-pipeline">
+    <div class="card"><div class="card-title">Reorder Health — every client, one glance</div>
+      <div class="section-note">Auto-labelled purely from real order dates: 🟢 Active (0-30d) · 🟡 Due (31-60d) · 🔴 Overdue (61-120d) · ⚫ Dormant (120d+). No tagging needed.</div>
+      <div class="health-board" id="healthBoardFull"></div>
+    </div>
+    <div class="card"><div class="card-title">All Clients by Days Since Last Order</div><div class="scroll-table"><table><thead><tr><th>Client</th><th>Status</th><th>Last Order</th><th>Days Since</th><th>Total Revenue</th></tr></thead><tbody id="healthTableBody"></tbody></table></div></div>
+  </div>
+
+  <!-- TRACKER -->
+  <div class="tab-content" id="tab-tracker">
+    <div class="subtabs">
+      <button class="subtab active" onclick="switchSubtab('tracker','overview',this)">Overview</button>
+      <button class="subtab" onclick="switchSubtab('tracker','dailyTotals',this)">Daily Totals</button>
+      <button class="subtab" onclick="switchSubtab('tracker','weeklySales',this)">Weekly Sales</button>
+      <button class="subtab" onclick="switchSubtab('tracker','monthlyRpt',this)">Monthly Report</button>
+      <button class="subtab" onclick="switchSubtab('tracker','annualSummary',this)">Annual Summary</button>
+      <button class="subtab" onclick="switchSubtab('tracker','stockAnalysis',this)">Stock Analysis</button>
+      <button class="subtab" onclick="switchSubtab('tracker','profitDash',this)">Profit Dash</button>
+    </div>
+    <div class="subtab-content active" id="tracker-overview">
+      <div class="grid">
+        <div class="card"><div class="card-title">Revenue &amp; Profit — recent months</div><div id="trendChart"><div class="loading">Loading</div></div></div>
+        <div class="card"><div class="card-title">Top Products by Revenue</div><div id="topProductsList"><div class="loading">Loading</div></div></div>
+      </div>
+      <div class="card"><div class="card-title">Debtor Aging</div><div id="agingChart"><div class="loading">Loading</div></div></div>
+    </div>
+    <div class="subtab-content" id="tracker-dailyTotals"><div class="card"><div class="card-title">Daily Totals — computed live from Sales</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Revenue</th><th>COGS</th><th>Profit</th><th>Tax</th><th>Txns</th><th>Avg Sale</th><th>Margin %</th></tr></thead><tbody id="dailyTotalsBody"></tbody></table></div></div></div>
+    <div class="subtab-content" id="tracker-weeklySales"><div class="card"><div class="card-title">Weekly Sales — computed live</div><div class="scroll-table"><table><thead><tr><th>Week</th><th>Revenue</th><th>COGS</th><th>Profit</th><th>Txns</th><th>Margin %</th></tr></thead><tbody id="weeklySalesBody"></tbody></table></div></div></div>
+    <div class="subtab-content" id="tracker-monthlyRpt"><div class="card"><div class="card-title">Monthly Report — computed live, all months</div><div id="monthlyRptBody"></div></div></div>
+    <div class="subtab-content" id="tracker-annualSummary"><div class="card"><div class="card-title">Annual Summary — computed live</div><div class="scroll-table"><table><thead><tr><th>Year</th><th>Revenue</th><th>Profit</th><th>Margin %</th></tr></thead><tbody id="annualSummaryBody"></tbody></table></div></div></div>
+    <div class="subtab-content" id="tracker-stockAnalysis"><div class="card"><div class="card-title">Stock Analysis — computed live</div><div class="scroll-table"><table><thead><tr><th>Code</th><th>Product</th><th>Txns</th><th>Qty Sold</th><th>Revenue</th><th>Profit</th><th>Margin %</th></tr></thead><tbody id="stockAnalysisBody"></tbody></table></div></div></div>
+    <div class="subtab-content" id="tracker-profitDash"><div class="card"><div class="card-title">Profit Dashboard — computed live</div><div id="profitDashBody"></div></div></div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="tab-content" id="tab-inventory">
+    <div class="card"><div class="card-title">Inventory (computed live — read-only)</div>
+      <div class="section-note">Current stock = Opening + all Purchases − all Sales, computed fresh every load. Never a stale sheet formula.</div>
+      <input id="inventorySearch" placeholder="Search stock code or product name..." oninput="renderInventory()" style="margin-bottom:12px">
+      <div class="scroll-table"><table><thead><tr><th>Code</th><th>Product</th><th>Category</th><th>Stock</th><th>Reorder Lvl</th><th>Status</th><th>Unit Cost</th><th>Retail</th><th>Value (Cost)</th></tr></thead><tbody id="inventoryTableBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- PURCHASES -->
+  <div class="tab-content" id="tab-purchases">
+    <div class="grid">
+      <div class="card"><div class="card-title">Log a Purchase</div>
+        <div class="field-row"><div class="field"><label>Date</label><input type="date" id="purchDate"></div><div class="field"><label>Stock Code</label><input id="purchStockCode" list="stockCodeList"></div></div>
+        <div class="field-row"><div class="field"><label>Qty</label><input type="number" id="purchQty"></div><div class="field"><label>Unit Cost (GHS)</label><input type="number" id="purchUnitCost"></div></div>
+        <div class="field"><label>Supplier</label><input id="purchSupplier"></div>
+        <div class="field"><label>Notes</label><input id="purchNotes"></div>
+        <button class="btn" style="width:100%;margin-top:4px" onclick="submitPurchase()">+ Log Purchase</button>
+        <div id="purchResult" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">About this tab</div><div class="section-note">This where supplier price changes get logged going forward — new purchase costs don't touch past sales. Use Setup → Product Catalog → Update Cost to change the price future sales will use.</div></div>
+    </div>
+    <div class="card"><div class="card-title">Recent Purchases</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Code</th><th>Product</th><th>Qty</th><th>Unit Cost</th><th>Total</th><th>Supplier</th></tr></thead><tbody id="purchasesTableBody"></tbody></table></div></div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="tab-content" id="tab-expenses">
+    <div class="grid">
+      <div class="card"><div class="card-title">Log an Expense</div>
+        <div class="field-row"><div class="field"><label>Date</label><input type="date" id="expDate"></div><div class="field"><label>Category</label><input id="expCategory"></div></div>
+        <div class="field"><label>Description</label><input id="expDescription"></div>
+        <div class="field-row"><div class="field"><label>Amount (GHS)</label><input type="number" id="expAmount"></div><div class="field"><label>Payment Method</label><select id="expPaymentMethod"><option value="">—</option><option>Cash</option><option>MoMo</option><option>Cheque</option><option>Bank Transfer</option></select></div></div>
+        <div class="field"><label>Notes</label><input id="expNotes"></div>
+        <button class="btn" style="width:100%" onclick="submitExpense()">+ Log Expense</button>
+        <div id="expResult" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">About this tab</div><div class="section-note">Expenses feed straight into the Profit Dashboard's net profit figure.</div></div>
+    </div>
+    <div class="card"><div class="card-title">Recent Expenses</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Payment</th></tr></thead><tbody id="expensesTableBody"></tbody></table></div></div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div class="tab-content" id="tab-clients">
+    <div class="grid">
+      <div class="card"><div class="card-title">Add a Client</div>
+        <div class="field"><label>Name</label><input id="clientName"></div>
+        <div class="field-row"><div class="field"><label>Contact Person</label><input id="clientContactPerson"></div><div class="field"><label>Number</label><input id="clientNumber"></div></div>
+        <div class="field"><label>Notes</label><input id="clientNotes"></div>
+        <button class="btn" style="width:100%" onclick="submitClient()">+ Add Client</button>
+        <div id="clientResult" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">About this tab</div><div class="section-note">For each client's live reorder status, see the Client Pipeline tab.</div></div>
+    </div>
+    <div class="card"><div class="card-title">All Clients</div><div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact Person</th><th>Number</th><th>Notes</th><th></th></tr></thead><tbody id="clientsTableBody"></tbody></table></div></div>
+  </div>
+
+  <!-- REFERRALS -->
+  <div class="tab-content" id="tab-referrals">
+    <div class="grid">
+      <div class="card"><div class="card-title">Log a Referral</div>
+        <div class="field-row"><div class="field"><label>Date</label><input type="date" id="refDate"></div><div class="field"><label>Client Name</label><input id="refClientName"></div></div>
+        <div class="field-row"><div class="field"><label>Referred Someone?</label><select id="refReferred"><option>Yes</option><option>No</option></select></div><div class="field"><label>Times Referred</label><input type="number" id="refTimes" value="1"></div></div>
+        <div class="field"><label>Notes</label><input id="refNotes"></div>
+        <button class="btn" style="width:100%" onclick="submitReferral()">+ Add Referral</button>
+        <div id="refResult" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">About this tab</div><div class="section-note">Golden-window rule: ask 24–72 hours after a client confirms satisfaction, not before, not weeks later.</div></div>
+    </div>
+    <div class="card"><div class="card-title">All Referrals</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Client</th><th>Referred?</th><th>Times</th><th>Notes</th></tr></thead><tbody id="referralsTableBody"></tbody></table></div></div>
+  </div>
+
+  <!-- CALLS & MESSAGES -->
+  <div class="tab-content" id="tab-callsmsgs">
+    <div class="grid">
+      <div class="card"><div class="card-title">Log a Call</div>
+        <div class="field-row"><div class="field"><label>Business / Client</label><input id="callBusiness"></div><div class="field"><label>Number</label><input id="callNumber"></div></div>
+        <div class="field"><label>Notes</label><input id="callNotes"></div>
+        <div class="field-row"><div class="field"><label>Next Action</label><input id="callNextAction"></div><div class="field"><label>Next Follow-Up</label><input type="date" id="callNextFollowUp"></div></div>
+        <button class="btn" style="width:100%" onclick="submitCall()">+ Log Call</button>
+        <div id="callResult" style="margin-top:6px;font-size:12px"></div>
+      </div>
+      <div class="card"><div class="card-title">Log a Message</div>
+        <div class="field-row"><div class="field"><label>Business / Client</label><input id="msgBusiness"></div><div class="field"><label>Channel</label><select id="msgChannel"><option>WhatsApp</option><option>SMS</option><option>Email</option><option>In Person</option></select></div></div>
+        <div class="field"><label>Summary</label><input id="msgSummary"></div>
+        <button class="btn" style="width:100%" onclick="submitMessage()">+ Log Message</button>
+        <div id="msgResult" style="margin-top:6px;font-size:12px"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="card-title">Recent Calls</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Business</th><th>Number</th><th>Notes</th><th>Next Action</th><th>Follow Up</th></tr></thead><tbody id="callsTableBody"></tbody></table></div></div>
+      <div class="card"><div class="card-title">Recent Messages</div><div class="scroll-table"><table><thead><tr><th>Date</th><th>Business</th><th>Channel</th><th>Summary</th></tr></thead><tbody id="messagesTableBody"></tbody></table></div></div>
+    </div>
+  </div>
+
+  <!-- ARCHIVE -->
+  <div class="tab-content" id="tab-archive">
+    <div class="card"><div class="card-title">Archived Debtors &amp; Creditors<span class="mono" id="archiveCountBadge"></span></div>
+      <div class="section-note">Cleared accounts live here once swept. Nothing is deleted.</div>
+      <div class="scroll-table"><table><thead><tr><th>Archived</th><th>Type</th><th>Name</th><th>Owed</th><th>Paid</th><th>Reason</th></tr></thead><tbody id="archiveTableBody"></tbody></table></div>
+    </div>
+    <div class="card"><div class="card-title">Archived Sales<span class="mono" id="archiveSalesCountBadge"></span></div>
+      <div class="section-note">Old Daily Sales rows, once swept, live here so the live sales table stays fast.</div>
+      <div class="field-row" style="align-items:end">
+        <div class="field"><label>Sweep sales older than (months)</label><input type="number" id="sweepSalesMonths" value="12"></div>
+        <div class="field"><button class="btn ghost" style="width:100%" onclick="sweepArchiveSales()">Sweep old sales to Archive</button></div>
+      </div>
+      <div id="sweepSalesResult" style="margin-bottom:10px;font-size:12px"></div>
+      <div class="scroll-table"><table><thead><tr><th>Archived</th><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Revenue</th></tr></thead><tbody id="archiveSalesTableBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- AI ASSISTANT -->
+  <div class="tab-content" id="tab-assistant">
+    <div class="card"><div class="card-title">Command Centre Assistant</div>
+      <div class="section-note">Ask about revenue pace, which clients to chase, or anything about running the business. Requires <code>ANTHROPIC_API_KEY</code> in Apps Script Script Properties.</div>
+      <div class="chat-box"><div class="chat-log" id="chatLog"></div>
+        <div class="chat-input-row"><input id="chatInput" placeholder="e.g. Which clients should I follow up with today?" onkeydown="if(event.key==='Enter') sendChat()"><button class="btn" onclick="sendChat()">Send</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="tab-content" id="tab-setup">
+    <div class="card"><div class="card-title">Business Identity</div>
+      <div class="field-row"><div class="field"><label>Business Name</label><input id="setupBusinessName"></div><div class="field"><label>Industry</label><input id="setupIndustry"></div></div>
+      <div class="field" style="margin-top:10px"><label>Branding</label><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:400;font-size:12.5px;color:var(--ink)"><input type="checkbox" id="setupBrandingEnabled" style="width:auto"> Show "Powered by BYINFORGH" footer</label></div>
+      <button class="btn" style="margin-top:12px" onclick="saveSetup()">Save Settings</button>
+      <div id="setupResult" style="margin-top:8px;font-size:12px"></div>
+    </div>
+
+    <div class="card"><div class="card-title">Revenue Targets &amp; Expense Budgets</div>
+      <div class="field-row3">
+        <div class="field"><label>Daily Revenue Target</label><input type="number" id="targetDaily"></div>
+        <div class="field"><label>Weekly Revenue Target</label><input type="number" id="targetWeekly"></div>
+        <div class="field"><label>Monthly Revenue Target</label><input type="number" id="targetMonthly"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Annual Revenue Target</label><input type="number" id="targetAnnual"></div>
+        <div class="field"><label>Working Days / Month</label><input type="number" id="setupWorkingDays"></div>
+      </div>
+      <div class="field-row3">
+        <div class="field"><label>Daily Expense Budget</label><input type="number" id="budgetDaily"></div>
+        <div class="field"><label>Weekly Expense Budget</label><input type="number" id="budgetWeekly"></div>
+        <div class="field"><label>Monthly Expense Budget</label><input type="number" id="budgetMonthly"></div>
+      </div>
+      <div class="field"><label>Annual Expense Budget</label><input type="number" id="budgetAnnual"></div>
+      <button class="btn" onclick="saveTargets()">Save Targets &amp; Budgets</button>
+      <div id="targetsResult" style="margin-top:8px;font-size:12px"></div>
+    </div>
+
+    <div class="card"><div class="card-title">Tax / VAT Codes — one selection updates every sale instantly</div>
+      <div class="section-note">Add as many tax codes as you need (VAT, NHIL+GETFund, zero-rated, etc). Toggle Active to control what shows in the Daily Sales dropdown.</div>
+      <div class="field-row3">
+        <div class="field"><label>Code</label><input id="newTaxCode" placeholder="e.g. VAT"></div>
+        <div class="field"><label>Description</label><input id="newTaxDesc"></div>
+        <div class="field"><label>Rate %</label><input type="number" id="newTaxRate"></div>
+      </div>
+      <button class="btn ghost" onclick="submitNewTaxCode()">+ Add Tax Code</button>
+      <div class="scroll-table" style="margin-top:10px"><table><thead><tr><th>Code</th><th>Description</th><th>Rate %</th><th>Active</th></tr></thead><tbody id="taxCodesTableBody"></tbody></table></div>
+    </div>
+
+    <div class="grid">
+      <div class="card"><div class="card-title">Product Catalog — add a new product</div>
+        <div class="field-row"><div class="field"><label>Stock Code</label><input id="catStockCode"></div><div class="field"><label>Product Name</label><input id="catName"></div></div>
+        <div class="field-row"><div class="field"><label>Category</label><select id="catCategory"></select></div><div class="field"><label>Unit</label><select id="catUnit"></select></div></div>
+        <div class="field-row"><div class="field"><label>Reorder Level</label><input type="number" id="catReorder"></div><div class="field"><label>Lead Time (days)</label><input type="number" id="catLeadTime"></div></div>
+        <div class="field-row"><div class="field"><label>Opening Stock</label><input type="number" id="catOpening"></div><div class="field"><label>Supplier</label><input id="catSupplier"></div></div>
+        <div class="field-row"><div class="field"><label>Unit Cost (GHS)</label><input type="number" id="catUnitCost"></div><div class="field"><label>Retail Price (GHS)</label><input type="number" id="catRetailPrice"></div></div>
+        <div class="field"><label>Track Expiry?</label><select id="catTrackExpiry"><option>No</option><option>Yes</option></select></div>
+        <button class="btn" style="width:100%" onclick="submitCatalogProduct()">+ Add Product</button>
+        <div id="catalogResult" style="margin-top:8px;font-size:12px"></div>
+
+        <div class="card-title" style="margin-top:16px">Categories</div>
+        <div class="field-row"><div class="field" style="flex:1"><input id="newCategoryInput" placeholder="Add a new category"></div><div class="field"><button class="btn ghost" style="width:100%" onclick="submitNewCategory()">+ Add</button></div></div>
+        <div class="chip-list" id="categoryChips"></div>
+
+        <div class="card-title" style="margin-top:16px">Units</div>
+        <div class="field-row"><div class="field" style="flex:1"><input id="newUnitInput" placeholder="Add a new unit"></div><div class="field"><button class="btn ghost" style="width:100%" onclick="submitNewUnit()">+ Add</button></div></div>
+        <div class="chip-list" id="unitChips"></div>
+      </div>
+      <div class="card"><div class="card-title">Product Catalog — cost tracking</div>
+        <div class="section-note">Supplier price changed? Update the cost here — Unit Cost moves to Previous Unit Cost, and today's date is stamped as the change date. Any sale dated BEFORE that date keeps using the previous cost automatically.</div>
+        <div class="scroll-table"><table><thead><tr><th>Code</th><th>Product</th><th>Unit Cost</th><th>Previous</th><th>Changed</th><th></th></tr></thead><tbody id="catalogTableBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="card"><div class="card-title">AI Assistant Setup (one-time)</div>
+      <div class="section-note">
+        1. Open the spreadsheet → Extensions → Apps Script.<br>
+        2. Project Settings (gear icon) → Script Properties → Add script property.<br>
+        3. Property: <code>ANTHROPIC_API_KEY</code> — Value: your Anthropic API key. Save.<br>
+        4. Reload this dashboard.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="byif-footer" id="byifFooter" style="display:none"><a href="https://wa.me/233509960980" target="_blank" rel="noopener noreferrer">Powered by BYINFORGH — Business Solutions</a> · © 2026</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ==========================================================
+// CONFIG — paste your Apps Script /exec deployment URL here
+// ==========================================================
+const API_URL = "https://script.google.com/macros/s/AKfycbxzgaprVywVXAr5hgn1eO7kzMIAcAnACy9haTi5MHRGQANqQ7ZC7DnScjsQzxssNPhl/exec";
+
+let state = {};
+let calViewDate = new Date();
+let calSelectedDate = new Date();
+let pollTimer = null;
+
+// v1.0: escape every user-entered string before it goes into a
+// template literal — fixes the "no output escaping" gap flagged in
+// the CORAZON sign-off (a stray < or <script> in a notes field could
+// break a row's rendering).
+function esc(s){ return (s===undefined||s===null?'':s.toString()).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function switchTab(name, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='calendar'){ renderCalendar(); renderAgenda(); }
+}
+function switchSubtab(group, name, btn){
+  const container = btn.closest('.tab-content');
+  container.querySelectorAll('.subtab').forEach(t=>t.classList.remove('active'));
+  container.querySelectorAll('.subtab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(group+'-'+name).classList.add('active');
+}
+function fmtMoney(v){ v=parseFloat(v)||0; return 'GHS '+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtMoneyShort(v){ v=parseFloat(v)||0; return 'GHS '+Math.round(v).toLocaleString(); }
+
+function safeRender(fn,label){ try{ fn(); } catch(e){ console.log('Render error in '+label+':', e); } }
+
+function fetchWithTimeout(url, ms){
+  return new Promise((resolve, reject) => {
+    let settled=false;
+    const timer=setTimeout(()=>{ if(settled)return; settled=true; reject(new Error('timeout')); }, ms);
+    fetch(url).then(res=>{ if(settled)return; settled=true; clearTimeout(timer); resolve(res); })
+      .catch(err=>{ if(settled)return; settled=true; clearTimeout(timer); reject(err); });
+  });
+}
+
+async function loadData(){
+  document.getElementById('lastRefresh').textContent='Refreshing...';
+  if(API_URL.indexOf('PASTE_YOUR')===0){ document.getElementById('lastRefresh').textContent='Not connected — paste your Apps Script URL into API_URL'; return; }
+  try{
+    const res = await fetchWithTimeout(API_URL+'?t='+Date.now(), 25000);
+    const data = await res.json();
+    state = data;
+    safeRender(applySettings,'applySettings');
+    safeRender(renderHome,'renderHome');
+    safeRender(renderFollowUpsFull,'renderFollowUpsFull');
+    safeRender(renderTracker,'renderTracker');
+    safeRender(renderSales,'renderSales');
+    safeRender(renderExpenses,'renderExpenses');
+    safeRender(renderDebtorsCreditors,'renderDebtorsCreditors');
+    safeRender(renderClients,'renderClients');
+    safeRender(renderInventory,'renderInventory');
+    safeRender(renderPurchases,'renderPurchases');
+    safeRender(renderReferrals,'renderReferrals');
+    safeRender(renderCallsMessages,'renderCallsMessages');
+    safeRender(renderArchive,'renderArchive');
+    safeRender(renderClientHealth,'renderClientHealth');
+    safeRender(renderTaxDropdown,'renderTaxDropdown');
+    safeRender(renderStockCodeList,'renderStockCodeList');
+    safeRender(renderCatalogFormOptions,'renderCatalogFormOptions');
+    safeRender(renderCatalogTable,'renderCatalogTable');
+    safeRender(renderTaxCodesTable,'renderTaxCodesTable');
+    safeRender(renderCategoryChips,'renderCategoryChips');
+    safeRender(renderUnitChips,'renderUnitChips');
+    safeRender(renderTargets,'renderTargets');
+    safeRender(renderCalendar,'renderCalendar');
+    safeRender(renderAgenda,'renderAgenda');
+    document.getElementById('lastRefresh').textContent='Updated '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('lastRefresh').textContent = (e && e.message==='timeout') ? 'Timed out — tap Refresh to try again' : 'Offline — check connection';
+    console.log('Load error', e);
+  }
+}
+
+function applySettings(){
+  const s = state.settings || {};
+  document.getElementById('brandName').textContent = s.business_name || 'CORAZON';
+  document.getElementById('brandMark').textContent = (s.business_name||'C').charAt(0).toUpperCase();
+  document.getElementById('brandSub').textContent = s.industry || 'Command Centre';
+  document.getElementById('setupBusinessName').value = s.business_name || '';
+  document.getElementById('setupIndustry').value = s.industry || '';
+  const brandingOn = s.branding_enabled !== 'false';
+  document.getElementById('byifFooter').style.display = brandingOn ? 'block' : 'none';
+  const cb = document.getElementById('setupBrandingEnabled'); if(cb) cb.checked = brandingOn;
+}
+
+// ---------- HOME ----------
+function daysLabel(days){ if(days===null||days===undefined) return 'No date'; if(days<0) return Math.abs(days)+'d overdue'; if(days===0) return 'Due today'; return 'In '+days+'d'; }
+function daysTagClass(days){ if(days===null||days===undefined) return 'soon'; if(days<0) return 'overdue'; if(days===0) return 'today'; return 'soon'; }
+
+function renderHome(){
+  const sales = state.sales||{};
+  const dc = state.debtorsCreditors||{};
+  const debtorsBal = dc.debtors&&dc.debtors.summary ? dc.debtors.summary.totalBalance : 0;
+  const creditorsBal = dc.creditors&&dc.creditors.summary ? dc.creditors.summary.totalBalance : 0;
+  const overdueCount = (dc.debtors&&dc.debtors.summary?dc.debtors.summary.overdueCount:0)+(dc.creditors&&dc.creditors.summary?dc.creditors.summary.overdueCount:0);
+  document.getElementById('vitalsStrip').innerHTML = `
+    <div class="vital"><div class="vital-label">Today's Revenue</div><div class="vital-value">${fmtMoney(sales.todayRevenue||0)}</div></div>
+    <div class="vital"><div class="vital-label">Today's Gross Profit</div><div class="vital-value teal">${fmtMoney(sales.todayProfit||0)}</div></div>
+    <div class="vital"><div class="vital-label">Sales Logged Today</div><div class="vital-value">${sales.todayCount||0}</div></div>
+    <div class="vital"><div class="vital-label">Owed to you</div><div class="vital-value teal">${fmtMoney(debtorsBal)}</div></div>
+    <div class="vital"><div class="vital-label">You owe</div><div class="vital-value amber">${fmtMoney(creditorsBal)}</div></div>
+    <div class="vital"><div class="vital-label">Overdue accounts</div><div class="vital-value ${overdueCount>0?'coral':''}">${overdueCount}</div></div>`;
+
+  const rev = state.revenue||{};
+  const mt = rev.monthlyTarget||0, ma = rev.monthlyActual||0;
+  const pct = mt>0 ? Math.min(150,(ma/mt)*100) : 0;
+  document.getElementById('revenueBlock').innerHTML = mt<=0 ? `<div class="section-note">No monthly target set. Go to Setup → Revenue Targets to add one.</div>` : `
+    <div class="summary-row" style="margin-bottom:6px">
+      <div class="summary-chip"><div class="summary-chip-label">Today</div><div class="summary-chip-value">${fmtMoneyShort(rev.dailyActual)}</div></div>
+      <div class="summary-chip blue"><div class="summary-chip-label">This Week</div><div class="summary-chip-value">${fmtMoneyShort(rev.weeklyActual)}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--ink-dim);display:flex;justify-content:space-between"><span>${fmtMoneyShort(ma)} of ${fmtMoneyShort(mt)} target</span><span class="mono">${pct.toFixed(0)}%</span></div>
+    <div class="progress-outer"><div class="progress-inner ${pct>100?'over':''}" style="width:${Math.min(100,pct)}%"></div></div>
+    <div style="font-size:11px;color:var(--ink-dim);margin-top:6px">${rev.gapToTarget>0?'GHS '+Math.round(rev.gapToTarget).toLocaleString()+' left to reach target':'Target reached'} · pace ${rev.pacePct?rev.pacePct.toFixed(0):0}%</div>`;
+
+  const fu = state.followUps||{items:[]};
+  document.getElementById('followUpCountBadge').textContent = fu.items&&fu.items.length ? ' ('+fu.items.length+')' : '';
+  document.getElementById('homeFollowUps').innerHTML = (fu.items||[]).slice(0,6).map(i=>`
+    <div class="due-item ${i.daysUntil<0?'overdue':(i.daysUntil===0?'today':'')}">
+      <div class="due-left"><b>${esc(i.name||'—')}</b><span>${esc(i.kind)} · ${esc(i.detail)}</span></div>
+      <div class="due-tag ${daysTagClass(i.daysUntil)}">${daysLabel(i.daysUntil)}</div>
+    </div>`).join('') || '<div class="empty">Nothing due — clean books</div>';
+
+  const reorder = (state.tracker&&state.tracker.reorder)||{items:[]};
+  document.getElementById('reorderCountBadge').textContent = reorder.items&&reorder.items.length?' ('+reorder.items.length+')':'';
+  document.getElementById('homeReorder').innerHTML = (reorder.items||[]).slice(0,6).map(i=>`
+    <div class="due-item ${i.status==='OUT OF STOCK'?'overdue':'today'}"><div class="due-left"><b>${esc(i.name)}</b><span>${esc(i.stockCode)} · stock ${i.currentStock}</span></div><div class="due-tag ${i.status==='OUT OF STOCK'?'overdue':'soon'}">${esc(i.status)}</div></div>`).join('') || '<div class="empty">Nothing needs reordering</div>';
+
+  const debtorsRows=(dc.debtors&&dc.debtors.rows)||[], creditorsRows=(dc.creditors&&dc.creditors.rows)||[];
+  const dCleared=debtorsRows.filter(r=>r.balance<=0).length, dOverdue=debtorsRows.filter(r=>r.balance>0&&r.daysOverdue>0).length, dPending=debtorsRows.filter(r=>r.balance>0&&r.daysOverdue<=0).length;
+  const cCleared=creditorsRows.filter(r=>r.balance<=0).length, cOverdue=creditorsRows.filter(r=>r.balance>0&&r.daysOverdue>0).length, cPending=creditorsRows.filter(r=>r.balance>0&&r.daysOverdue<=0).length;
+  document.getElementById('statusBoard').innerHTML = `
+    <div class="status-cell"><div class="num" style="color:var(--teal)">${dCleared+cCleared}</div><div class="lbl">Cleared</div></div>
+    <div class="status-cell"><div class="num" style="color:var(--amber)">${dPending+cPending}</div><div class="lbl">Pending</div></div>
+    <div class="status-cell"><div class="num" style="color:var(--coral)">${dOverdue+cOverdue}</div><div class="lbl">Overdue</div></div>
+    <div class="status-cell"><div class="num">${debtorsRows.length+creditorsRows.length}</div><div class="lbl">Total Accounts</div></div>`;
+
+  const health = state.clientHealth||{counts:{}};
+  const c = health.counts||{};
+  document.getElementById('healthCountBadge').textContent = health.rows&&health.rows.length?' ('+health.rows.length+')':'';
+  document.getElementById('homeHealthBoard').innerHTML = `
+    <div class="health-cell active"><div class="num">${c.active||0}</div><div class="lbl">🟢 Active</div></div>
+    <div class="health-cell due"><div class="num">${c.due||0}</div><div class="lbl">🟡 Due</div></div>
+    <div class="health-cell overdue"><div class="num">${c.overdue||0}</div><div class="lbl">🔴 Overdue</div></div>
+    <div class="health-cell dormant"><div class="num">${c.dormant||0}</div><div class="lbl">⚫ Dormant</div></div>`;
+
+  const recent=(sales.rows||[]).slice(0,8);
+  document.getElementById('homeRecentSales').innerHTML = recent.length ? recent.map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12px"><div><strong>${esc(r.product||'—')}</strong><br><span style="color:var(--ink-dim);font-size:11px">${esc(r.customer||'—')} · ${esc(r.date||'')}</span></div><div class="mono" style="text-align:right">${fmtMoney(r.revenue)}</div></div>`).join('') : '<div class="empty">No sales logged yet</div>';
+
+  const cm = state.callsMessages||{calls:[],messages:[]};
+  let activity=[];
+  (cm.calls||[]).slice(0,10).forEach(c=>activity.push({icon:'📞',label:c['Business']||'—',detail:c['Notes']||'Call logged',date:c['Date']}));
+  (cm.messages||[]).slice(0,10).forEach(m=>activity.push({icon:'💬',label:m['Business']||'—',detail:(m['Channel']||'')+' — '+(m['Summary']||''),date:m['Date']}));
+  (sales.rows||[]).slice(0,10).forEach(r=>activity.push({icon:'🧾',label:r.customer||'—',detail:'Sale — '+(r.product||''),date:r.date}));
+  activity = activity.slice(0,10);
+  document.getElementById('homeActivity').innerHTML = activity.length ? activity.map(a=>`<div class="activity-item"><div class="activity-icon">${a.icon}</div><div><strong>${esc(a.label)}</strong><br><span style="color:var(--ink-dim)">${esc(a.detail)} · ${esc(a.date)}</span></div></div>`).join('') : '<div class="empty">No activity logged yet</div>';
+}
+
+async function quickLogCall(){
+  const business=document.getElementById('hcBusiness').value.trim();
+  if(!business){ document.getElementById('hcResult').innerHTML='<span style="color:var(--coral)">Business name required.</span>'; return; }
+  const params={business, number:document.getElementById('hcNumber').value.trim(), notes:document.getElementById('hcNotes').value.trim(), nextAction:document.getElementById('hcNextAction').value.trim(), nextFollowUp: document.getElementById('hcNextFollowUp').value ? document.getElementById('hcNextFollowUp').value.split('-').reverse().join('/') : ''};
+  document.getElementById('hcResult').innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=logCall&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ document.getElementById('hcResult').innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Call logged'); ['hcBusiness','hcNumber','hcNotes','hcNextAction','hcNextFollowUp'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else document.getElementById('hcResult').innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ document.getElementById('hcResult').innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+async function quickLogMessage(){
+  const business=document.getElementById('hmBusiness').value.trim();
+  if(!business){ document.getElementById('hmResult').innerHTML='<span style="color:var(--coral)">Business name required.</span>'; return; }
+  const params={business, channel:document.getElementById('hmChannel').value, summary:document.getElementById('hmSummary').value.trim()};
+  document.getElementById('hmResult').innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=logMessage&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ document.getElementById('hmResult').innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Message logged'); ['hmBusiness','hmSummary'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else document.getElementById('hmResult').innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ document.getElementById('hmResult').innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- FOLLOW-UPS ----------
+function renderFollowUpsFull(){
+  const items=(state.followUps&&state.followUps.items)||[];
+  if(!items.length){ document.getElementById('followUpsFull').innerHTML='<div class="empty">Nothing due or overdue right now</div>'; return; }
+  const overdue=items.filter(i=>i.daysUntil!==null&&i.daysUntil<0), today=items.filter(i=>i.daysUntil===0), soon=items.filter(i=>i.daysUntil!==null&&i.daysUntil>0), none=items.filter(i=>i.daysUntil===null);
+  function block(title,list){ if(!list.length) return ''; return `<div style="margin-bottom:14px"><div class="card-title" style="margin-bottom:7px">${title} (${list.length})</div>`+list.map(i=>`<div class="due-item ${i.daysUntil<0?'overdue':(i.daysUntil===0?'today':'')}"><div class="due-left"><b>${esc(i.name||'—')}</b><span>${esc(i.kind)} · ${esc(i.detail)}${i.dueDate?' · due '+esc(i.dueDate):''}</span></div><div class="due-tag ${daysTagClass(i.daysUntil)}">${daysLabel(i.daysUntil)}</div></div>`).join('')+`</div>`; }
+  document.getElementById('followUpsFull').innerHTML = block('Overdue',overdue)+block('Due Today',today)+block('Due Soon',soon)+block('No Date Set',none);
+}
+
+// ---------- CALENDAR ----------
+function ddmmyyyyToDate(s){ if(!s) return null; const p=s.toString().split('/'); if(p.length!==3) return null; const d=new Date(parseInt(p[2],10),parseInt(p[1],10)-1,parseInt(p[0],10)); return isNaN(d.getTime())?null:d; }
+function sameDay(a,b){ return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function calShiftMonth(delta){ calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+delta,1); renderCalendar(); }
+function calDayItems(day){
+  const items=[];
+  ((state.followUps&&state.followUps.items)||[]).forEach(i=>{ const d=ddmmyyyyToDate(i.dueDate); if(d&&sameDay(d,day)) items.push({type:i.daysUntil!==null&&i.daysUntil<0?'overdue':'due', label:(i.name||'—')+' — '+i.kind}); });
+  (state.appointments||[]).forEach(a=>{ const d=ddmmyyyyToDate(a['Date']); if(d&&sameDay(d,day)) items.push({type:'appt', label:a['Title']+(a['Client']?' — '+a['Client']:''), row:a.__row}); });
+  return items;
+}
+function renderCalendar(){
+  const y=calViewDate.getFullYear(), m=calViewDate.getMonth();
+  document.getElementById('calMonthLabel').textContent=calViewDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const firstOfMonth=new Date(y,m,1), startOffset=firstOfMonth.getDay(), daysInMonth=new Date(y,m+1,0).getDate();
+  const todayD=new Date(); todayD.setHours(0,0,0,0);
+  let html=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<startOffset;i++) html+='<div class="cal-cell empty"></div>';
+  for(let day=1;day<=daysInMonth;day++){
+    const dObj=new Date(y,m,day), items=calDayItems(dObj), isToday=sameDay(dObj,todayD), isSelected=sameDay(dObj,calSelectedDate);
+    const dots=items.slice(0,6).map(it=>`<span class="cal-dot ${it.type}"></span>`).join('');
+    html+=`<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" onclick="calSelectDay(${y},${m},${day})"><div class="cal-daynum">${day}</div><div class="cal-dot-row">${dots}</div></div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function calSelectDay(y,m,day){ calSelectedDate=new Date(y,m,day); renderCalendar(); renderAgenda(); }
+function renderAgenda(){
+  const items=calDayItems(calSelectedDate); const todayD=new Date(); todayD.setHours(0,0,0,0);
+  document.getElementById('agendaDayLabel').textContent = sameDay(calSelectedDate,todayD) ? 'today, '+calSelectedDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : calSelectedDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  if(!document.getElementById('apptDate').value) document.getElementById('apptDate').valueAsDate=calSelectedDate;
+  document.getElementById('agendaList').innerHTML = items.length ? items.map(it=>`<div class="agenda-item"><span>${esc(it.label)}</span>${it.type==='appt'?`<button class="btn ghost agenda-del" onclick="removeAppointment(${it.row})">Remove</button>`:''}</div>`).join('') : '<div class="empty">Nothing scheduled this day</div>';
+}
+async function submitAppointment(){
+  const title=document.getElementById('apptTitle').value.trim();
+  if(!title){ document.getElementById('apptResult').innerHTML='<span style="color:var(--coral)">Title is required.</span>'; return; }
+  const dateVal=document.getElementById('apptDate').value;
+  const params={title, client:document.getElementById('apptClient').value.trim(), date:dateVal?dateVal.split('-').reverse().join('/'):'', notes:document.getElementById('apptNotes').value.trim()};
+  document.getElementById('apptResult').innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=logAppointment&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ document.getElementById('apptResult').innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Appointment added'); ['apptTitle','apptClient','apptNotes'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else document.getElementById('apptResult').innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ document.getElementById('apptResult').innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+async function removeAppointment(row){ try{ await fetch(API_URL+'?action=deleteAppointment&row='+row+'&t='+Date.now()); showToast('Appointment removed'); loadData(); }catch(e){ showToast('Connection error'); } }
+
+// ---------- TRACKER ----------
+function renderTracker(){
+  const t = state.tracker||{};
+  const trend = (t.monthlyReport&&t.monthlyReport[0]&&t.monthlyReport[0].months) || [];
+  if(trend.length){
+    const maxVal=Math.max.apply(null,trend.map(m=>m.revenue))||1;
+    document.getElementById('trendChart').innerHTML=`<div class="bar-chart">`+trend.map(m=>{ const h=Math.max(4,(m.revenue/maxVal)*110); return `<div class="bar-col"><div class="bar-value">${fmtMoneyShort(m.revenue)}</div><div class="bar" style="height:${h}px"></div><div class="bar-label">${m.label}</div></div>`; }).join('')+`</div>`;
+  } else document.getElementById('trendChart').innerHTML='<div class="empty">No sales history yet</div>';
+
+  const top=(t.stockAnalysis||[]).slice(0,8);
+  document.getElementById('topProductsList').innerHTML = top.length ? top.map((p,i)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12px"><div><span class="mono" style="color:var(--ink-dim)">#${i+1}</span> <strong>${esc(p.product)}</strong></div><div class="mono">${fmtMoney(p.revenue)}</div></div>`).join('') : '<div class="empty">No sales history yet</div>';
+
+  const dc = state.debtorsCreditors||{};
+  const today=new Date(); today.setHours(0,0,0,0);
+  const aging={d0_30:0,d31_60:0,d61_90:0,d90plus:0};
+  ((dc.debtors&&dc.debtors.rows)||[]).forEach(r=>{ if(r.balance<=0) return; const d=ddmmyyyyToDate(r.invoiceDate); const days=d?Math.floor((today-d)/86400000):0; if(days<=30) aging.d0_30+=r.balance; else if(days<=60) aging.d31_60+=r.balance; else if(days<=90) aging.d61_90+=r.balance; else aging.d90plus+=r.balance; });
+  const maxA=Math.max(aging.d0_30,aging.d31_60,aging.d61_90,aging.d90plus,1);
+  function agingRow(label,val,cls){ const pct=Math.max(2,(val/maxA)*100); return `<div class="aging-row"><div class="aging-label">${label}</div><div class="aging-bar-outer"><div class="aging-bar-inner ${cls}" style="width:${pct}%"></div></div><div class="aging-value">${fmtMoneyShort(val)}</div></div>`; }
+  document.getElementById('agingChart').innerHTML = agingRow('0-30d',aging.d0_30,'')+agingRow('31-60d',aging.d31_60,'warn')+agingRow('61-90d',aging.d61_90,'warn')+agingRow('90d+',aging.d90plus,'danger');
+
+  document.getElementById('dailyTotalsBody').innerHTML=(t.dailyTotals||[]).map(d=>`<tr><td>${esc(d.date)}</td><td class="mono">${fmtMoney(d.revenue)}</td><td class="mono">${fmtMoney(d.cogs)}</td><td class="mono">${fmtMoney(d.profit)}</td><td class="mono">${fmtMoney(d.tax)}</td><td>${d.transactions}</td><td class="mono">${fmtMoney(d.avgSale)}</td><td>${d.marginPct}%</td></tr>`).join('')||'<tr><td colspan="8" class="empty">No sales yet</td></tr>';
+  document.getElementById('weeklySalesBody').innerHTML=(t.weeklySales||[]).map(w=>`<tr><td>${esc(w.week)}</td><td class="mono">${fmtMoney(w.revenue)}</td><td class="mono">${fmtMoney(w.cogs)}</td><td class="mono">${fmtMoney(w.profit)}</td><td>${w.transactions}</td><td>${w.marginPct}%</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No sales yet</td></tr>';
+  document.getElementById('monthlyRptBody').innerHTML=(t.monthlyReport||[]).map(y=>`<div class="card-title" style="margin-top:8px">${y.year} — Revenue ${fmtMoneyShort(y.totalRevenue)} · Profit ${fmtMoneyShort(y.totalProfit)}</div><div class="scroll-table"><table><thead><tr><th>Month</th><th>Revenue</th><th>COGS</th><th>Profit</th><th>Txns</th></tr></thead><tbody>${y.months.map(m=>`<tr><td>${m.label}</td><td class="mono">${fmtMoney(m.revenue)}</td><td class="mono">${fmtMoney(m.cogs)}</td><td class="mono">${fmtMoney(m.profit)}</td><td>${m.transactions}</td></tr>`).join('')}</tbody></table></div>`).join('')||'<div class="empty">No sales yet</div>';
+  document.getElementById('annualSummaryBody').innerHTML=(t.annualSummary||[]).map(y=>`<tr><td>${y.year}</td><td class="mono">${fmtMoney(y.revenue)}</td><td class="mono">${fmtMoney(y.profit)}</td><td>${y.marginPct}%</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No sales yet</td></tr>';
+  document.getElementById('stockAnalysisBody').innerHTML=(t.stockAnalysis||[]).map(s=>`<tr><td>${esc(s.stockCode)}</td><td>${esc(s.product)}</td><td>${s.transactions}</td><td class="mono">${s.qtySold}</td><td class="mono">${fmtMoney(s.revenue)}</td><td class="mono">${fmtMoney(s.profit)}</td><td>${s.marginPct}%</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No sales yet</td></tr>';
+
+  const pd=t.profitDash||{};
+  document.getElementById('profitDashBody').innerHTML = pd.totalRevenue===undefined ? '<div class="empty">No data yet</div>' : [
+    ['Total Revenue',fmtMoney(pd.totalRevenue)],['Total COGS',fmtMoney(pd.totalCogs)],['Gross Profit',fmtMoney(pd.grossProfit)],['Gross Margin %',pd.grossMarginPct+'%'],
+    ['Total Expenses',fmtMoney(pd.totalExpenses)],['Net Profit',fmtMoney(pd.netProfit)],['Net Margin %',pd.netMarginPct+'%'],['Total Tax Collected',fmtMoney(pd.totalTaxCollected)]
+  ].map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px"><span>${r[0]}</span><span class="mono">${r[1]}</span></div>`).join('');
+}
+
+// ---------- CLIENT HEALTH ----------
+function renderClientHealth(){
+  const health=state.clientHealth||{rows:[],counts:{}}; const c=health.counts||{};
+  document.getElementById('healthBoardFull').innerHTML = `
+    <div class="health-cell active"><div class="num">${c.active||0}</div><div class="lbl">🟢 Active</div></div>
+    <div class="health-cell due"><div class="num">${c.due||0}</div><div class="lbl">🟡 Due</div></div>
+    <div class="health-cell overdue"><div class="num">${c.overdue||0}</div><div class="lbl">🔴 Overdue</div></div>
+    <div class="health-cell dormant"><div class="num">${c.dormant||0}</div><div class="lbl">⚫ Dormant</div></div>`;
+  document.getElementById('healthTableBody').innerHTML = (health.rows||[]).map(r=>`<tr><td>${esc(r.customer)}</td><td>${esc(r.label)}</td><td>${esc(r.lastOrder)}</td><td class="mono">${r.daysSince}d</td><td class="mono">${fmtMoney(r.totalRevenue)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No client order history yet</td></tr>';
+}
+
+// ---------- DAILY SALES ----------
+function renderStockCodeList(){ document.getElementById('stockCodeList').innerHTML=(state.catalog||[]).map(c=>`<option value="${esc(c['Stock Code'])}">${esc(c['Product Name'])}</option>`).join(''); if(!document.getElementById('saleDate').value) document.getElementById('saleDate').valueAsDate=new Date(); if(!document.getElementById('purchDate').value) document.getElementById('purchDate').valueAsDate=new Date(); }
+function autofillSalePrice(){
+  const code=document.getElementById('saleStockCode').value.trim();
+  const item=(state.catalog||[]).find(c=>c['Stock Code']===code);
+  if(item && !document.getElementById('saleUnitPrice').value) document.getElementById('saleUnitPrice').value=item['Retail Price'];
+}
+function renderTaxDropdown(){
+  const sel=document.getElementById('saleTax'); const codes=(state.taxCodes||[]).filter(c=>c.active); const current=sel.value;
+  sel.innerHTML='<option value="">No tax</option>'+codes.map(c=>`<option value="${esc(c.code)}">${esc(c.code)} (${c.rate}%)${c.description?' — '+esc(c.description):''}</option>`).join('');
+  if(current) sel.value=current;
+}
+function renderSales(){
+  const sales=state.sales||{};
+  document.getElementById('salesSummaryChips').innerHTML=`
+    <div class="summary-chip"><div class="summary-chip-label">Today Revenue</div><div class="summary-chip-value">${fmtMoney(sales.todayRevenue||0)}</div></div>
+    <div class="summary-chip"><div class="summary-chip-label">Today Profit</div><div class="summary-chip-value">${fmtMoney(sales.todayProfit||0)}</div></div>
+    <div class="summary-chip blue"><div class="summary-chip-label">All-Time Revenue</div><div class="summary-chip-value">${fmtMoney(sales.totalRevenue||0)}</div></div>
+    <div class="summary-chip blue"><div class="summary-chip-label">All-Time Profit</div><div class="summary-chip-value">${fmtMoney(sales.totalProfit||0)}</div></div>`;
+  document.getElementById('salesTableBody').innerHTML=(sales.rows||[]).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.customer)}</td><td>${esc(r.product)}</td><td>${r.qty}</td><td class="mono">${fmtMoney(r.revenue)}</td><td class="mono">${fmtMoney(r.grossProfit)}</td><td>${esc(r.paymentMethod)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No sales yet</td></tr>';
+}
+async function submitSale(){
+  const date=document.getElementById('saleDate').value; const ddmmyyyy=date?date.split('-').reverse().join('/'):'';
+  const stockCode=document.getElementById('saleStockCode').value.trim(); const qty=document.getElementById('saleQty').value;
+  const resultEl=document.getElementById('saleResult');
+  if(!stockCode||!qty){ resultEl.innerHTML='<span style="color:var(--coral)">Stock code and quantity are required.</span>'; return; }
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const url=API_URL+'?action=addSale&date='+encodeURIComponent(ddmmyyyy)+'&customer='+encodeURIComponent(document.getElementById('saleCustomer').value.trim())
+      +'&stockCode='+encodeURIComponent(stockCode)+'&qty='+encodeURIComponent(qty)+'&unitPrice='+encodeURIComponent(document.getElementById('saleUnitPrice').value)
+      +'&discountPct='+encodeURIComponent(document.getElementById('saleDiscount').value)+'&taxCode='+encodeURIComponent(document.getElementById('saleTax').value)
+      +'&paymentMethod='+encodeURIComponent(document.getElementById('salePaymentMethod').value)+'&notes='+encodeURIComponent(document.getElementById('saleNotes').value.trim())+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){
+      resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved — Revenue '+fmtMoney(data.revenue)+' · Profit '+fmtMoney(data.grossProfit)+'</span>';
+      showToast('Sale logged');
+      ['saleCustomer','saleStockCode','saleQty','saleUnitPrice','saleDiscount','saleNotes'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('saleTax').value=''; document.getElementById('salePaymentMethod').value='';
+      loadData();
+    } else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- PURCHASES ----------
+function renderPurchases(){ document.getElementById('purchasesTableBody').innerHTML=((state.purchases&&state.purchases.rows)||[]).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.stockCode)}</td><td>${esc(r.product)}</td><td>${r.qty}</td><td class="mono">${fmtMoney(r.unitCost)}</td><td class="mono">${fmtMoney(r.totalCost)}</td><td>${esc(r.supplier)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No purchases yet</td></tr>'; }
+async function submitPurchase(){
+  const date=document.getElementById('purchDate').value; const ddmmyyyy=date?date.split('-').reverse().join('/'):'';
+  const stockCode=document.getElementById('purchStockCode').value.trim(); const qty=document.getElementById('purchQty').value; const unitCost=document.getElementById('purchUnitCost').value;
+  const resultEl=document.getElementById('purchResult');
+  if(!stockCode||!qty){ resultEl.innerHTML='<span style="color:var(--coral)">Stock code and quantity are required.</span>'; return; }
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const url=API_URL+'?action=addPurchase&date='+encodeURIComponent(ddmmyyyy)+'&stockCode='+encodeURIComponent(stockCode)+'&qty='+encodeURIComponent(qty)+'&unitCost='+encodeURIComponent(unitCost)+'&supplier='+encodeURIComponent(document.getElementById('purchSupplier').value.trim())+'&notes='+encodeURIComponent(document.getElementById('purchNotes').value.trim())+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved — Total '+fmtMoney(data.totalCost)+'</span>'; showToast('Purchase logged'); ['purchStockCode','purchQty','purchUnitCost','purchSupplier','purchNotes'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- EXPENSES ----------
+function renderExpenses(){ document.getElementById('expensesTableBody').innerHTML=((state.expenses&&state.expenses.rows)||[]).map(r=>`<tr><td>${esc(r['Date'])}</td><td>${esc(r['Category'])}</td><td>${esc(r['Description'])}</td><td class="mono">${fmtMoney(r['Amount'])}</td><td>${esc(r['Payment Method'])}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No expenses yet</td></tr>'; if(!document.getElementById('expDate').value) document.getElementById('expDate').valueAsDate=new Date(); }
+async function submitExpense(){
+  const desc=document.getElementById('expDescription').value.trim(); const amount=document.getElementById('expAmount').value;
+  const resultEl=document.getElementById('expResult');
+  if(!desc||!amount){ resultEl.innerHTML='<span style="color:var(--coral)">Description and amount are required.</span>'; return; }
+  const date=document.getElementById('expDate').value; const ddmmyyyy=date?date.split('-').reverse().join('/'):'';
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const url=API_URL+'?action=addExpense&Date='+encodeURIComponent(ddmmyyyy)+'&Category='+encodeURIComponent(document.getElementById('expCategory').value.trim())+'&Description='+encodeURIComponent(desc)+'&Amount='+encodeURIComponent(amount)+'&PaymentMethod='+encodeURIComponent(document.getElementById('expPaymentMethod').value)+'&Notes='+encodeURIComponent(document.getElementById('expNotes').value.trim())+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Expense logged'); ['expCategory','expDescription','expAmount','expNotes'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- CLIENTS ----------
+function renderClients(){ document.getElementById('clientsTableBody').innerHTML=((state.clients&&state.clients.rows)||[]).map(r=>`<tr><td>${esc(r['Name'])}</td><td>${esc(r['Contact Person'])}</td><td>${esc(r['Number'])}</td><td>${esc(r['Notes'])}</td><td><button class="btn ghost small" onclick="archiveClient('${esc(r['Name']).replace(/'/g,"\\'")}')">Archive</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No clients yet</td></tr>'; }
+async function submitClient(){
+  const name=document.getElementById('clientName').value.trim();
+  const resultEl=document.getElementById('clientResult');
+  if(!name){ resultEl.innerHTML='<span style="color:var(--coral)">Name is required.</span>'; return; }
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const url=API_URL+'?action=addClient&Name='+encodeURIComponent(name)+'&ContactPerson='+encodeURIComponent(document.getElementById('clientContactPerson').value.trim())+'&Number='+encodeURIComponent(document.getElementById('clientNumber').value.trim())+'&Notes='+encodeURIComponent(document.getElementById('clientNotes').value.trim())+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Client added'); ['clientName','clientContactPerson','clientNumber','clientNotes'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+async function archiveClient(name){ if(!confirm('Archive '+name+'?')) return; try{ await fetch(API_URL+'?action=archiveClient&name='+encodeURIComponent(name)+'&t='+Date.now()); showToast('Archived'); loadData(); }catch(e){ showToast('Connection error'); } }
+
+// ---------- REFERRALS ----------
+function renderReferrals(){ document.getElementById('referralsTableBody').innerHTML=((state.referrals&&state.referrals.rows)||[]).map(r=>`<tr><td>${esc(r['Date'])}</td><td>${esc(r['Client Name'])}</td><td>${esc(r['Referred Someone'])}</td><td>${esc(r['Times Referred'])}</td><td>${esc(r['Notes'])}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No referrals yet</td></tr>'; if(!document.getElementById('refDate').value) document.getElementById('refDate').valueAsDate=new Date(); }
+async function submitReferral(){
+  const client=document.getElementById('refClientName').value.trim();
+  const resultEl=document.getElementById('refResult');
+  if(!client){ resultEl.innerHTML='<span style="color:var(--coral)">Client name is required.</span>'; return; }
+  const date=document.getElementById('refDate').value; const ddmmyyyy=date?date.split('-').reverse().join('/'):'';
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const url=API_URL+'?action=addReferral&Date='+encodeURIComponent(ddmmyyyy)+'&ClientName='+encodeURIComponent(client)+'&ReferredSomeone='+encodeURIComponent(document.getElementById('refReferred').value)+'&TimesReferred='+encodeURIComponent(document.getElementById('refTimes').value)+'&Notes='+encodeURIComponent(document.getElementById('refNotes').value.trim())+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Referral logged'); ['refClientName','refNotes'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- INVENTORY ----------
+function renderInventory(){
+  const rows=state.inventory||[];
+  const q=(document.getElementById('inventorySearch').value||'').toLowerCase();
+  const filtered=rows.filter(r=>!q||(r.stockCode||'').toLowerCase().includes(q)||(r.name||'').toLowerCase().includes(q));
+  document.getElementById('inventoryTableBody').innerHTML=filtered.length?filtered.map(r=>`<tr><td>${esc(r.stockCode)}</td><td>${esc(r.name)}</td><td>${esc(r.category)}</td><td class="mono">${r.currentStock}</td><td class="mono">${r.reorderLevel}</td><td><span class="badge ${r.status==='OK'?'cleared':(r.status==='REORDER'?'pending':'overdue')}">${esc(r.status)}</span></td><td class="mono">${fmtMoney(r.unitCost)}</td><td class="mono">${fmtMoney(r.retailPrice)}</td><td class="mono">${fmtMoney(r.stockValueCost)}</td></tr>`).join(''):'<tr><td colspan="9" class="empty">No matching items</td></tr>';
+}
+
+// ---------- DEBTORS & CREDITORS ----------
+function renderDebtorsCreditors(){
+  const dc=state.debtorsCreditors||{};
+  renderDCTable(dc.debtors,'debtorsSummaryChips','debtorsTableBody','debtor');
+  renderDCTable(dc.creditors,'creditorsSummaryChips','creditorsTableBody','creditor');
+}
+function renderDCTable(table,chipsEl,bodyEl,kind){
+  table=table||{rows:[],summary:{totalOwed:0,totalPaid:0,totalBalance:0,overdueCount:0}};
+  const s=table.summary||{totalOwed:0,totalPaid:0,totalBalance:0,overdueCount:0};
+  document.getElementById(chipsEl).innerHTML=`
+    <div class="summary-chip"><div class="summary-chip-label">Total Owed</div><div class="summary-chip-value">${fmtMoney(s.totalOwed)}</div></div>
+    <div class="summary-chip blue"><div class="summary-chip-label">Paid</div><div class="summary-chip-value">${fmtMoney(s.totalPaid)}</div></div>
+    <div class="summary-chip ${s.totalBalance>0?'amber':''}"><div class="summary-chip-label">Balance</div><div class="summary-chip-value">${fmtMoney(s.totalBalance)}</div></div>
+    <div class="summary-chip ${s.overdueCount>0?'coral':''}"><div class="summary-chip-label">Overdue</div><div class="summary-chip-value">${s.overdueCount}</div></div>`;
+  const rows=table.rows||[];
+  document.getElementById(bodyEl).innerHTML=rows.length?rows.map(r=>{
+    const statusBadge=r.balance<=0?'<span class="badge cleared">Cleared</span>':(r.daysOverdue>0?'<span class="badge overdue">Overdue</span>':'<span class="badge pending">Pending</span>');
+    const actionBtn=r.balance>0?`<button class="btn ghost small" onclick="markCleared('${kind}',${r.row},${r.amountOwed})">Mark cleared</button>`:`<button class="btn ghost small" onclick="archiveOne('${kind}',${r.row},'${esc(r.name).replace(/'/g,"\\'")}')">Archive</button>`;
+    return `<tr><td>${esc(r.name)}</td><td class="mono">${fmtMoney(r.amountOwed)}</td><td class="mono">${fmtMoney(r.amountPaid)}</td><td class="mono">${fmtMoney(r.balance)}</td><td>${statusBadge}</td><td>${actionBtn}</td></tr>`;
+  }).join(''):'<tr><td colspan="6" class="empty">Nothing here yet</td></tr>';
+}
+async function submitDC(kind){
+  const p=kind==='debtor'?'debtor':'creditor'; const action=kind==='debtor'?'addDebtor':'addCreditor';
+  const name=document.getElementById(p+'Name').value.trim(); const amountOwed=document.getElementById(p+'AmountOwed').value;
+  const resultEl=document.getElementById(p+'Result');
+  if(!name||!amountOwed){ resultEl.innerHTML='<span style="color:var(--coral)">Name and amount owed are required.</span>'; return; }
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const invD=document.getElementById(p+'InvoiceDate').value, dueD=document.getElementById(p+'DueDate').value;
+    const url=API_URL+'?action='+action+'&name='+encodeURIComponent(name)+'&contact='+encodeURIComponent(document.getElementById(p+'Contact').value.trim())
+      +'&amountOwed='+encodeURIComponent(amountOwed)+'&amountPaid='+encodeURIComponent(document.getElementById(p+'AmountPaid').value||'0')
+      +'&invoiceDate='+encodeURIComponent(invD?invD.split('-').reverse().join('/'):'')+'&dueDate='+encodeURIComponent(dueD?dueD.split('-').reverse().join('/'):'')
+      +'&paymentMethod='+encodeURIComponent(document.getElementById(p+'PaymentMethod').value)+'&notes='+encodeURIComponent(document.getElementById(p+'Notes').value.trim())+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast((kind==='debtor'?'Debtor':'Creditor')+' added'); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+async function markCleared(kind,row,amountOwed){ try{ await fetch(API_URL+'?action=markCleared&row='+row+'&amountPaid='+amountOwed+'&table='+kind+'s&t='+Date.now()); showToast('Marked cleared'); loadData(); }catch(e){ showToast('Connection error'); } }
+async function archiveOne(kind,row,name){ try{ await fetch(API_URL+'?action=archiveDC&row='+row+'&table='+kind+'s&reason='+encodeURIComponent('Archived from dashboard')+'&t='+Date.now()); showToast(name+' archived'); loadData(); }catch(e){ showToast('Connection error'); } }
+async function sweepArchive(){
+  const el=document.getElementById('sweepResult'); el.innerHTML='<span style="color:var(--ink-dim)">Sweeping...</span>';
+  try{ const res=await fetch(API_URL+'?action=sweepArchiveDC&t='+Date.now()); const data=await res.json();
+    if(data.success){ el.innerHTML='<span style="color:var(--teal);font-weight:600">'+data.archived+' account(s) archived</span>'; showToast('Archive swept'); loadData(); }
+    else el.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not sweep')+'</span>';
+  }catch(e){ el.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- CALLS & MESSAGES ----------
+async function submitCall(){
+  const business=document.getElementById('callBusiness').value.trim(); const resultEl=document.getElementById('callResult');
+  if(!business){ resultEl.innerHTML='<span style="color:var(--coral)">Business name required.</span>'; return; }
+  const params={business, number:document.getElementById('callNumber').value.trim(), notes:document.getElementById('callNotes').value.trim(), nextAction:document.getElementById('callNextAction').value.trim(), nextFollowUp: document.getElementById('callNextFollowUp').value?document.getElementById('callNextFollowUp').value.split('-').reverse().join('/'):''};
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=logCall&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Call logged'); ['callBusiness','callNumber','callNotes','callNextAction','callNextFollowUp'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+async function submitMessage(){
+  const business=document.getElementById('msgBusiness').value.trim(); const resultEl=document.getElementById('msgResult');
+  if(!business){ resultEl.innerHTML='<span style="color:var(--coral)">Business name required.</span>'; return; }
+  const params={business, channel:document.getElementById('msgChannel').value, summary:document.getElementById('msgSummary').value.trim()};
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=logMessage&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Message logged'); ['msgBusiness','msgSummary'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+function renderCallsMessages(){
+  const cm=state.callsMessages||{calls:[],messages:[]};
+  document.getElementById('callsTableBody').innerHTML=(cm.calls||[]).map(c=>`<tr><td>${esc(c['Date'])}</td><td>${esc(c['Business'])}</td><td>${esc(c['Number'])}</td><td>${esc(c['Notes'])}</td><td>${esc(c['Next Action'])}</td><td>${esc(c['Next Follow Up'])}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No calls logged yet</td></tr>';
+  document.getElementById('messagesTableBody').innerHTML=(cm.messages||[]).map(m=>`<tr><td>${esc(m['Date'])}</td><td>${esc(m['Business'])}</td><td>${esc(m['Channel'])}</td><td>${esc(m['Summary'])}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No messages logged yet</td></tr>';
+}
+
+// ---------- ARCHIVE ----------
+function renderArchive(){
+  const arch=state.archiveDC||{rows:[]};
+  document.getElementById('archiveCountBadge').textContent=arch.rows&&arch.rows.length?' ('+arch.rows.length+')':'';
+  document.getElementById('archiveTableBody').innerHTML=(arch.rows||[]).map(r=>`<tr><td>${esc(r.archivedDate)}</td><td><span class="badge pending">${esc(r.type)}</span></td><td>${esc(r.name)}</td><td class="mono">${fmtMoney(r.amountOwed)}</td><td class="mono">${fmtMoney(r.amountPaid)}</td><td>${esc(r.reason)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Nothing archived yet</td></tr>';
+  const archS=state.archiveSales||{rows:[]};
+  document.getElementById('archiveSalesCountBadge').textContent=archS.rows&&archS.rows.length?' ('+archS.rows.length+')':'';
+  document.getElementById('archiveSalesTableBody').innerHTML=(archS.rows||[]).map(r=>`<tr><td>${esc(r.archivedDate)}</td><td>${esc(r.date)}</td><td>${esc(r.customer)}</td><td>${esc(r.product)}</td><td>${r.qty}</td><td class="mono">${fmtMoney(r.revenue)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Nothing archived yet</td></tr>';
+}
+async function sweepArchiveSales(){
+  const months=document.getElementById('sweepSalesMonths').value||'12'; const el=document.getElementById('sweepSalesResult');
+  el.innerHTML='<span style="color:var(--ink-dim)">Sweeping...</span>';
+  try{ const res=await fetch(API_URL+'?action=sweepArchiveSales&months='+encodeURIComponent(months)+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ el.innerHTML='<span style="color:var(--teal);font-weight:600">'+data.archived+' sale(s) archived</span>'; showToast('Sales archive swept'); loadData(); }
+    else el.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not sweep')+'</span>';
+  }catch(e){ el.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+
+// ---------- SETUP ----------
+async function saveSetup(){
+  const resultEl=document.getElementById('setupResult'); resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  const params={ business_name:document.getElementById('setupBusinessName').value.trim(), industry:document.getElementById('setupIndustry').value.trim(), branding_enabled: document.getElementById('setupBrandingEnabled').checked?'true':'false' };
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=saveSettings&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Settings saved'); state.settings=data.settings; applySettings(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+function renderTargets(){
+  const s=state.settings||{};
+  document.getElementById('targetDaily').value=s.daily_revenue_target||'0'; document.getElementById('targetWeekly').value=s.weekly_revenue_target||'0'; document.getElementById('targetMonthly').value=s.monthly_target||'0'; document.getElementById('targetAnnual').value=s.annual_revenue_target||'0';
+  document.getElementById('setupWorkingDays').value=s.working_days||'26';
+  document.getElementById('budgetDaily').value=s.daily_expense_budget||'0'; document.getElementById('budgetWeekly').value=s.weekly_expense_budget||'0'; document.getElementById('budgetMonthly').value=s.monthly_expense_budget||'0'; document.getElementById('budgetAnnual').value=s.annual_expense_budget||'0';
+}
+async function saveTargets(){
+  const resultEl=document.getElementById('targetsResult'); resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  const params={ daily_revenue_target:document.getElementById('targetDaily').value||'0', weekly_revenue_target:document.getElementById('targetWeekly').value||'0', monthly_target:document.getElementById('targetMonthly').value||'0', annual_revenue_target:document.getElementById('targetAnnual').value||'0', working_days:document.getElementById('setupWorkingDays').value||'26', daily_expense_budget:document.getElementById('budgetDaily').value||'0', weekly_expense_budget:document.getElementById('budgetWeekly').value||'0', monthly_expense_budget:document.getElementById('budgetMonthly').value||'0', annual_expense_budget:document.getElementById('budgetAnnual').value||'0' };
+  try{
+    const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const res=await fetch(API_URL+'?action=saveSettings&'+qs+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Targets saved'); state.settings=data.settings; loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+function renderTaxCodesTable(){
+  document.getElementById('taxCodesTableBody').innerHTML=(state.taxCodes||[]).map(c=>`<tr><td>${esc(c.code)}</td><td>${esc(c.description)}</td><td class="mono">${c.rate}%</td><td><label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:400"><input type="checkbox" style="width:auto" ${c.active?'checked':''} onchange="toggleTaxCode('${esc(c.code).replace(/'/g,"\\'")}',this.checked)"> Active</label></td></tr>`).join('')||'<tr><td colspan="4" class="empty">No tax codes yet</td></tr>';
+}
+async function toggleTaxCode(code,active){ try{ await fetch(API_URL+'?action=updateTaxCode&code='+encodeURIComponent(code)+'&active='+(active?'true':'false')+'&t='+Date.now()); showToast('Updated'); loadData(); }catch(e){ showToast('Connection error'); } }
+async function submitNewTaxCode(){
+  const code=document.getElementById('newTaxCode').value.trim();
+  if(!code){ showToast('Enter a tax code first'); return; }
+  try{ await fetch(API_URL+'?action=addTaxCode&code='+encodeURIComponent(code)+'&description='+encodeURIComponent(document.getElementById('newTaxDesc').value.trim())+'&rate='+encodeURIComponent(document.getElementById('newTaxRate').value||'0')+'&t='+Date.now());
+    showToast('Tax code added'); ['newTaxCode','newTaxDesc','newTaxRate'].forEach(id=>document.getElementById(id).value=''); loadData();
+  }catch(e){ showToast('Connection error'); }
+}
+function renderCatalogFormOptions(){
+  document.getElementById('catCategory').innerHTML='<option value="">—</option>'+(state.categories||[]).map(c=>`<option>${esc(c)}</option>`).join('');
+  document.getElementById('catUnit').innerHTML='<option value="">—</option>'+(state.units||[]).map(u=>`<option>${esc(u)}</option>`).join('');
+}
+function renderCategoryChips(){ document.getElementById('categoryChips').innerHTML=(state.categories||[]).length?(state.categories||[]).map(c=>`<span class="chip">${esc(c)}</span>`).join(''):'<span class="section-note">No categories yet</span>'; }
+function renderUnitChips(){ document.getElementById('unitChips').innerHTML=(state.units||[]).length?(state.units||[]).map(u=>`<span class="chip">${esc(u)}</span>`).join(''):'<span class="section-note">No units yet</span>'; }
+function renderCatalogTable(){
+  document.getElementById('catalogTableBody').innerHTML=(state.catalog||[]).length?(state.catalog||[]).map(r=>`
+    <tr><td>${esc(r['Stock Code'])}</td><td>${esc(r['Product Name'])}</td><td class="mono">${esc(r['Unit Cost'])}</td><td class="mono">${esc(r['Previous Unit Cost'])}</td><td>${esc(r['Price Changed Date'])}</td>
+    <td><div style="display:flex;gap:6px;align-items:center"><input type="number" placeholder="New cost" style="width:90px" id="newcost_${esc(r['Stock Code'])}"><button class="btn ghost small" onclick="submitCostUpdate('${esc(r['Stock Code']).replace(/'/g,"\\'")}')">Update</button></div></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No products in catalog yet</td></tr>';
+}
+async function submitCostUpdate(stockCode){
+  const input=document.getElementById('newcost_'+stockCode); const newCost=input?input.value:'';
+  if(!newCost){ showToast('Enter a new cost first'); return; }
+  try{ const res=await fetch(API_URL+'?action=updateCatalogCost&stockCode='+encodeURIComponent(stockCode)+'&newUnitCost='+encodeURIComponent(newCost)+'&t='+Date.now()); const data=await res.json();
+    if(data.success){ showToast('Cost updated — previous cost saved'); loadData(); } else showToast(data.error||'Could not update');
+  }catch(e){ showToast('Connection error'); }
+}
+async function submitCatalogProduct(){
+  const stockCode=document.getElementById('catStockCode').value.trim(); const name=document.getElementById('catName').value.trim();
+  const resultEl=document.getElementById('catalogResult');
+  if(!stockCode||!name){ resultEl.innerHTML='<span style="color:var(--coral)">Stock Code and Product Name are required.</span>'; return; }
+  resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
+  try{
+    const url=API_URL+'?action=addCatalogProduct&stockCode='+encodeURIComponent(stockCode)+'&name='+encodeURIComponent(name)+'&category='+encodeURIComponent(document.getElementById('catCategory').value)
+      +'&unit='+encodeURIComponent(document.getElementById('catUnit').value)+'&reorderLevel='+encodeURIComponent(document.getElementById('catReorder').value)+'&leadTimeDays='+encodeURIComponent(document.getElementById('catLeadTime').value)
+      +'&openingStock='+encodeURIComponent(document.getElementById('catOpening').value)+'&supplier='+encodeURIComponent(document.getElementById('catSupplier').value.trim())
+      +'&unitCost='+encodeURIComponent(document.getElementById('catUnitCost').value)+'&retailPrice='+encodeURIComponent(document.getElementById('catRetailPrice').value)+'&trackExpiry='+encodeURIComponent(document.getElementById('catTrackExpiry').value)+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Product added</span>'; showToast('Product added to catalog'); ['catStockCode','catName','catReorder','catLeadTime','catOpening','catSupplier','catUnitCost','catRetailPrice'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
+  }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
+}
+async function submitNewCategory(){ const input=document.getElementById('newCategoryInput'); const val=input.value.trim(); if(!val) return; try{ await fetch(API_URL+'?action=addCategory&category='+encodeURIComponent(val)+'&t='+Date.now()); input.value=''; showToast('Category added'); loadData(); }catch(e){ showToast('Connection error'); } }
+async function submitNewUnit(){ const input=document.getElementById('newUnitInput'); const val=input.value.trim(); if(!val) return; try{ await fetch(API_URL+'?action=addUnit&unit='+encodeURIComponent(val)+'&t='+Date.now()); input.value=''; showToast('Unit added'); loadData(); }catch(e){ showToast('Connection error'); } }
+
+// ---------- AI ASSISTANT ----------
+let chatHistory=[];
+function buildDashboardContext(){
+  const rev=state.revenue||{}; const fu=state.followUps||{items:[]}; const health=state.clientHealth||{counts:{}}; const dc=state.debtorsCreditors||{};
+  const overdueFu=(fu.items||[]).filter(i=>i.daysUntil!==null&&i.daysUntil<0).slice(0,8).map(i=>`${i.name} (${i.kind}: ${i.detail})`).join('; ');
+  return [
+    `Monthly revenue: GHS ${Math.round(rev.monthlyActual||0)} of GHS ${Math.round(rev.monthlyTarget||0)} target (pace ${(rev.pacePct||0).toFixed(0)}%).`,
+    `Client reorder pipeline: ${health.counts&&health.counts.active||0} active, ${health.counts&&health.counts.due||0} due, ${health.counts&&health.counts.overdue||0} overdue, ${health.counts&&health.counts.dormant||0} dormant.`,
+    `Owed to business: GHS ${Math.round((dc.debtors&&dc.debtors.summary&&dc.debtors.summary.totalBalance)||0)}. Business owes: GHS ${Math.round((dc.creditors&&dc.creditors.summary&&dc.creditors.summary.totalBalance)||0)}.`,
+    overdueFu?`Overdue follow-ups: ${overdueFu}`:'No overdue follow-ups right now.'
+  ].join('\\n');
+}
+function renderChatLog(){ const log=document.getElementById('chatLog'); log.innerHTML=chatHistory.map(m=>`<div class="chat-msg ${m.role==='user'?'user':'assistant'}"><div class="bubble">${esc(m.content).replace(/\\n/g,'<br>')}</div></div>`).join(''); log.scrollTop=log.scrollHeight; }
+async function sendChat(){
+  const input=document.getElementById('chatInput'); const question=input.value.trim(); if(!question) return;
+  chatHistory.push({role:'user',content:question}); renderChatLog(); input.value='';
+  try{
+    const context=buildDashboardContext();
+    const url=API_URL+'?action=aiAsk&question='+encodeURIComponent(question)+'&history='+encodeURIComponent(JSON.stringify(chatHistory))+'&context='+encodeURIComponent(context)+'&t='+Date.now();
+    const res=await fetch(url); const data=await res.json();
+    chatHistory.push({role:'assistant',content: data.success? data.reply : ('Error: '+(data.error||'could not reach the assistant.'))});
+  }catch(e){ chatHistory.push({role:'assistant',content:'Connection error — check the API_URL and try again.'}); }
+  renderChatLog();
+}
+
+// ---------- INIT + tab-aware polling ----------
+function startPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer=setInterval(()=>{ if(!document.hidden) loadData(); }, 60000);
+}
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loadData(); });
+
+loadData();
+startPolling();
+</script>
+</body>
+</html>
