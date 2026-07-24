@@ -379,13 +379,14 @@ details summary::-webkit-details-marker{display:none}
       <div class="card"><div class="card-title">Add a Client</div>
         <div class="field"><label>Name</label><input id="clientName"></div>
         <div class="field-row"><div class="field"><label>Contact Person</label><input id="clientContactPerson"></div><div class="field"><label>Number</label><input id="clientNumber"></div></div>
+        <div class="field"><label>Location</label><input id="clientLocation" placeholder="Town / area"></div>
         <div class="field"><label>Notes</label><input id="clientNotes"></div>
         <button class="btn" style="width:100%" onclick="submitClient()">+ Add Client</button>
         <div id="clientResult" style="margin-top:8px;font-size:12px"></div>
       </div>
       <div class="card"><div class="card-title">About this tab</div><div class="section-note">For each client's live reorder status, see the Client Pipeline tab.</div></div>
     </div>
-    <div class="card"><div class="card-title">All Clients</div><div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact Person</th><th>Number</th><th>Notes</th><th></th></tr></thead><tbody id="clientsTableBody"></tbody></table></div></div>
+    <div class="card"><div class="card-title">All Clients</div><div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact Person</th><th>Number</th><th>Location</th><th>Notes</th><th></th></tr></thead><tbody id="clientsTableBody"></tbody></table></div></div>
   </div>
 
   <!-- REFERRALS -->
@@ -533,9 +534,6 @@ details summary::-webkit-details-marker{display:none}
 <div class="toast" id="toast"></div>
 
 <script>
-// ==========================================================
-// CONFIG — paste your Apps Script /exec deployment URL here
-// ==========================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbxzgaprVywVXAr5hgn1eO7kzMIAcAnACy9haTi5MHRGQANqQ7ZC7DnScjsQzxssNPhl/exec";
 
 let state = {};
@@ -543,10 +541,6 @@ let calViewDate = new Date();
 let calSelectedDate = new Date();
 let pollTimer = null;
 
-// v1.0: escape every user-entered string before it goes into a
-// template literal — fixes the "no output escaping" gap flagged in
-// the CORAZON sign-off (a stray < or <script> in a notes field could
-// break a row's rendering).
 function esc(s){ return (s===undefined||s===null?'':s.toString()).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
@@ -628,7 +622,6 @@ function applySettings(){
   const cb = document.getElementById('setupBrandingEnabled'); if(cb) cb.checked = brandingOn;
 }
 
-// ---------- HOME ----------
 function daysLabel(days){ if(days===null||days===undefined) return 'No date'; if(days<0) return Math.abs(days)+'d overdue'; if(days===0) return 'Due today'; return 'In '+days+'d'; }
 function daysTagClass(days){ if(days===null||days===undefined) return 'soon'; if(days<0) return 'overdue'; if(days===0) return 'today'; return 'soon'; }
 
@@ -726,7 +719,6 @@ async function quickLogMessage(){
   }catch(e){ document.getElementById('hmResult').innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- FOLLOW-UPS ----------
 function renderFollowUpsFull(){
   const items=(state.followUps&&state.followUps.items)||[];
   if(!items.length){ document.getElementById('followUpsFull').innerHTML='<div class="empty">Nothing due or overdue right now</div>'; return; }
@@ -735,7 +727,6 @@ function renderFollowUpsFull(){
   document.getElementById('followUpsFull').innerHTML = block('Overdue',overdue)+block('Due Today',today)+block('Due Soon',soon)+block('No Date Set',none);
 }
 
-// ---------- CALENDAR ----------
 function ddmmyyyyToDate(s){ if(!s) return null; const p=s.toString().split('/'); if(p.length!==3) return null; const d=new Date(parseInt(p[2],10),parseInt(p[1],10)-1,parseInt(p[0],10)); return isNaN(d.getTime())?null:d; }
 function sameDay(a,b){ return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
 function calShiftMonth(delta){ calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+delta,1); renderCalendar(); }
@@ -781,7 +772,6 @@ async function submitAppointment(){
 }
 async function removeAppointment(row){ try{ await fetch(API_URL+'?action=deleteAppointment&row='+row+'&t='+Date.now()); showToast('Appointment removed'); loadData(); }catch(e){ showToast('Connection error'); } }
 
-// ---------- TRACKER ----------
 function renderTracker(){
   const t = state.tracker||{};
   const trend = (t.monthlyReport&&t.monthlyReport[0]&&t.monthlyReport[0].months) || [];
@@ -814,7 +804,6 @@ function renderTracker(){
   ].map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px"><span>${r[0]}</span><span class="mono">${r[1]}</span></div>`).join('');
 }
 
-// ---------- CLIENT HEALTH ----------
 function renderClientHealth(){
   const health=state.clientHealth||{rows:[],counts:{}}; const c=health.counts||{};
   document.getElementById('healthBoardFull').innerHTML = `
@@ -825,7 +814,6 @@ function renderClientHealth(){
   document.getElementById('healthTableBody').innerHTML = (health.rows||[]).map(r=>`<tr><td>${esc(r.customer)}</td><td>${esc(r.label)}</td><td>${esc(r.lastOrder)}</td><td class="mono">${r.daysSince}d</td><td class="mono">${fmtMoney(r.totalRevenue)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No client order history yet</td></tr>';
 }
 
-// ---------- DAILY SALES ----------
 function renderStockCodeList(){ document.getElementById('stockCodeList').innerHTML=(state.catalog||[]).map(c=>`<option value="${esc(c['Stock Code'])}">${esc(c['Product Name'])}</option>`).join(''); if(!document.getElementById('saleDate').value) document.getElementById('saleDate').valueAsDate=new Date(); if(!document.getElementById('purchDate').value) document.getElementById('purchDate').valueAsDate=new Date(); }
 function autofillSalePrice(){
   const code=document.getElementById('saleStockCode').value.trim();
@@ -868,7 +856,6 @@ async function submitSale(){
   }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- PURCHASES ----------
 function renderPurchases(){ document.getElementById('purchasesTableBody').innerHTML=((state.purchases&&state.purchases.rows)||[]).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.stockCode)}</td><td>${esc(r.product)}</td><td>${r.qty}</td><td class="mono">${fmtMoney(r.unitCost)}</td><td class="mono">${fmtMoney(r.totalCost)}</td><td>${esc(r.supplier)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No purchases yet</td></tr>'; }
 async function submitPurchase(){
   const date=document.getElementById('purchDate').value; const ddmmyyyy=date?date.split('-').reverse().join('/'):'';
@@ -884,7 +871,6 @@ async function submitPurchase(){
   }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- EXPENSES ----------
 function renderExpenses(){ document.getElementById('expensesTableBody').innerHTML=((state.expenses&&state.expenses.rows)||[]).map(r=>`<tr><td>${esc(r['Date'])}</td><td>${esc(r['Category'])}</td><td>${esc(r['Description'])}</td><td class="mono">${fmtMoney(r['Amount'])}</td><td>${esc(r['Payment Method'])}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No expenses yet</td></tr>'; if(!document.getElementById('expDate').value) document.getElementById('expDate').valueAsDate=new Date(); }
 async function submitExpense(){
   const desc=document.getElementById('expDescription').value.trim(); const amount=document.getElementById('expAmount').value;
@@ -900,23 +886,21 @@ async function submitExpense(){
   }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- CLIENTS ----------
-function renderClients(){ document.getElementById('clientsTableBody').innerHTML=((state.clients&&state.clients.rows)||[]).map(r=>`<tr><td>${esc(r['Name'])}</td><td>${esc(r['Contact Person'])}</td><td>${esc(r['Number'])}</td><td>${esc(r['Notes'])}</td><td><button class="btn ghost small" onclick="archiveClient('${esc(r['Name']).replace(/'/g,"\\'")}')">Archive</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No clients yet</td></tr>'; }
+function renderClients(){ document.getElementById('clientsTableBody').innerHTML=((state.clients&&state.clients.rows)||[]).map(r=>`<tr><td>${esc(r['Name'])}</td><td>${esc(r['Contact Person'])}</td><td>${esc(r['Number'])}</td><td>${esc(r['Location'])}</td><td>${esc(r['Notes'])}</td><td><button class="btn ghost small" onclick="archiveClient('${esc(r['Name']).replace(/'/g,"\\'")}')">Archive</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No clients yet</td></tr>'; }
 async function submitClient(){
   const name=document.getElementById('clientName').value.trim();
   const resultEl=document.getElementById('clientResult');
   if(!name){ resultEl.innerHTML='<span style="color:var(--coral)">Name is required.</span>'; return; }
   resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
   try{
-    const url=API_URL+'?action=addClient&Name='+encodeURIComponent(name)+'&ContactPerson='+encodeURIComponent(document.getElementById('clientContactPerson').value.trim())+'&Number='+encodeURIComponent(document.getElementById('clientNumber').value.trim())+'&Notes='+encodeURIComponent(document.getElementById('clientNotes').value.trim())+'&t='+Date.now();
+    const url=API_URL+'?action=addClient&Name='+encodeURIComponent(name)+'&ContactPerson='+encodeURIComponent(document.getElementById('clientContactPerson').value.trim())+'&Number='+encodeURIComponent(document.getElementById('clientNumber').value.trim())+'&Notes='+encodeURIComponent(document.getElementById('clientNotes').value.trim())+'&Location='+encodeURIComponent(document.getElementById('clientLocation').value.trim())+'&t='+Date.now();
     const res=await fetch(url); const data=await res.json();
-    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Client added'); ['clientName','clientContactPerson','clientNumber','clientNotes'].forEach(id=>document.getElementById(id).value=''); loadData(); }
+    if(data.success){ resultEl.innerHTML='<span style="color:var(--teal);font-weight:600">Saved</span>'; showToast('Client added'); ['clientName','clientContactPerson','clientNumber','clientNotes','clientLocation'].forEach(id=>document.getElementById(id).value=''); loadData(); }
     else resultEl.innerHTML='<span style="color:var(--coral)">'+(data.error||'Could not save')+'</span>';
   }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 async function archiveClient(name){ if(!confirm('Archive '+name+'?')) return; try{ await fetch(API_URL+'?action=archiveClient&name='+encodeURIComponent(name)+'&t='+Date.now()); showToast('Archived'); loadData(); }catch(e){ showToast('Connection error'); } }
 
-// ---------- REFERRALS ----------
 function renderReferrals(){ document.getElementById('referralsTableBody').innerHTML=((state.referrals&&state.referrals.rows)||[]).map(r=>`<tr><td>${esc(r['Date'])}</td><td>${esc(r['Client Name'])}</td><td>${esc(r['Referred Someone'])}</td><td>${esc(r['Times Referred'])}</td><td>${esc(r['Notes'])}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No referrals yet</td></tr>'; if(!document.getElementById('refDate').value) document.getElementById('refDate').valueAsDate=new Date(); }
 async function submitReferral(){
   const client=document.getElementById('refClientName').value.trim();
@@ -932,7 +916,6 @@ async function submitReferral(){
   }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- INVENTORY ----------
 function renderInventory(){
   const rows=state.inventory||[];
   const q=(document.getElementById('inventorySearch').value||'').toLowerCase();
@@ -940,7 +923,6 @@ function renderInventory(){
   document.getElementById('inventoryTableBody').innerHTML=filtered.length?filtered.map(r=>`<tr><td>${esc(r.stockCode)}</td><td>${esc(r.name)}</td><td>${esc(r.category)}</td><td class="mono">${r.currentStock}</td><td class="mono">${r.reorderLevel}</td><td><span class="badge ${r.status==='OK'?'cleared':(r.status==='REORDER'?'pending':'overdue')}">${esc(r.status)}</span></td><td class="mono">${fmtMoney(r.unitCost)}</td><td class="mono">${fmtMoney(r.retailPrice)}</td><td class="mono">${fmtMoney(r.stockValueCost)}</td></tr>`).join(''):'<tr><td colspan="9" class="empty">No matching items</td></tr>';
 }
 
-// ---------- DEBTORS & CREDITORS ----------
 function renderDebtorsCreditors(){
   const dc=state.debtorsCreditors||{};
   renderDCTable(dc.debtors,'debtorsSummaryChips','debtorsTableBody','debtor');
@@ -988,7 +970,6 @@ async function sweepArchive(){
   }catch(e){ el.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- CALLS & MESSAGES ----------
 async function submitCall(){
   const business=document.getElementById('callBusiness').value.trim(); const resultEl=document.getElementById('callResult');
   if(!business){ resultEl.innerHTML='<span style="color:var(--coral)">Business name required.</span>'; return; }
@@ -1019,7 +1000,6 @@ function renderCallsMessages(){
   document.getElementById('messagesTableBody').innerHTML=(cm.messages||[]).map(m=>`<tr><td>${esc(m['Date'])}</td><td>${esc(m['Business'])}</td><td>${esc(m['Channel'])}</td><td>${esc(m['Summary'])}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No messages logged yet</td></tr>';
 }
 
-// ---------- ARCHIVE ----------
 function renderArchive(){
   const arch=state.archiveDC||{rows:[]};
   document.getElementById('archiveCountBadge').textContent=arch.rows&&arch.rows.length?' ('+arch.rows.length+')':'';
@@ -1037,7 +1017,6 @@ async function sweepArchiveSales(){
   }catch(e){ el.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-// ---------- SETUP ----------
 async function saveSetup(){
   const resultEl=document.getElementById('setupResult'); resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
   const params={ business_name:document.getElementById('setupBusinessName').value.trim(), industry:document.getElementById('setupIndustry').value.trim(), branding_enabled: document.getElementById('setupBrandingEnabled').checked?'true':'false' };
@@ -1111,7 +1090,6 @@ async function submitCatalogProduct(){
 async function submitNewCategory(){ const input=document.getElementById('newCategoryInput'); const val=input.value.trim(); if(!val) return; try{ await fetch(API_URL+'?action=addCategory&category='+encodeURIComponent(val)+'&t='+Date.now()); input.value=''; showToast('Category added'); loadData(); }catch(e){ showToast('Connection error'); } }
 async function submitNewUnit(){ const input=document.getElementById('newUnitInput'); const val=input.value.trim(); if(!val) return; try{ await fetch(API_URL+'?action=addUnit&unit='+encodeURIComponent(val)+'&t='+Date.now()); input.value=''; showToast('Unit added'); loadData(); }catch(e){ showToast('Connection error'); } }
 
-// ---------- AI ASSISTANT ----------
 let chatHistory=[];
 function buildDashboardContext(){
   const rev=state.revenue||{}; const fu=state.followUps||{items:[]}; const health=state.clientHealth||{counts:{}}; const dc=state.debtorsCreditors||{};
@@ -1136,7 +1114,6 @@ async function sendChat(){
   renderChatLog();
 }
 
-// ---------- INIT + tab-aware polling ----------
 function startPolling(){
   if(pollTimer) clearInterval(pollTimer);
   pollTimer=setInterval(()=>{ if(!document.hidden) loadData(); }, 60000);
