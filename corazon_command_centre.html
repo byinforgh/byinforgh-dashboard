@@ -274,7 +274,7 @@ details summary::-webkit-details-marker{display:none}
             <div id="debtorResult" style="margin-top:6px;font-size:12px"></div>
           </div>
         </details>
-        <div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact</th><th>Owed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="debtorsTableBody"></tbody></table></div>
+        <div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact</th><th>Owed</th><th>Paid</th><th>Balance</th><th>Status</th><th>Notes</th><th></th></tr></thead><tbody id="debtorsTableBody"></tbody></table></div>
       </div>
       <div class="card"><div class="card-title">Creditors — you OWE to suppliers</div><div class="summary-row" id="creditorsSummaryChips"></div>
         <button class="btn ghost small" style="margin-bottom:10px" onclick="exportToCSV((state.debtorsCreditors&&state.debtorsCreditors.creditors&&state.debtorsCreditors.creditors.rows)||[],[{key:'name',label:'Name'},{key:'contact',label:'Contact'},{key:'amountOwed',label:'Owed'},{key:'amountPaid',label:'Paid'},{key:'balance',label:'Balance'}],'creditors.csv')">&#8681; Export CSV</button>
@@ -289,7 +289,7 @@ details summary::-webkit-details-marker{display:none}
             <div id="creditorResult" style="margin-top:6px;font-size:12px"></div>
           </div>
         </details>
-        <div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact</th><th>Owed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="creditorsTableBody"></tbody></table></div>
+        <div class="scroll-table"><table><thead><tr><th>Name</th><th>Contact</th><th>Owed</th><th>Paid</th><th>Balance</th><th>Status</th><th>Notes</th><th></th></tr></thead><tbody id="creditorsTableBody"></tbody></table></div>
       </div>
     </div>
     <div class="card"><div class="card-title">Keep this table fast — archive cleared accounts</div>
@@ -320,6 +320,7 @@ details summary::-webkit-details-marker{display:none}
       <button class="subtab" onclick="switchSubtab('tracker','profitDash',this)">Profit Dash</button>
     </div>
     <div class="subtab-content active" id="tracker-overview">
+      <div class="card"><div class="card-title">Period Breakdown — computed live from full sales history</div><div class="summary-row" id="periodBreakdownChips"></div></div>
       <div class="grid">
         <div class="card"><div class="card-title">Revenue &amp; Profit — recent months</div><div id="trendChart"><div class="loading">Loading</div></div></div>
         <div class="card"><div class="card-title">Top Products by Revenue</div><div id="topProductsList"><div class="loading">Loading</div></div></div>
@@ -567,7 +568,7 @@ function buildCorazonBriefing(state){
   lines.push('• Client pipeline: '+(health.active||0)+' active, '+(health.due||0)+' due, '+(health.overdue||0)+' overdue, '+(health.dormant||0)+' dormant.');
   lines.push('• Owed to you: '+caMoney(debtorsBal)+'. You owe: '+caMoney(creditorsBal)+'.');
   lines.push('');
-  lines.push('Ask me things like "who should I follow up with today", "what needs reordering", or "how is revenue tracking this month".');
+  lines.push('Ask me things like "who should I follow up with today", "what needs reordering", "what\'s my biggest opportunity right now", or "how is revenue tracking this month".');
   return lines.join('\n');
 }
 
@@ -659,7 +660,27 @@ function answerCorazonAdvisor(question, state){
     return 'Today: '+(sales.todayCount||0)+' sale(s) logged, '+caMoney(sales.todayRevenue||0)+' revenue, '+caMoney(sales.todayProfit||0)+' gross profit.';
   }
 
-  return "I can answer from your live dashboard data — try asking about revenue/pace, follow-ups due, reorder alerts, debtors and creditors, client pipeline, referrals, or profit and expenses.";
+  // v1.5: "quick wins" — real, computed opportunities, nothing invented.
+  if (isMatch(['quick win','opportunity','what should i focus','biggest opportunity','where should i focus','what should i do'])){
+    var winLines = [];
+    var debtorsRowsQ = (dc.debtors && dc.debtors.rows) || [];
+    var overdueDebtorsQ = debtorsRowsQ.filter(function(r){ return r.balance > 0 && r.daysOverdue > 0; });
+    var overdueTotalQ = overdueDebtorsQ.reduce(function(s,r){ return s + r.balance; }, 0);
+    if (overdueTotalQ > 0) winLines.push('• Collecting overdue debtor balances: '+caMoney(overdueTotalQ)+' sitting with '+overdueDebtorsQ.length+' client(s).');
+    var reorderItemsQ = reorderData.items || [];
+    if (reorderItemsQ.length) winLines.push('• '+reorderItemsQ.length+' stock item(s) need reordering — resolving this protects sales you would otherwise lose to stockouts.');
+    var quietRows = (healthData.rows || []).filter(function(r){ return r.status === 'dormant' || r.status === 'overdue'; });
+    if (quietRows.length){
+      var quietRevenue = quietRows.reduce(function(s,r){ return s + (r.totalRevenue || 0); }, 0);
+      winLines.push('• '+quietRows.length+' client(s) gone quiet (overdue/dormant) — historically worth '+caMoney(quietRevenue)+' combined, worth a check-in call.');
+    }
+    var referralWindow = fu.filter(function(i){ return i.kind === 'Referral ask window'; });
+    if (referralWindow.length) winLines.push('• '+referralWindow.length+' client(s) in the referral golden window right now — ask before it closes.');
+    if (!winLines.length) winLines.push('Nothing urgent stands out — the books look clean right now.');
+    return winLines.join('\n');
+  }
+
+  return "I can answer from your live dashboard data — try asking about revenue/pace, follow-ups due, reorder alerts, debtors and creditors, client pipeline, referrals, profit and expenses, or your biggest opportunity right now.";
 }
 
 let calSelectedDate = new Date();
@@ -689,6 +710,33 @@ function exportToCSV(rows, columns, filename){
   const a=document.createElement('a'); a.href=url; a.download=filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// v1.5: debounced inline field save — used for Notes textareas on
+// Debtors, Creditors, and Clients so edits save themselves ~2s after
+// typing stops, no separate "save" button needed.
+const fieldDebounceTimers={};
+function debouncedUpdateField(sheetKey,row,field,value,el,delay){
+  const key=sheetKey+'|'+row+'|'+field;
+  if(fieldDebounceTimers[key]) clearTimeout(fieldDebounceTimers[key]);
+  fieldDebounceTimers[key]=setTimeout(()=>{ updateFieldNow(sheetKey,row,field,value,el); delete fieldDebounceTimers[key]; }, delay||2000);
+}
+async function updateFieldNow(sheetKey,row,field,value,el){
+  try{
+    const res=await fetch(API_URL+'?action=updateField&sheet='+encodeURIComponent(sheetKey)+'&row='+row+'&field='+encodeURIComponent(field)+'&value='+encodeURIComponent(value)+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){ if(el){ el.style.borderColor='var(--teal)'; setTimeout(()=>{ if(el) el.style.borderColor='var(--line)'; },1200); } }
+    else showToast('Error: '+(data.error||'could not save'));
+  }catch(e){ showToast('Connection error — note not saved'); }
+}
+// v1.5: phone normalizer for sharper duplicate detection on Add Client.
+function caNormPhone(raw){
+  let n=(raw||'').toString().trim().replace(/[\s-]/g,'');
+  if(!n) return '';
+  if(n.charAt(0)==='+') n=n.substring(1);
+  if(/^233\d{9}$/.test(n)) return '0'+n.substring(3);
+  if(/^0\d{9}$/.test(n)) return n;
+  return n;
 }
 
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
@@ -923,6 +971,12 @@ async function removeAppointment(row){ try{ await fetch(API_URL+'?action=deleteA
 
 function renderTracker(){
   const t = state.tracker||{};
+  const pb = t.periodBreakdown||{};
+  const pbEntries = [['Today',pb.today],['This Week',pb.week],['This Month',pb.month],['This Quarter',pb.quarter],['This Year',pb.year],['All-Time',pb.allTime]];
+  document.getElementById('periodBreakdownChips').innerHTML = pbEntries.map(function(pair){
+    const label=pair[0], d=pair[1]||{revenue:0,profit:0,transactions:0};
+    return `<div class="summary-chip"><div class="summary-chip-label">${label}</div><div class="summary-chip-value">${fmtMoneyShort(d.revenue)}</div><div style="font-size:10px;color:var(--ink-dim);margin-top:2px">${fmtMoneyShort(d.profit)} profit · ${d.transactions} txns</div></div>`;
+  }).join('');
   const trend = (t.monthlyReport&&t.monthlyReport[0]&&t.monthlyReport[0].months) || [];
   if(trend.length){
     const maxVal=Math.max.apply(null,trend.map(m=>m.revenue))||1;
@@ -1035,14 +1089,28 @@ async function submitExpense(){
   }catch(e){ resultEl.innerHTML='<span style="color:var(--coral)">Connection error</span>'; }
 }
 
-function renderClients(){ document.getElementById('clientsTableBody').innerHTML=((state.clients&&state.clients.rows)||[]).map(r=>`<tr><td>${esc(r['Name'])}</td><td>${esc(r['Contact Person'])}</td><td>${esc(r['Number'])} ${callLinkHtml(r['Number'])}</td><td>${esc(r['Location'])}</td><td>${esc(r['Notes'])}</td><td><button class="btn ghost small" onclick="archiveClient('${esc(r['Name']).replace(/'/g,"\\'")}')">Archive</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No clients yet</td></tr>'; }
+function renderClients(){ document.getElementById('clientsTableBody').innerHTML=((state.clients&&state.clients.rows)||[]).map(r=>`<tr><td>${esc(r['Name'])}</td><td>${esc(r['Contact Person'])}</td><td>${esc(r['Number'])} ${callLinkHtml(r['Number'])}</td><td>${esc(r['Location'])}</td><td><textarea style="width:150px;min-height:30px;background:#fbfcfb;border:1px solid var(--line);color:var(--ink);font-size:11px;padding:4px 6px;border-radius:5px;resize:vertical;font-family:'IBM Plex Sans',sans-serif" placeholder="Notes" oninput="debouncedUpdateField('clients',${r.__row},'Notes',this.value,this)">${esc(r['Notes'])}</textarea></td><td><button class="btn ghost small" onclick="archiveClient('${esc(r['Name']).replace(/'/g,"\\'")}')">Archive</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No clients yet</td></tr>'; }
 async function submitClient(){
   const name=document.getElementById('clientName').value.trim();
   const resultEl=document.getElementById('clientResult');
   if(!name){ resultEl.innerHTML='<span style="color:var(--coral)">Name is required.</span>'; return; }
+  // v1.5: sharper duplicate check — catches an exact number match
+  // (even under a different business name) separately from a
+  // name-only match, so the confirm message tells you which kind
+  // of collision it actually is.
+  const dupNumber = document.getElementById('clientNumber').value.trim();
   const normName = name.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  const dup = (state.clients && state.clients.rows || []).find(c => (c['Name']||'').toLowerCase().replace(/[^a-z0-9]/g,'') === normName);
-  if (dup && !confirm(`"${dup['Name']}" already exists as a client. Add "${name}" anyway as a separate entry?`)) { return; }
+  const normNum = caNormPhone(dupNumber);
+  const rows = (state.clients && state.clients.rows) || [];
+  const nameDup = rows.find(c => (c['Name']||'').toLowerCase().replace(/[^a-z0-9]/g,'') === normName);
+  const numDup = normNum ? rows.find(c => caNormPhone(c['Number']) === normNum) : null;
+  if (nameDup && numDup && nameDup === numDup) {
+    if (!confirm(`"${nameDup['Name']}" already exists with this exact name and number. Add "${name}" anyway as a separate entry?`)) return;
+  } else if (numDup) {
+    if (!confirm(`This number is already used by "${numDup['Name']}". Add "${name}" anyway as a separate entry?`)) return;
+  } else if (nameDup) {
+    if (!confirm(`"${nameDup['Name']}" already exists as a client with a different number. Add "${name}" anyway as a separate entry?`)) return;
+  }
   resultEl.innerHTML='<span style="color:var(--ink-dim)">Saving...</span>';
   try{
     const url=API_URL+'?action=addClient&Name='+encodeURIComponent(name)+'&ContactPerson='+encodeURIComponent(document.getElementById('clientContactPerson').value.trim())+'&Number='+encodeURIComponent(document.getElementById('clientNumber').value.trim())+'&Notes='+encodeURIComponent(document.getElementById('clientNotes').value.trim())+'&Location='+encodeURIComponent(document.getElementById('clientLocation').value.trim())+'&t='+Date.now();
@@ -1092,8 +1160,8 @@ function renderDCTable(table,chipsEl,bodyEl,kind){
   document.getElementById(bodyEl).innerHTML=rows.length?rows.map(r=>{
     const statusBadge=r.balance<=0?'<span class="badge cleared">Cleared</span>':(r.daysOverdue>0?'<span class="badge overdue">Overdue</span>':'<span class="badge pending">Pending</span>');
     const actionBtn=r.balance>0?`<button class="btn ghost small" onclick="markCleared('${kind}',${r.row},${r.amountOwed})">Mark cleared</button>`:`<button class="btn ghost small" onclick="archiveOne('${kind}',${r.row},'${esc(r.name).replace(/'/g,"\\'")}')">Archive</button>`;
-    return `<tr><td>${esc(r.name)}</td><td>${esc(r.contact)} ${callLinkHtml(r.contact)}</td><td class="mono">${fmtMoney(r.amountOwed)}</td><td class="mono">${fmtMoney(r.amountPaid)}</td><td class="mono">${fmtMoney(r.balance)}</td><td>${statusBadge}</td><td>${actionBtn}</td></tr>`;
-  }).join(''):'<tr><td colspan="7" class="empty">Nothing here yet</td></tr>';
+    return `<tr><td>${esc(r.name)}</td><td>${esc(r.contact)} ${callLinkHtml(r.contact)}</td><td class="mono">${fmtMoney(r.amountOwed)}</td><td class="mono">${fmtMoney(r.amountPaid)}</td><td class="mono">${fmtMoney(r.balance)}</td><td>${statusBadge}</td><td><textarea style="width:140px;min-height:30px;background:#fbfcfb;border:1px solid var(--line);color:var(--ink);font-size:11px;padding:4px 6px;border-radius:5px;resize:vertical;font-family:'IBM Plex Sans',sans-serif" placeholder="Notes" oninput="debouncedUpdateField('${kind}s',${r.row},'Notes',this.value,this)">${esc(r.notes)}</textarea></td><td>${actionBtn}</td></tr>`;
+  }).join(''):'<tr><td colspan="8" class="empty">Nothing here yet</td></tr>';
 }
 async function submitDC(kind){
   const p=kind==='debtor'?'debtor':'creditor'; const action=kind==='debtor'?'addDebtor':'addCreditor';
