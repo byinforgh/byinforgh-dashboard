@@ -110,6 +110,32 @@ border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:
 .toast.show{opacity:1;}
 
 .pkg-section{background:var(--highlight);border-radius:16px;padding:28px;}
+
+.compare-table{width:100%;border-collapse:separate;border-spacing:0 8px;margin-top:10px;}
+.compare-table th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-dim);text-align:left;padding:0 14px 6px;}
+.compare-row td{background:#fff;border:1px solid var(--line);padding:14px;font-size:12.5px;line-height:1.6;vertical-align:top;}
+.compare-row td:first-child{border-radius:10px 0 0 10px;color:var(--ink-dim);border-right:none;}
+.compare-row td:last-child{border-radius:0 10px 10px 0;border-left:none;background:var(--highlight);font-weight:600;color:var(--ink);}
+
+.bonus-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:18px;}
+.bonus-card{background:var(--panel);border:1.5px solid var(--gold);border-radius:12px;padding:18px;position:relative;}
+.bonus-card .bnum{position:absolute;top:-10px;left:16px;background:var(--gold);color:var(--teal-deep);font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.5px;}
+.bonus-card h5{font-size:13.5px;font-weight:800;margin:8px 0 6px;}
+.bonus-card p{font-size:12px;color:var(--ink-dim);line-height:1.6;}
+.bonus-card .bval{margin-top:10px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#a3781f;}
+.bonus-total{margin-top:16px;background:var(--teal-deep);color:#fff;border-radius:10px;padding:16px 20px;font-size:14px;font-weight:800;text-align:center;}
+.bonus-total .amt{color:var(--gold);font-family:'Space Mono',monospace;font-size:22px;display:block;margin-top:4px;}
+
+.guarantee-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:16px;}
+.guarantee-card{background:var(--panel);border-left:4px solid var(--green);border:1px solid var(--line);border-radius:12px;padding:18px;}
+.guarantee-card h5{font-size:13px;font-weight:800;color:var(--green);margin-bottom:6px;}
+.guarantee-card p{font-size:12px;color:var(--ink);line-height:1.7;}
+
+.payment-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+.payment-step{flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;}
+.payment-step .pct{font-family:'Space Mono',monospace;font-size:26px;font-weight:800;color:var(--teal-dark);}
+.payment-step .plabel{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-dim);margin:6px 0 6px;}
+.payment-step p{font-size:11.5px;color:var(--ink-dim);line-height:1.5;}
 .pkg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px;}
 .pkg-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;}
 .pkg-card .pn{font-size:14px;font-weight:800;color:var(--ink);}
@@ -181,6 +207,15 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
     <div>Every engagement starts at <b>Level 0 — free</b>. From <b>Level 1 onward</b>, this is corporate-tier investment, priced for businesses with real operating complexity: multiple staff, multiple revenue lines, or multiple locations. It is intentionally priced above BYINFORGH's SME Ecosystem packages, because the scope of work — audits, custom builds, dashboards, staff training — is materially larger.</div>
   </div>
 
+  <div class="section-label" style="margin-top:10px">WHY THIS ISN'T "JUST SOFTWARE"</div>
+  <p class="lead" style="font-size:13px;margin-bottom:14px;">Cheap agencies and freelancers sell code. BYINFORGH sells an infrastructure standard — audit-led, staff-tested, and 100% owned by you. This is why the price is different.</p>
+  <table class="compare-table">
+    <tr><th style="width:38%">Cheap Agencies & Freelancers</th><th>The BYINFORGH Infrastructure Standard</th></tr>
+    <tr class="compare-row"><td><b>Code-First</b> — build software without understanding how your staff actually operate on the ground.</td><td><b>Audit-First</b> — zero build work happens until a full Business Infrastructure Audit maps every gap and revenue leak.</td></tr>
+    <tr class="compare-row"><td><b>Vendor Lock-In</b> — custom proprietary code that breaks the moment the developer disappears.</td><td><b>100% Owned Infrastructure</b> — deployed directly to your own cloud accounts. You keep it even if BYINFORGH is never involved again.</td></tr>
+    <tr class="compare-row"><td><b>Handover & Hope</b> — software dumped on your team with a PDF manual nobody reads.</td><td><b>Enforced Adoption</b> — live staff stress-testing and hands-on SOP training until your team is certified, not just "shown."</td></tr>
+  </table>
+
   <div class="cta-row">
     <button class="btn btn-gold" onclick="goScreen('intake')">Take the Business Infrastructure Audit →</button>
     <button class="btn btn-primary" onclick="scrollToLadder()">Browse the 8 levels ↓</button>
@@ -202,6 +237,16 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
     <div class="section-label" style="margin:0">CORPORATE PACKAGES AT THIS LEVEL</div>
     <div class="pkg-grid" id="stagePkgGrid"></div>
   </div>
+
+  <div id="stageBonusWrap"></div>
+
+  <div class="section-label" style="margin-top:34px">RISK-REVERSAL GUARANTEES</div>
+  <div class="guarantee-grid" id="stageGuaranteeGrid"></div>
+
+  <div class="section-label" style="margin-top:34px">HOW YOU PAY — THE 40/40/20 MODEL</div>
+  <p class="lead" style="font-size:13px;margin-bottom:0;">No full lump sum upfront on any build over GH₵15,000. Payment tracks delivery, not promises.</p>
+  <div class="payment-row" id="stagePaymentRow"></div>
+
   <div class="stage-jump-row">
     <button class="btn btn-ghost" id="stagePrevBtn" onclick="jumpStage(-1)">← Previous level</button>
     <button class="btn btn-primary" id="stageNextBtn" onclick="jumpStage(1)">Next level →</button>
@@ -273,6 +318,7 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
   <div class="card" id="resRecCard">
     <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:8px">RECOMMENDATION</div>
     <div id="resRecText" style="font-size:13px;line-height:1.7;"></div>
+    <div style="font-size:11.5px;color:var(--green);margin-top:10px;font-weight:700;">🛡️ Backed by the Leak Identification Guarantee — no operational or revenue leakage found worth the audit fee, and the audit fee is refunded in full.</div>
   </div>
   <button class="btn btn-primary btn-full" id="resGoStageBtn" onclick="goToRecommendedStage()">See the recommended level in detail →</button>
   <button class="btn btn-gold btn-full" style="margin-top:8px" onclick="addRecommendedToSelection()">Add Level <span id="resRecLevelNum"></span> to My Selection →</button>
@@ -300,6 +346,7 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
   </div>
 
   <div class="total-box" id="selTotalBox">Nothing selected yet.</div>
+  <p style="font-size:11.5px;color:var(--ink-dim);margin-bottom:10px;">💳 No lump sum upfront on any build over GH₵15,000 — payments follow the 40/40/20 model: 40% to mobilise, 40% after staff training and stress-testing, 20% only after 7 days of error-free live operation.</p>
 
   <label>Business name *</label><input id="sel_business" placeholder="Business name">
   <label>Your name *</label><input id="sel_contact" placeholder="Full name">
@@ -751,6 +798,26 @@ const CORP_PACKAGES = {
      {name:'Command Centre — Flagship', tier:'Enterprise Build', desc:'White-glove build, dedicated team, 24/7 priority care.', price:'GH₵250,000 + GH₵15,000/mo'}]
 };
 
+// Offer-architecture data: bonuses, guarantees, payment plan.
+const BONUSES = [
+  {t:'The "2-Week Owner Absence" Playbook', val:'GH₵25,000', d:'Complete management SOPs, emergency escalation protocols, and automated daily WhatsApp/SMS summaries so the owner can step away for 14 days without operations slipping.'},
+  {t:'Staff Certification & "Live Fire" Onboarding', val:'GH₵15,000', d:'We don\'t just build the system — we personally train your floor staff, run 100 simulated stress-test orders, and certify each employee before go-live.'},
+  {t:'Custom Hardware & QR Stand Setup', val:'GH₵8,000', d:'Physical branded acrylic QR table stands, staff tablet optimisation, and a localised offline/online network fallback so the system never goes dark.'},
+  {t:'Investor Data Room Vault', val:'GH₵20,000', d:'Automated 12-month financial ledger structuring, COGS analytics, and balance sheets ready to present to a bank, partner, or investor.'}
+];
+const BONUS_LEVELS = [6,7]; // shown on Predictability and Expansion — the Enterprise Tier 2/3 contracts
+
+const GUARANTEES = [
+  {t:'The Leak Identification Guarantee', d:'If the Business Infrastructure Audit and Level 5 Financial Control setup don\'t uncover operational, stock or revenue leakage worth at least the audit fee, the audit fee is refunded 100%.'},
+  {t:'The 100-Order Zero-Defect Guarantee', d:'Your final milestone payment is held back and only released after your team completes 7 consecutive days of error-free live operation on the new system — not on our word that it\'s "done."'}
+];
+
+const PAYMENT_PLAN = [
+  {pct:'40%', label:'Mobilization Deposit', d:'Kicks off system architecture, cloud/database provisioning, and the custom buildout for this level.'},
+  {pct:'40%', label:'Validation Milestone', d:'Released only after staff training and live stress-testing are complete — not on delivery of code alone.'},
+  {pct:'20%', label:'Live Handover', d:'Paid strictly after 7 consecutive days of verified, error-free live operation.'}
+];
+
 let currentLevelN=0;
 
 function buildStageNav(){
@@ -843,6 +910,28 @@ function openStage(n){
 
   document.getElementById('stagePrevBtn').disabled = n===0;
   document.getElementById('stageNextBtn').textContent = n===7 ? 'Back to overview →' : 'Next level →';
+
+  // Bonus stack — only on the Enterprise Tier 2/3 levels
+  const bonusWrap=document.getElementById('stageBonusWrap');
+  if(BONUS_LEVELS.includes(n)){
+    const totalVal=BONUSES.reduce((sum,b)=>sum+parseInt(b.val.replace(/[^\d]/g,'')),0);
+    bonusWrap.innerHTML=`
+      <div class="section-label" style="margin-top:34px">INCLUDED FREE — THE ENTERPRISE BONUS STACK</div>
+      <p class="lead" style="font-size:13px;margin-bottom:0;">We don't discount enterprise builds. We stack value instead. Every Level ${s.label} Command Centre-grade contract includes all four of these at no extra cost:</p>
+      <div class="bonus-grid">
+        ${BONUSES.map((b,i)=>`<div class="bonus-card"><div class="bnum">BONUS #${i+1}</div><h5>${b.t}</h5><p>${b.d}</p><div class="bval">Valued at ${b.val}</div></div>`).join('')}
+      </div>
+      <div class="bonus-total">Total bonus value included free<span class="amt">GH₵${totalVal.toLocaleString()}</span></div>`;
+  } else {
+    bonusWrap.innerHTML='';
+  }
+
+  document.getElementById('stageGuaranteeGrid').innerHTML = GUARANTEES.map(g=>
+    `<div class="guarantee-card"><h5>🛡️ ${g.t}</h5><p>${g.d}</p></div>`).join('');
+
+  document.getElementById('stagePaymentRow').innerHTML = PAYMENT_PLAN.map(p=>
+    `<div class="payment-step"><div class="pct">${p.pct}</div><div class="plabel">${p.label}</div><p>${p.d}</p></div>`).join('');
+
   renderSelBar();
 }
 function jumpStage(dir){
