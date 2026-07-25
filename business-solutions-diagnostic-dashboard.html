@@ -368,6 +368,22 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
 <div class="toast" id="toast"></div>
 
 <script>
+// ============================================================
+// LIVE BACKEND SYNC — connects to the BYINFORGH Business Solutions
+// Apps Script (Code.gs), which independently bridges into the
+// Command Centre CRM via its own addManualContact call. Paste the
+// deployed /exec URL below. Until it's set, every backend call is
+// silently skipped and the WhatsApp/email links still work exactly
+// as before — nothing here can block a real submission.
+// ============================================================
+const APPS_SCRIPT_URL = 'PASTE_YOUR_BUSINESS_SOLUTIONS_EXEC_URL_HERE';
+
+function backendCall(params){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR')===0) return Promise.resolve(null);
+  const qs=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k]==null?'':params[k])).join('&');
+  return fetch(APPS_SCRIPT_URL+'?'+qs+'&t='+Date.now()).then(r=>r.json()).catch(()=>null);
+}
+
 const QUESTIONS = [
   {level:1, text:"Do you have a written mission or 'why we exist' statement — not just in your head, but somewhere staff can see it?"},
   {level:1, text:"If a new staff member joined tomorrow, is there a document explaining how customers should be treated, without you telling them yourself?"},
@@ -1072,4 +1088,3 @@ goHome();
 </script>
 </body>
 </html>
-
