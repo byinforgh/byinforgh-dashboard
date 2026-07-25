@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>BYINFORGH Business Solutions — Diagnostic & Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0a0a0a;--surface:#111111;--card:#181818;--border:#2a2a2a;--gold:#f5c842;--gold-dim:#c8a22a;
+--green:#22c55e;--red:#ef4444;--orange:#f97316;--blue:#3b82f6;--teal:#14b8a6;--muted:#888;--text:#f2f2f2;--text-dim:#b5b5b5;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--black);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+.hidden{display:none !important;}
+.wrap{max-width:640px;margin:0 auto;padding:24px 20px 90px;}
+.header{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-weight:800;font-family:'Syne',sans-serif;}
+.brand{font-weight:800;letter-spacing:1px;font-size:14px;}
+.brand span{display:block;font-size:9px;color:var(--muted);letter-spacing:2px;font-weight:400;}
+.progress-track{background:var(--border);border-radius:4px;height:6px;overflow:hidden;margin:18px 0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:4px;transition:width .4s ease;}
+.eyebrow{font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:10px;font-weight:700;}
+h1{font-size:22px;font-weight:800;line-height:1.3;margin-bottom:8px;}
+p.sub{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;}
+label{display:block;font-size:10px;letter-spacing:1px;color:var(--gold);text-transform:uppercase;margin:14px 0 5px;font-weight:700;}
+input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);
+padding:12px 14px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:9px;
+border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;margin-top:14px;}
+.btn-primary{background:var(--gold);color:#0a0a0a;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+.btn-green{background:var(--green);color:#06210f;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;}
+.err{color:var(--red);font-size:12px;margin-top:8px;min-height:14px;}
+.q-stage-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);
+background:#1c1a12;border:1px solid var(--gold-dim);border-radius:20px;padding:4px 12px;margin-bottom:14px;}
+.q-text{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:22px;}
+.ans-row{display:flex;gap:8px;margin-bottom:10px;}
+.ans-btn{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:14px 10px;
+border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.ans-btn.yes:hover,.ans-btn.yes.sel{border-color:var(--green);background:#0a1a0f;color:var(--green);}
+.ans-btn.partial:hover,.ans-btn.partial.sel{border-color:var(--orange);background:#1a1200;color:var(--orange);}
+.ans-btn.no:hover,.ans-btn.no.sel{border-color:var(--red);background:#1a0a0a;color:var(--red);}
+.ladder{display:flex;flex-direction:column-reverse;gap:6px;margin:18px 0;}
+.rung{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);}
+.rung.current{border-color:var(--gold);background:#1c1a12;}
+.rung .num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:'Space Mono',monospace;flex-shrink:0;}
+.rung .name{font-size:12px;font-weight:700;width:110px;flex-shrink:0;}
+.rung .barwrap{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.rung .barfill{height:100%;border-radius:4px;transition:width .5s ease;}
+.rung .pct{font-size:11px;font-family:'Space Mono',monospace;color:var(--text-dim);width:36px;text-align:right;flex-shrink:0;}
+.gap-item{background:var(--surface);border-left:3px solid var(--red);border-radius:6px;padding:12px 14px;margin-bottom:8px;font-size:12px;line-height:1.6;}
+.rec-card{background:linear-gradient(135deg,#1c1a12,var(--card));border:1px solid var(--gold-dim);border-radius:10px;padding:18px;margin:16px 0;}
+.rec-card .rn{font-size:15px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+.rec-card .rd{font-size:12px;color:var(--text-dim);line-height:1.6;}
+.tabs{display:flex;gap:4px;background:var(--surface);padding:5px;border-radius:8px;border:1px solid var(--border);margin-bottom:18px;overflow-x:auto;}
+.tab{padding:8px 13px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text-dim);
+background:none;border:none;cursor:pointer;white-space:nowrap;font-family:'Syne',sans-serif;}
+.tab.active{background:var(--gold);color:#0a0a0a;}
+.toggle-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
+border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:12px;cursor:pointer;}
+.toggle-row input{width:auto;}
+.pkg-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:10px;}
+.pkg-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.pkg-name{font-size:13px;font-weight:700;}
+.pkg-tier{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.pkg-price{font-size:13px;font-weight:800;color:var(--gold);font-family:'Space Mono',monospace;white-space:nowrap;}
+.pkg-desc{font-size:11px;color:var(--text-dim);line-height:1.6;margin:8px 0;}
+.pkg-add{background:var(--border);color:var(--text);border:none;padding:7px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
+.pkg-add.added{background:var(--green);color:#06210f;}
+.stage-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.stage-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);
+color:var(--text-dim);font-size:11px;font-weight:700;cursor:pointer;}
+.stage-chip.active{background:var(--gold);color:#0a0a0a;border-color:var(--gold);}
+.cart-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1c1c1c;font-size:12px;}
+.cart-total{display:flex;justify-content:space-between;font-size:15px;font-weight:800;padding-top:12px;border-top:1px solid var(--border);margin-top:8px;}
+.empty{text-align:center;padding:30px 10px;color:var(--muted);font-size:12px;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0a0a0a;
+padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;}
+.spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(0,0,0,.25);border-top-color:#0a0a0a;
+animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="mark">B</div>
+  <div class="brand">BYINFORGH <span>BUSINESS SOLUTIONS</span></div>
+</div>
+
+<div class="wrap">
+
+  <!-- SCREEN: LANDING -->
+  <div id="screen-landing">
+    <div class="eyebrow">Free Business Maturity Diagnostic</div>
+    <h1>What stage is your business really at?</h1>
+    <p class="sub">6 minutes. 7 areas. No jargon. At the end you'll get a plain-language rating of your business and exactly what's missing — plus a recommendation for what to fix first.</p>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.8">
+        ✅ Built specifically for Ghanaian businesses<br>
+        ✅ Works for any size — solo trader to 50+ staff<br>
+        ✅ Free — no card required
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="goScreen('intake')">Start the diagnostic →</button>
+    <button class="btn btn-ghost" onclick="goScreen('dashboard')">I already know what I need — open the dashboard</button>
+  </div>
+
+  <!-- SCREEN: INTAKE -->
+  <div id="screen-intake" class="hidden">
+    <div class="eyebrow">Step 1 of 2</div>
+    <h1>Tell us about the business</h1>
+    <p class="sub">This is what makes the questions after this relevant to you specifically.</p>
+    <label>Business name *</label><input id="in_business" placeholder="e.g. Mama Serwaa Foods">
+    <label>Your name *</label><input id="in_contact" placeholder="Full name">
+    <label>WhatsApp number *</label><input id="in_number" type="tel" placeholder="024 123 4567">
+    <label>Region / town *</label>
+    <select id="in_region">
+      <option value="">Select region</option>
+      <option>Greater Accra</option><option>Ashanti</option><option>Eastern Region</option>
+      <option>Central Region</option><option>Western Region</option><option>Volta Region</option>
+      <option>Northern Region</option><option>Bono Region</option><option>Other</option>
+    </select>
+    <label>Industry / niche *</label>
+    <select id="in_industry">
+      <option value="">Select industry</option>
+      <option>Retail & Fashion</option><option>Food & Beverage / Restaurant</option>
+      <option>Salon & Beauty</option><option>Hospitality / Guest House</option>
+      <option>Transport & Logistics</option><option>Construction & Trade</option>
+      <option>Health & Wellness Clinic</option><option>Education / Training</option>
+      <option>Events</option><option>Real Estate</option><option>Agriculture / Agro-processing</option>
+      <option>Automotive</option><option>Other</option>
+    </select>
+    <label>Years operating *</label>
+    <select id="in_years">
+      <option value="">Select</option>
+      <option>Less than 6 months</option><option>6 months – 2 years</option>
+      <option>2 – 5 years</option><option>5 – 10 years</option><option>10+ years</option>
+    </select>
+    <label>Staff count (incl. you) *</label>
+    <select id="in_staff">
+      <option value="">Select</option>
+      <option>Just me</option><option>2–5</option><option>6–15</option><option>16–50</option><option>50+</option>
+    </select>
+    <label>Approx. monthly revenue</label>
+    <select id="in_revenue">
+      <option value="">Prefer not to say</option>
+      <option>Under GH₵2,000</option><option>GH₵2,000–10,000</option><option>GH₵10,000–30,000</option>
+      <option>GH₵30,000–100,000</option><option>GH₵100,000+</option>
+    </select>
+    <label>What's the single biggest headache right now?</label>
+    <textarea id="in_headache" rows="2" placeholder="e.g. Staff don't follow the same standard when I'm not there"></textarea>
+    <div class="err" id="intakeErr"></div>
+    <button class="btn btn-primary" onclick="startDiagnostic()">Continue to the diagnostic →</button>
+    <button class="btn btn-ghost" onclick="goScreen('landing')">Back</button>
+  </div>
+
+  <!-- SCREEN: DIAGNOSTIC (one question at a time) -->
+  <div id="screen-diagnostic" class="hidden">
+    <div class="progress-track"><div class="progress-fill" id="diagProgressFill" style="width:0%"></div></div>
+    <div class="card">
+      <div class="q-stage-tag" id="qStageTag">STAGE 1 — FOUNDATION</div>
+      <div class="q-text" id="qText">—</div>
+      <div class="ans-row">
+        <button class="ans-btn yes" onclick="answer(2)">Yes</button>
+        <button class="ans-btn partial" onclick="answer(1)">Partially</button>
+        <button class="ans-btn no" onclick="answer(0)">No</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="prevQuestion()">← Previous question</button>
+  </div>
+
+  <!-- SCREEN: RESULTS -->
+  <div id="screen-results" class="hidden">
+    <div class="eyebrow">Your Results</div>
+    <h1 id="resHeadline">—</h1>
+    <p class="sub" id="resExplainer">—</p>
+
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:4px">MATURITY LADDER</div>
+      <div class="ladder" id="resLadder"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:10px">TOP 3 GAPS FOUND</div>
+      <div id="resGaps"></div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rn" id="resRecName">—</div>
+      <div class="rd" id="resRecDesc">—</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="openBooking()">Book a Full Consultation</button>
+    <button class="btn btn-green" onclick="goScreen('dashboard');filterDashboardToRecommendation()">Open the Dashboard →</button>
+  </div>
+
+  <!-- SCREEN: BOOKING -->
+  <div id="screen-booking" class="hidden">
+    <div class="eyebrow">Book a Consultation</div>
+    <h1>Let's talk through your results.</h1>
+    <p class="sub">YJ reviews every diagnostic personally. Pick a rough time and we'll confirm on WhatsApp.</p>
+    <label>Preferred day/time</label>
+    <input id="bk_time" placeholder="e.g. Weekday mornings, or Saturday">
+    <label>Anything else to add?</label>
+    <textarea id="bk_notes" rows="2"></textarea>
+    <div class="err" id="bookingErr"></div>
+    <button class="btn btn-primary" id="bookingSubmitBtn" onclick="submitBooking()">
+      <span id="bookingSpinner" class="hidden spinner"></span> Confirm booking request
+    </button>
+    <button class="btn btn-ghost" onclick="goScreen('results')">Back to results</button>
+  </div>
+
+  <!-- SCREEN: BOOKING CONFIRMED -->
+  <div id="screen-booking-done" class="hidden">
+    <div class="card" style="text-align:center;padding:30px 18px">
+      <div style="font-size:32px;margin-bottom:10px">✓</div>
+      <h1 style="font-size:18px">Booking request sent.</h1>
+      <p class="sub">We'll confirm your slot on WhatsApp shortly.</p>
+      <a class="btn btn-green" style="text-decoration:none;display:block" href="#" id="bookingWaLink" target="_blank">Continue on WhatsApp</a>
+      <button class="btn btn-ghost" onclick="goScreen('dashboard')">Or browse the dashboard while you wait</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: DASHBOARD -->
+  <div id="screen-dashboard" class="hidden">
+    <div class="eyebrow">Business Solutions</div>
+    <h1 style="font-size:18px">Browse & select what your business needs</h1>
+    <div class="tabs">
+      <button class="tab active" onclick="setDashTab('stage',this)">BY STAGE</button>
+      <button class="tab" onclick="setDashTab('product',this)">BY PRODUCT</button>
+      <button class="tab" onclick="setDashTab('cart',this)">CART</button>
+      <button class="tab" onclick="setDashTab('book',this)">BOOK A HUMAN</button>
+    </div>
+
+    <div id="dashTab-stage">
+      <p class="sub">Tap the stage you scored weakest on to see what fixes it.</p>
+      <div class="stage-filter-row" id="stageFilterRow"></div>
+      <div id="stageProductList"></div>
+    </div>
+
+    <div id="dashTab-product" class="hidden">
+      <div class="toggle-row"><input type="checkbox" id="alreadyEcosystem" onchange="renderProductList()"> I already have BYINFORGH Ecosystem (Presence/Verified/Visibility/Authority)</div>
+      <div class="toggle-row"><input type="checkbox" id="alreadySME" onchange="renderProductList()"> I already have SME Systems (Starter/Growth/Authority)</div>
+      <div id="productFullList"></div>
+    </div>
+
+    <div id="dashTab-cart" class="hidden">
+      <div id="cartList"></div>
+      <div class="cart-total"><span>Total</span><span id="cartTotal">GH₵0</span></div>
+      <label>Payment method</label>
+      <select id="checkoutPayment">
+        <option value="MoMo">MoMo</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Send me an invoice">Send me an invoice</option>
+        <option value="I'll pay after consultation">I'll pay after consultation</option>
+      </select>
+      <label>Notes (optional)</label>
+      <textarea id="checkoutNotes" rows="2"></textarea>
+      <div class="err" id="checkoutErr"></div>
+      <button class="btn btn-primary" id="checkoutBtn" onclick="submitCheckout()">
+        <span id="checkoutSpinner" class="hidden spinner"></span> Confirm selection & checkout
+      </button>
+    </div>
+
+    <div id="dashTab-book" class="hidden">
+      <p class="sub">Prefer to talk it through first? Book a free consultation any time — no diagnostic required.</p>
+      <label>Business name *</label><input id="hb_business" placeholder="Business name">
+      <label>Your name *</label><input id="hb_contact" placeholder="Full name">
+      <label>WhatsApp number *</label><input id="hb_number" type="tel" placeholder="024 123 4567">
+      <label>Preferred day/time</label><input id="hb_time" placeholder="e.g. Weekday mornings">
+      <div class="err" id="hbErr"></div>
+      <button class="btn btn-primary" onclick="submitHumanBooking()">Request a consultation</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// ⚠️ REQUIRED — paste your deployed Business Solutions Apps
+// Script /exec URL here once you've completed the Code.gs setup.
+// ============================================================
+const APPS_SCRIPT_URL = "PASTE_YOUR_BUSINESS_SOLUTIONS_EXEC_URL_HERE";
+const WHATSAPP_NUMBER = "233509960980";
+
+// ---------- STAGE METADATA ----------
+const STAGES = [
+  {n:1,name:'Foundation',explain:'Your business identity — vision, values, documents — either does not exist yet or lives only in your head.'},
+  {n:2,name:'Infrastructure',explain:'The systems that turn daily tasks into something repeatable are missing or incomplete.'},
+  {n:3,name:'Validation',explain:'What you have hasn\'t really been tested with real staff and real customers under pressure.'},
+  {n:4,name:'Deployment',explain:'You have systems live, but adoption and continuous improvement aren\'t consistent yet.'},
+  {n:5,name:'Performance',explain:'You\'re running the business without a clear, numbers-based view of profit, cost and cash flow.'},
+  {n:6,name:'Predictability',explain:'The business still depends heavily on you being physically present to function well.'},
+  {n:7,name:'Expansion',explain:'Your foundation is strong — the focus now is investment-readiness, replication and legacy.'}
+];
+
+// ---------- QUESTION BANK ----------
+const QUESTIONS = [
+  // Stage 1 — Foundation
+  {stage:1, text:"Do you have a written mission or 'why we exist' statement — not just in your head, but somewhere staff can see it?"},
+  {stage:1, text:"If a new staff member joined tomorrow, is there a document explaining how customers should be treated, without you telling them yourself?"},
+  {stage:1, text:"Do you have written rules for staff conduct — lateness, dress code, phone use, cash handling?"},
+  {stage:1, text:"If you were away for a week, would every staff member give a customer the same answer about your prices, hours and policies?"},
+  {stage:1, text:"Have you ever written down who your ideal customer actually is — age, need, budget — rather than 'anyone who comes'?"},
+  {stage:1, text:"Do you have a clear name/brand you use consistently everywhere — signage, WhatsApp, social media, receipts?"},
+  // Stage 2 — Infrastructure
+  {stage:2, text:"Do you track stock/inventory somewhere other than 'I can see what's on the shelf'?"},
+  {stage:2, text:"Is your business findable on Google Maps with correct hours, location and phone number?"},
+  {stage:2, text:"Do you use WhatsApp Business — catalog, quick replies, labels — rather than a personal WhatsApp number?"},
+  {stage:2, text:"Do you have a written record of who owes you money and who you owe?"},
+  {stage:2, text:"Is payroll calculated the same way every time — on paper or a sheet — or does it depend on you remembering?"},
+  {stage:2, text:"Do you post about your business online at least a few times a week?"},
+  // Stage 3 — Validation
+  {stage:3, text:"Have you ever watched a staff member serve a customer start-to-finish and written down what went wrong?"},
+  {stage:3, text:"If you introduced a new process — new order form, new price list — did you test it with a few customers or staff before rolling it out to everyone?"},
+  {stage:3, text:"Do you know your most common customer complaint, backed by actual notes — not a guess?"},
+  {stage:3, text:"Has any system you use — WhatsApp ordering, booking, POS — ever broken under real busy-period pressure, and did you fix the actual cause?"},
+  // Stage 4 — Deployment
+  {stage:4, text:"Are your current systems — ordering, booking, payment — being used by all staff, or only some?"},
+  {stage:4, text:"In the last month, did you change anything about how the business runs because of customer or staff feedback?"},
+  {stage:4, text:"Do you review how the week went — even informally — on a regular schedule?"},
+  {stage:4, text:"Are new staff trained using a written process, or do they 'just learn by watching'?"},
+  // Stage 5 — Performance
+  {stage:5, text:"Can you say, right now, what your business made in profit last month — an actual number, not a feeling?"},
+  {stage:5, text:"Do you know your cost per item/service sold — ingredients, materials, labour — separately from your selling price?"},
+  {stage:5, text:"Do you track cash and MoMo/bank income separately and reconcile them against what you sold?"},
+  {stage:5, text:"Do you know which product/service line makes you the most money, and which barely breaks even?"},
+  {stage:5, text:"Do you have a rough idea of your monthly fixed costs — rent, salaries, utilities — versus variable costs?"},
+  // Stage 6 — Predictability
+  {stage:6, text:"If you disappeared for two weeks, is there a manager or system that would keep the business running at the same standard?"},
+  {stage:6, text:"Do you get a regular report — daily/weekly — on sales and stock without personally checking everything yourself?"},
+  {stage:6, text:"Are staff held accountable to written standards, or only to what you personally notice?"},
+  {stage:6, text:"Is your monthly revenue roughly predictable month to month, or does it swing wildly with no clear pattern?"},
+  // Stage 7 — Expansion
+  {stage:7, text:"If an investor or bank asked for your last 12 months of financial records today, could you produce them in an organised form?"},
+  {stage:7, text:"Could you open a second location tomorrow and hand someone a playbook that recreates what makes this business work?"},
+  {stage:7, text:"Have you thought about what happens to this business if something happened to you — a succession plan, even informal?"},
+  {stage:7, text:"Have you ever been approached by, or considered, an investor, partner or franchise opportunity?"}
+];
+
+let qIndex = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let intake = {};
+let diagResult = null; // computed on completion
+let catalogue = [];
+let cart = []; // array of catalogue keys
+let activeStageFilter = null;
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function goScreen(id){
+  ['landing','intake','diagnostic','results','booking','booking-done','dashboard'].forEach(s=>{
+    document.getElementById('screen-'+s).classList.toggle('hidden', s!==id);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='dashboard' && catalogue.length===0) loadCatalogue();
+}
+
+// ---------- INTAKE ----------
+function startDiagnostic(){
+  const business=document.getElementById('in_business').value.trim();
+  const contact=document.getElementById('in_contact').value.trim();
+  const number=document.getElementById('in_number').value.trim();
+  const region=document.getElementById('in_region').value;
+  const industry=document.getElementById('in_industry').value;
+  const years=document.getElementById('in_years').value;
+  const staff=document.getElementById('in_staff').value;
+  const revenue=document.getElementById('in_revenue').value;
+  const headache=document.getElementById('in_headache').value.trim();
+  const err=document.getElementById('intakeErr');
+  if(!business||!contact||!number||!region||!industry||!years||!staff){
+    err.textContent='Please fill in every field marked *.'; return;
+  }
+  err.textContent='';
+  intake={business,contact,number,region,industry,years,staff,revenue,headache};
+  qIndex=0; answers=new Array(QUESTIONS.length).fill(null);
+  goScreen('diagnostic');
+  renderQuestion();
+}
+
+// ---------- DIAGNOSTIC FLOW ----------
+function renderQuestion(){
+  const q=QUESTIONS[qIndex];
+  const stageMeta=STAGES.find(s=>s.n===q.stage);
+  document.getElementById('qStageTag').textContent='STAGE '+q.stage+' — '+stageMeta.name.toUpperCase();
+  document.getElementById('qText').textContent=q.text;
+  document.getElementById('diagProgressFill').style.width=Math.round((qIndex/QUESTIONS.length)*100)+'%';
+  document.querySelectorAll('.ans-btn').forEach(b=>b.classList.remove('sel'));
+  if(answers[qIndex]!==null){
+    const val=answers[qIndex];
+    const cls=val===2?'yes':val===1?'partial':'no';
+    document.querySelector('.ans-btn.'+cls).classList.add('sel');
+  }
+}
+function answer(points){
+  answers[qIndex]=points;
+  if(qIndex<QUESTIONS.length-1){
+    qIndex++;
+    renderQuestion();
+  }else{
+    computeResults();
+    goScreen('results');
+    renderResults();
+  }
+}
+function prevQuestion(){
+  if(qIndex>0){ qIndex--; renderQuestion(); }
+  else goScreen('intake');
+}
+
+// ---------- SCORING ----------
+function computeResults(){
+  const stageScores={};
+  STAGES.forEach(s=>{
+    const qs=QUESTIONS.map((q,i)=>({q,i})).filter(x=>x.q.stage===s.n);
+    const earned=qs.reduce((sum,x)=>sum+(answers[x.i]||0),0);
+    const possible=qs.length*2;
+    stageScores[s.n]=Math.round((earned/possible)*100);
+  });
+  // overall stage = lowest-scoring stage under 60%, else highest stage reached
+  let overallStage=7;
+  for(let n=1;n<=7;n++){
+    if(stageScores[n]<60){ overallStage=n; break; }
+  }
+  const overallScore=Math.round(STAGES.reduce((s,st)=>s+stageScores[st.n],0)/7);
+
+  // top 3 gaps = lowest scoring individual questions
+  const gapCandidates=QUESTIONS.map((q,i)=>({q,i,val:answers[i]})).filter(x=>x.val<2);
+  gapCandidates.sort((a,b)=>a.val-b.val || a.q.stage-b.q.stage);
+  const topGaps=gapCandidates.slice(0,3).map(x=>x.q.text);
+
+  let recommendedKey='foundation_audit';
+  if(overallStage<=1) recommendedKey='brand_sop_pack';
+  else if(overallStage===2) recommendedKey='sme_starter';
+  else if(overallStage===3) recommendedKey='visibility_essentials';
+  else if(overallStage===4) recommendedKey='sme_growth';
+  else if(overallStage===5) recommendedKey='sme_authority';
+  else if(overallStage===6) recommendedKey='cc_foundation';
+  else recommendedKey='foundation_audit';
+
+  diagResult={stageScores,overallStage,overallScore,topGaps,recommendedKey};
+}
+
+function renderResults(){
+  const stageMeta=STAGES.find(s=>s.n===diagResult.overallStage);
+  document.getElementById('resHeadline').textContent=(intake.business||'Your business')+' is currently operating at Stage '+diagResult.overallStage+' — '+stageMeta.name+'.';
+  document.getElementById('resExplainer').textContent=stageMeta.explain;
+
+  const ladder=document.getElementById('resLadder');
+  ladder.innerHTML=STAGES.map(s=>{
+    const score=diagResult.stageScores[s.n];
+    const color=score>=80?'var(--green)':score>=50?'var(--orange)':'var(--red)';
+    const isCurrent=s.n===diagResult.overallStage;
+    return `<div class="rung ${isCurrent?'current':''}">
+      <div class="num" style="background:${isCurrent?'var(--gold)':'var(--border)'};color:${isCurrent?'#0a0a0a':'var(--text-dim)'}">${s.n}</div>
+      <div class="name">${s.name}</div>
+      <div class="barwrap"><div class="barfill" style="width:${score}%;background:${color}"></div></div>
+      <div class="pct" style="color:${color}">${score}%</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('resGaps').innerHTML=diagResult.topGaps.length
+    ? diagResult.topGaps.map(g=>`<div class="gap-item">${g}</div>`).join('')
+    : '<div class="gap-item" style="border-color:var(--green)">No major gaps found — strong across the board.</div>';
+
+  const rec=RECOMMENDATION_COPY[diagResult.recommendedKey] || RECOMMENDATION_COPY.foundation_audit;
+  document.getElementById('resRecName').textContent='Recommended: '+rec.name;
+  document.getElementById('resRecDesc').textContent=rec.desc;
+}
+
+const RECOMMENDATION_COPY = {
+  brand_sop_pack:{name:'Brand & SOP Foundation Pack',desc:'Your biggest gap is identity and documentation. This builds your vision, values, employee handbook and core SOPs — the ground everything else stands on.'},
+  sme_starter:{name:'SME Systems — Starter',desc:'You have some structure but no repeatable systems yet. Starter gets you access to a working business system you can implement yourself.'},
+  visibility_essentials:{name:'Visibility Essentials',desc:'Your systems exist but haven\'t been tested or made visible. This package builds and guides your visibility so real customers start finding you.'},
+  sme_growth:{name:'SME Systems — Growth',desc:'You\'re live but adoption is inconsistent. Growth adds SOPs, training materials and hands-on onboarding so systems actually stick.'},
+  sme_authority:{name:'SME Systems — Authority',desc:'You need real financial visibility. Authority adds ongoing support and monthly review so you finally see your numbers clearly.'},
+  cc_foundation:{name:'Command Centre — Foundation',desc:'You\'re close to running without you in the room. A Command Centre build gives you the dashboards and structure to close that last gap.'},
+  foundation_audit:{name:'Full Business Audit & Consultation',desc:'Your business is mature or the picture is mixed enough that it deserves a real conversation — book a full audit with YJ.'}
+};
+
+// ---------- BOOKING (from results screen) ----------
+function openBooking(){ goScreen('booking'); }
+async function submitBooking(){
+  const time=document.getElementById('bk_time').value.trim();
+  const notes=document.getElementById('bk_notes').value.trim();
+  const err=document.getElementById('bookingErr');
+  const btn=document.getElementById('bookingSubmitBtn');
+  const spinner=document.getElementById('bookingSpinner');
+  err.textContent='';
+  btn.disabled=true; spinner.classList.remove('hidden');
+  try{
+    const url=APPS_SCRIPT_URL+'?action=bookConsultation'
+      +'&business='+encodeURIComponent(intake.business)+'&contactName='+encodeURIComponent(intake.contact)
+      +'&number='+encodeURIComponent(intake.number)+'&region='+encodeURIComponent(intake.region)
+      +'&preferredTime='+encodeURIComponent(time)+'&diagStage='+diagResult.overallStage
+      +'&diagScore='+diagResult.overallScore+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    await fetch(url);
+    await submitDiagnosticRecord('consultation');
+  }catch(e){ console.log('Booking submit issue',e); }
+  btn.disabled=false; spinner.classList.add('hidden');
+  document.getElementById('bookingWaLink').href='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent('Hi, I just completed the BYINFORGH diagnostic for '+intake.business+' — Stage '+diagResult.overallStage+'. Following up on my consultation request.');
+  goScreen('booking-done');
+}
+
+async function submitDiagnosticRecord(ctaChosen){
+  try{
+    const url=APPS_SCRIPT_URL+'?action=submitDiagnostic'
+      +'&business='+encodeURIComponent(intake.business)+'&contactName='+encodeURIComponent(intake.contact)
+      +'&number='+encodeURIComponent(intake.number)+'&region='+encodeURIComponent(intake.region)
+      +'&industry='+encodeURIComponent(intake.industry)+'&years='+encodeURIComponent(intake.years)
+      +'&staff='+encodeURIComponent(intake.staff)+'&revenueBand='+encodeURIComponent(intake.revenue||'')
+      +'&headache='+encodeURIComponent(intake.headache||'')
+      +'&answers='+encodeURIComponent(JSON.stringify(answers))
+      +'&scores='+encodeURIComponent(JSON.stringify({
+        stage1:diagResult.stageScores[1],stage2:diagResult.stageScores[2],stage3:diagResult.stageScores[3],
+        stage4:diagResult.stageScores[4],stage5:diagResult.stageScores[5],stage6:diagResult.stageScores[6],stage7:diagResult.stageScores[7]
+      }))
+      +'&overallStage='+diagResult.overallStage+'&overallScore='+diagResult.overallScore
+      +'&topGaps='+encodeURIComponent(diagResult.topGaps.join(' | '))
+      +'&recommendedPackage='+encodeURIComponent(RECOMMENDATION_COPY[diagResult.recommendedKey].name)
+      +'&ctaChosen='+encodeURIComponent(ctaChosen)+'&t='+Date.now();
+    await fetch(url);
+  }catch(e){ console.log('Diagnostic record save issue',e); }
+}
+
+// ---------- DASHBOARD ----------
+function setDashTab(name,btn){
+  document.querySelectorAll('#screen-dashboard .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['stage','product','cart','book'].forEach(t=>document.getElementById('dashTab-'+t).classList.toggle('hidden', t!==name));
+  if(name==='cart') renderCart();
+  if(name==='product') renderProductList();
+  if(name==='stage') renderStageTab();
+}
+async function loadCatalogue(){
+  try{
+    const res=await fetch(APPS_SCRIPT_URL+'?action=getCatalogue&t='+Date.now());
+    const data=await res.json();
+    catalogue=data.catalogue||[];
+  }catch(e){
+    // offline fallback — keep the dashboard usable even if the API isn't configured yet
+    catalogue=Object.keys(RECOMMENDATION_COPY).map(k=>({key:k,name:RECOMMENDATION_COPY[k].name,pillar:'—',tier:'—',oneTime:0,monthly:0,description:RECOMMENDATION_COPY[k].desc,recommendedForStage:''}));
+  }
+  renderStageTab();
+  renderProductList();
+}
+function filterDashboardToRecommendation(){
+  if(diagResult) activeStageFilter=diagResult.overallStage;
+  renderStageTab();
+}
+function renderStageTab(){
+  const row=document.getElementById('stageFilterRow');
+  row.innerHTML=STAGES.map(s=>`<div class="stage-chip ${activeStageFilter===s.n?'active':''}" onclick="activeStageFilter=${s.n};renderStageTab()">Stage ${s.n} — ${s.name}</div>`).join('')
+    + `<div class="stage-chip ${activeStageFilter===null?'active':''}" onclick="activeStageFilter=null;renderStageTab()">All</div>`;
+  const list=document.getElementById('stageProductList');
+  let items=catalogue;
+  if(activeStageFilter!==null){
+    items=catalogue.filter(p=>(p.recommendedForStage||'').split(',').map(x=>x.trim()).includes(String(activeStageFilter)));
+  }
+  list.innerHTML=items.length?items.map(p=>pkgCardHtml(p)).join(''):'<div class="empty">No packages tagged for this stage yet — see "By Product" for the full catalogue.</div>';
+}
+function alreadyHasFilter(p){
+  const hasEco=document.getElementById('alreadyEcosystem')?.checked;
+  const hasSme=document.getElementById('alreadySME')?.checked;
+  if(hasEco && p.pillar==='Ecosystem') return false;
+  if(hasSme && p.pillar==='SME Systems') return false;
+  return true;
+}
+function renderProductList(){
+  const list=document.getElementById('productFullList');
+  const items=catalogue.filter(alreadyHasFilter);
+  const pillars=[...new Set(items.map(p=>p.pillar))];
+  list.innerHTML=pillars.map(pillar=>{
+    const group=items.filter(p=>p.pillar===pillar);
+    return `<div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);margin:16px 0 8px">${pillar.toUpperCase()}</div>`
+      + group.map(p=>pkgCardHtml(p)).join('');
+  }).join('') || '<div class="empty">Nothing left to show — you\'ve told us you already have everything in the catalogue.</div>';
+}
+function pkgCardHtml(p){
+  const inCart=cart.includes(p.key);
+  const priceStr = p.oneTime>0 && p.monthly>0 ? 'GH₵'+p.oneTime.toLocaleString()+' + GH₵'+p.monthly.toLocaleString()+'/mo'
+    : p.monthly>0 ? 'GH₵'+p.monthly.toLocaleString()+'/mo'
+    : p.oneTime>0 ? 'GH₵'+p.oneTime.toLocaleString()
+    : 'Free / On request';
+  return `<div class="pkg-card">
+    <div class="pkg-head">
+      <div><div class="pkg-name">${p.name}</div><div class="pkg-tier">${p.tier}</div></div>
+      <div class="pkg-price">${priceStr}</div>
+    </div>
+    <div class="pkg-desc">${p.description}</div>
+    <button class="pkg-add ${inCart?'added':''}" onclick="toggleCart('${p.key}')">${inCart?'✓ Added':'+ Add to selection'}</button>
+  </div>`;
+}
+function toggleCart(key){
+  const idx=cart.indexOf(key);
+  if(idx===-1){ cart.push(key); showToast('Added to your selection'); }
+  else{ cart.splice(idx,1); showToast('Removed'); }
+  renderStageTab(); renderProductList();
+}
+function renderCart(){
+  const items=cart.map(k=>catalogue.find(p=>p.key===k)).filter(Boolean);
+  const list=document.getElementById('cartList');
+  list.innerHTML=items.length?items.map(p=>{
+    const priceStr = p.oneTime>0 && p.monthly>0 ? 'GH₵'+p.oneTime.toLocaleString()+' + GH₵'+p.monthly.toLocaleString()+'/mo'
+      : p.monthly>0 ? 'GH₵'+p.monthly.toLocaleString()+'/mo' : p.oneTime>0 ? 'GH₵'+p.oneTime.toLocaleString() : 'Free';
+    return `<div class="cart-item"><span>${p.name}</span><span>${priceStr}</span></div>`;
+  }).join('') : '<div class="empty">Nothing selected yet — browse By Stage or By Product.</div>';
+  const totalOneTime=items.reduce((s,p)=>s+(p.oneTime||0),0);
+  const totalMonthly=items.reduce((s,p)=>s+(p.monthly||0),0);
+  document.getElementById('cartTotal').textContent='GH₵'+totalOneTime.toLocaleString()+(totalMonthly?' + GH₵'+totalMonthly.toLocaleString()+'/mo':'');
+}
+async function submitCheckout(){
+  const err=document.getElementById('checkoutErr');
+  const btn=document.getElementById('checkoutBtn');
+  const spinner=document.getElementById('checkoutSpinner');
+  if(cart.length===0){ err.textContent='Add at least one package first.'; return; }
+  if(!intake.business){ err.textContent='Please complete the diagnostic intake first so we have your contact details — or use "Book a Human" instead.'; return; }
+  err.textContent='';
+  const items=cart.map(k=>catalogue.find(p=>p.key===k)).filter(Boolean);
+  const totalOneTime=items.reduce((s,p)=>s+(p.oneTime||0),0);
+  const totalMonthly=items.reduce((s,p)=>s+(p.monthly||0),0);
+  const payment=document.getElementById('checkoutPayment').value;
+  const notes=document.getElementById('checkoutNotes').value.trim();
+  btn.disabled=true; spinner.classList.remove('hidden');
+  try{
+    const url=APPS_SCRIPT_URL+'?action=submitOrder'
+      +'&business='+encodeURIComponent(intake.business)+'&contactName='+encodeURIComponent(intake.contact||'')
+      +'&number='+encodeURIComponent(intake.number)+'&region='+encodeURIComponent(intake.region||'')
+      +'&selectedPackages='+encodeURIComponent(items.map(p=>p.name).join(', '))
+      +'&totalOneTime='+totalOneTime+'&totalMonthly='+totalMonthly
+      +'&paymentMethod='+encodeURIComponent(payment)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    await fetch(url);
+    showToast('✓ Selection submitted — we\'ll be in touch on WhatsApp');
+    cart=[]; renderCart();
+  }catch(e){ err.textContent='Connection error — please try again.'; }
+  btn.disabled=false; spinner.classList.add('hidden');
+}
+async function submitHumanBooking(){
+  const business=document.getElementById('hb_business').value.trim();
+  const contact=document.getElementById('hb_contact').value.trim();
+  const number=document.getElementById('hb_number').value.trim();
+  const time=document.getElementById('hb_time').value.trim();
+  const err=document.getElementById('hbErr');
+  if(!business||!contact||!number){ err.textContent='Business name, your name and number are required.'; return; }
+  err.textContent='';
+  try{
+    const url=APPS_SCRIPT_URL+'?action=bookConsultation'
+      +'&business='+encodeURIComponent(business)+'&contactName='+encodeURIComponent(contact)
+      +'&number='+encodeURIComponent(number)+'&preferredTime='+encodeURIComponent(time)
+      +'&diagStage=Not completed&diagScore=—&notes='+encodeURIComponent('Booked directly from dashboard, no diagnostic taken')+'&t='+Date.now();
+    await fetch(url);
+    showToast('✓ Consultation requested — we\'ll confirm on WhatsApp');
+    ['hb_business','hb_contact','hb_number','hb_time'].forEach(id=>document.getElementById(id).value='');
+  }catch(e){ err.textContent='Connection error — please try again.'; }
+}
+</script>
+</body>
+</html>
