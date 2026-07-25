@@ -93,6 +93,38 @@ border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:
 .pkg-card .pp{margin-top:12px;font-size:15px;font-weight:800;color:var(--teal-dark);font-family:'Space Mono',monospace;}
 
 .stage-jump-row{display:flex;justify-content:space-between;margin-top:36px;gap:10px;flex-wrap:wrap;}
+
+/* ---------- AUDIT / DIAGNOSTIC ---------- */
+.page-narrow{max-width:640px;margin:0 auto;padding:36px 20px 90px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;}
+label{display:block;font-size:10px;letter-spacing:1px;color:var(--teal-dark);text-transform:uppercase;margin:14px 0 5px;font-weight:700;}
+input,select,textarea{width:100%;background:#fff;border:1px solid var(--line);color:var(--ink);padding:12px 14px;
+border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+.progress-track{background:var(--line);border-radius:4px;height:6px;overflow:hidden;margin:18px 0;}
+.progress-fill{height:100%;background:var(--teal);border-radius:4px;transition:width .4s ease;}
+.q-stage-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--teal-dark);
+background:var(--highlight);border:1px solid var(--teal);border-radius:20px;padding:4px 12px;margin-bottom:14px;}
+.q-text{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:22px;}
+.ans-row{display:flex;gap:8px;margin-bottom:10px;}
+.ans-btn{flex:1;background:#fff;border:1px solid var(--line);color:var(--ink);padding:14px 10px;border-radius:9px;
+font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.ans-btn.yes.sel{border-color:var(--green);background:#eaf6ee;color:var(--green);}
+.ans-btn.partial.sel{border-color:var(--orange);background:#fbf1e2;color:var(--orange);}
+.ans-btn.no.sel{border-color:var(--red);background:#fbeceb;color:var(--red);}
+.rung{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;margin-bottom:6px;}
+.rung.current{border-color:var(--teal);background:var(--highlight);}
+.rung .num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:'Space Mono',monospace;flex-shrink:0;background:var(--line);color:var(--ink-dim);}
+.rung.current .num{background:var(--teal-dark);color:#fff;}
+.rung .name{font-size:12px;font-weight:700;width:100px;flex-shrink:0;}
+.rung .barwrap{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;}
+.rung .barfill{height:100%;border-radius:4px;}
+.rung .pct{font-size:11px;font-family:'Space Mono',monospace;color:var(--ink-dim);width:36px;text-align:right;}
+.gap-item{background:#fff;border-left:3px solid var(--red);border-radius:6px;padding:12px 14px;margin-bottom:8px;font-size:12px;line-height:1.6;}
+.err{color:var(--red);font-size:12px;margin-top:8px;min-height:14px;}
+.btn-full{width:100%;}
+.contact-strip{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-dim);margin-top:10px;}
+.contact-strip a{color:var(--teal-dark);font-weight:700;text-decoration:none;}
 </style>
 </head>
 <body>
@@ -122,9 +154,11 @@ border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:
   </div>
 
   <div class="cta-row">
+    <button class="btn btn-gold" onclick="goScreen('intake')">Take the Business Infrastructure Audit →</button>
     <button class="btn btn-primary" onclick="scrollToLadder()">Browse the 8 levels ↓</button>
-    <button class="btn btn-ghost" onclick="openStage(1)">Start with the Business Audit →</button>
+    <button class="btn btn-ghost" onclick="openStage(1)">Learn about Level 1 →</button>
   </div>
+  <div class="contact-strip">Prefer to talk it through first? Call/WhatsApp <a href="tel:0509960980">0509 960 980</a> or email <a href="mailto:solutions@byinforgh.com">solutions@byinforgh.com</a></div>
 
   <div class="section-label" style="margin-top:40px" id="ladderAnchor">THE EIGHT BUSINESS MATURITY LEVELS</div>
   <div class="ladder-grid" id="homeLadderGrid"></div>
@@ -145,6 +179,204 @@ border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:
   </div>
 </div>
 
+<!-- ======================= AUDIT — INTAKE ======================= -->
+<div id="screen-intake" class="page-narrow hidden">
+  <div class="eyebrow">Business Infrastructure Audit — Step 1 of 2</div>
+  <h1 style="font-size:22px">Tell us about the business</h1>
+  <p class="lead" style="font-size:13px">This is what makes the questions after this relevant to your business specifically — not a generic checklist.</p>
+  <label>Business name *</label><input id="in_business" placeholder="e.g. The White House GH">
+  <label>Owner / contact name *</label><input id="in_contact" placeholder="Full name">
+  <label>WhatsApp number *</label><input id="in_number" type="tel" placeholder="024 123 4567">
+  <label>Region / town *</label>
+  <select id="in_region"><option value="">Select region</option><option>Greater Accra</option><option>Ashanti</option>
+    <option>Eastern Region</option><option>Central Region</option><option>Western Region</option><option>Volta Region</option>
+    <option>Northern Region</option><option>Bono Region</option><option>Other</option></select>
+  <label>Industry / niche *</label>
+  <select id="in_industry"><option value="">Select industry</option><option>Retail & Fashion</option>
+    <option>Food & Beverage / Restaurant</option><option>Hospitality / Guest House / Hotel</option>
+    <option>Salon & Beauty</option><option>Transport & Logistics</option><option>Construction & Trade</option>
+    <option>Health & Wellness Clinic</option><option>Education / Training</option><option>Manufacturing / Agro-processing</option>
+    <option>Events</option><option>Real Estate</option><option>Automotive</option><option>Other</option></select>
+  <label>Years operating *</label>
+  <select id="in_years"><option value="">Select</option><option>Less than 6 months</option><option>6 months – 2 years</option>
+    <option>2 – 5 years</option><option>5 – 10 years</option><option>10+ years</option></select>
+  <label>Staff count (incl. you) *</label>
+  <select id="in_staff"><option value="">Select</option><option>Just me</option><option>2–5</option><option>6–15</option>
+    <option>16–50</option><option>50+</option></select>
+  <label>Approx. monthly revenue</label>
+  <select id="in_revenue"><option value="">Prefer not to say</option><option>Under GH₵10,000</option>
+    <option>GH₵10,000–30,000</option><option>GH₵30,000–100,000</option><option>GH₵100,000–300,000</option><option>GH₵300,000+</option></select>
+  <label>What's the single biggest headache right now?</label>
+  <textarea id="in_headache" rows="2" placeholder="e.g. Staff don't follow the same standard when I'm not there"></textarea>
+  <div class="err" id="intakeErr"></div>
+  <button class="btn btn-primary btn-full" onclick="startDiagnostic()">Continue to the audit →</button>
+  <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="goHome()">Back</button>
+</div>
+
+<!-- ======================= AUDIT — QUESTIONS ======================= -->
+<div id="screen-diagnostic" class="page-narrow hidden">
+  <div class="progress-track"><div class="progress-fill" id="diagProgressFill" style="width:0%"></div></div>
+  <div class="card">
+    <div class="q-stage-tag" id="qStageTag">LEVEL 1 — FOUNDATION</div>
+    <div class="q-text" id="qText">—</div>
+    <div class="ans-row">
+      <button class="ans-btn yes" onclick="answer(2)">Yes</button>
+      <button class="ans-btn partial" onclick="answer(1)">Partially</button>
+      <button class="ans-btn no" onclick="answer(0)">No</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost btn-full" onclick="prevQuestion()">← Previous question</button>
+</div>
+
+<!-- ======================= AUDIT — RESULTS ======================= -->
+<div id="screen-results" class="page-narrow hidden">
+  <div class="eyebrow">Your Business Infrastructure Audit Results</div>
+  <h1 id="resHeadline" style="font-size:22px">—</h1>
+  <p class="lead" id="resExplainer" style="font-size:13px">—</p>
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:8px">MATURITY LADDER</div>
+    <div id="resLadder"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:10px">TOP 3 GAPS FOUND</div>
+    <div id="resGaps"></div>
+  </div>
+  <div class="card" id="resRecCard">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:8px">RECOMMENDATION</div>
+    <div id="resRecText" style="font-size:13px;line-height:1.7;"></div>
+  </div>
+  <button class="btn btn-primary btn-full" id="resGoStageBtn" onclick="goToRecommendedStage()">See the recommended level in detail →</button>
+  <button class="btn btn-gold btn-full" style="margin-top:8px" onclick="bookConsultation()">Book a Full Consultation</button>
+  <div class="contact-strip" style="justify-content:center">Call/WhatsApp <a href="tel:0509960980">0509 960 980</a> · Email <a href="mailto:solutions@byinforgh.com">solutions@byinforgh.com</a></div>
+  <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="goHome()">Back to the 8 levels</button>
+</div>
+
+<script>
+const QUESTIONS = [
+  {level:1, text:"Do you have a written mission or 'why we exist' statement — not just in your head, but somewhere staff can see it?"},
+  {level:1, text:"If a new staff member joined tomorrow, is there a document explaining how customers should be treated, without you telling them yourself?"},
+  {level:1, text:"Do you have written rules for staff conduct — lateness, dress code, phone use, cash handling?"},
+  {level:1, text:"If you were away for a week, would every staff member give a customer the same answer about your prices, hours and policies?"},
+  {level:1, text:"Have you ever written down who your ideal customer actually is — age, need, budget — rather than 'anyone who comes'?"},
+  {level:1, text:"Do you have a clear name/brand you use consistently everywhere — signage, WhatsApp, social media, receipts?"},
+  {level:2, text:"Do you track stock/inventory somewhere other than 'I can see what's on the shelf'?"},
+  {level:2, text:"Is your business findable on Google Maps with correct hours, location and phone number?"},
+  {level:2, text:"Do you use WhatsApp Business — catalog, quick replies, labels — rather than a personal WhatsApp number?"},
+  {level:2, text:"Do you have a written record of who owes you money and who you owe?"},
+  {level:2, text:"Is payroll calculated the same way every time — on paper or a sheet — or does it depend on you remembering?"},
+  {level:2, text:"Do you have any place customers can leave a review, or proof of past work such as photos or testimonials?"},
+  {level:2, text:"Do you post about your business online at least a few times a week?"},
+  {level:3, text:"Have you ever watched a staff member serve a customer start-to-finish and written down what went wrong?"},
+  {level:3, text:"If you introduced a new process — new order form, new price list — did you test it with a few customers or staff before rolling it out to everyone?"},
+  {level:3, text:"Do you know your most common customer complaint, backed by actual notes — not a guess?"},
+  {level:3, text:"Has any system you use — WhatsApp ordering, booking, POS — ever broken under real busy-period pressure, and did you fix the actual cause?"},
+  {level:4, text:"Are your current systems — ordering, booking, payment — being used by all staff, or only some?"},
+  {level:4, text:"In the last month, did you change anything about how the business runs because of customer or staff feedback?"},
+  {level:4, text:"Do you review how the week went — even informally — on a regular schedule?"},
+  {level:4, text:"Are new staff trained using a written process, or do they 'just learn by watching'?"},
+  {level:5, text:"Can you say, right now, what your business made in profit last month — an actual number, not a feeling?"},
+  {level:5, text:"Do you know your cost per item/service sold — ingredients, materials, labour — separately from your selling price?"},
+  {level:5, text:"Do you track cash and MoMo/bank income separately and reconcile them against what you sold?"},
+  {level:5, text:"Do you know which product/service line makes you the most money, and which barely breaks even?"},
+  {level:5, text:"Do you have a rough idea of your monthly fixed costs — rent, salaries, utilities — versus variable costs?"},
+  {level:6, text:"If you disappeared for two weeks, is there a manager or system that would keep the business running at the same standard?"},
+  {level:6, text:"Do you get a regular report — daily/weekly — on sales and stock without personally checking everything yourself?"},
+  {level:6, text:"Are staff held accountable to written standards, or only to what you personally notice?"},
+  {level:6, text:"Is your monthly revenue roughly predictable month to month, or does it swing wildly with no clear pattern?"},
+  {level:7, text:"If an investor or bank asked for your last 12 months of financial records today, could you produce them in an organised form?"},
+  {level:7, text:"Could you open a second location tomorrow and hand someone a playbook that recreates what makes this business work?"},
+  {level:7, text:"Have you thought about what happens to this business if something happened to you — a succession plan, even informal?"},
+  {level:7, text:"Have you ever been approached by, or considered, an investor, partner or franchise opportunity?"}
+];
+let qIndex=0, answers=new Array(QUESTIONS.length).fill(null), intake={}, diagResult=null;
+
+function startDiagnostic(){
+  const business=document.getElementById('in_business').value.trim();
+  const contact=document.getElementById('in_contact').value.trim();
+  const number=document.getElementById('in_number').value.trim();
+  const region=document.getElementById('in_region').value;
+  const industry=document.getElementById('in_industry').value;
+  const years=document.getElementById('in_years').value;
+  const staff=document.getElementById('in_staff').value;
+  const revenue=document.getElementById('in_revenue').value;
+  const headache=document.getElementById('in_headache').value.trim();
+  const err=document.getElementById('intakeErr');
+  if(!business||!contact||!number||!region||!industry||!years||!staff){ err.textContent='Please fill in every field marked *.'; return; }
+  err.textContent='';
+  intake={business,contact,number,region,industry,years,staff,revenue,headache};
+  qIndex=0; answers=new Array(QUESTIONS.length).fill(null);
+  goScreen('diagnostic'); renderQuestion();
+}
+function renderQuestion(){
+  const q=QUESTIONS[qIndex];
+  const lvl=LEVEL_CONTENT.find(s=>s.n===q.level);
+  document.getElementById('qStageTag').textContent='LEVEL '+q.level+' — '+lvl.name.toUpperCase();
+  document.getElementById('qText').textContent=q.text;
+  document.getElementById('diagProgressFill').style.width=Math.round((qIndex/QUESTIONS.length)*100)+'%';
+  document.querySelectorAll('.ans-btn').forEach(b=>b.classList.remove('sel'));
+  if(answers[qIndex]!==null){
+    const val=answers[qIndex]; const cls=val===2?'yes':val===1?'partial':'no';
+    document.querySelector('.ans-btn.'+cls).classList.add('sel');
+  }
+}
+function answer(points){
+  answers[qIndex]=points;
+  if(qIndex<QUESTIONS.length-1){ qIndex++; renderQuestion(); }
+  else{ computeResults(); goScreen('results'); renderResults(); }
+}
+function prevQuestion(){ if(qIndex>0){ qIndex--; renderQuestion(); } else goScreen('intake'); }
+
+function computeResults(){
+  const levelScores={};
+  for(let n=1;n<=7;n++){
+    const qs=QUESTIONS.map((q,i)=>({q,i})).filter(x=>x.q.level===n);
+    const earned=qs.reduce((sum,x)=>sum+(answers[x.i]||0),0);
+    levelScores[n]=Math.round((earned/(qs.length*2))*100);
+  }
+  let overallLevel=7;
+  for(let n=1;n<=7;n++){ if(levelScores[n]<60){ overallLevel=n; break; } }
+  const overallScore=Math.round(Object.values(levelScores).reduce((a,b)=>a+b,0)/7);
+  const gapCandidates=QUESTIONS.map((q,i)=>({q,i,val:answers[i]})).filter(x=>x.val<2);
+  gapCandidates.sort((a,b)=>a.val-b.val || a.q.level-b.q.level);
+  const topGaps=gapCandidates.slice(0,3).map(x=>x.q.text);
+  diagResult={levelScores,overallLevel,overallScore,topGaps};
+}
+function renderResults(){
+  const lvl=LEVEL_CONTENT.find(s=>s.n===diagResult.overallLevel);
+  document.getElementById('resHeadline').textContent=(intake.business||'Your business')+' is currently operating at Level '+lvl.label+' — '+lvl.name+'.';
+  document.getElementById('resExplainer').textContent=lvl.reality;
+  document.getElementById('resLadder').innerHTML=[1,2,3,4,5,6,7].map(n=>{
+    const s=LEVEL_CONTENT.find(x=>x.n===n);
+    const score=diagResult.levelScores[n];
+    const color=score>=80?'var(--green)':score>=50?'var(--orange)':'var(--red)';
+    const isCurrent=n===diagResult.overallLevel;
+    return `<div class="rung ${isCurrent?'current':''}">
+      <div class="num">${n}</div><div class="name">${s.name}</div>
+      <div class="barwrap"><div class="barfill" style="width:${score}%;background:${color}"></div></div>
+      <div class="pct" style="color:${color}">${score}%</div></div>`;
+  }).join('');
+  document.getElementById('resGaps').innerHTML=diagResult.topGaps.length
+    ? diagResult.topGaps.map(g=>`<div class="gap-item">${g}</div>`).join('')
+    : '<div class="gap-item" style="border-color:var(--green)">No major gaps found — strong across the board.</div>';
+  const pkgs=CORP_PACKAGES[diagResult.overallLevel]||[];
+  const pkgLine=pkgs.length ? 'Start with: <b>'+pkgs[0].name+'</b> ('+pkgs[0].price+').' : '';
+  document.getElementById('resRecText').innerHTML=
+    `Based on this audit, ${intake.business||'this business'} should start at <b>Level ${lvl.label} — ${lvl.name}</b>. ${pkgLine} `+
+    `A Business Infrastructure Audit consultation with BYINFORGH will confirm this in person and scope the exact engagement — nothing here is a final quote.`;
+}
+function goToRecommendedStage(){ openStage(diagResult.overallLevel); }
+function bookConsultation(){
+  const msg='Hi BYINFORGH, I just completed the Business Infrastructure Audit for '+(intake.business||'my business')+
+    ' — it came out at Level '+diagResult.overallLevel+' ('+diagResult.overallScore+'%). I would like to book a full consultation.';
+  window.open('https://wa.me/233509960980?text='+encodeURIComponent(msg),'_blank');
+}
+function goScreen(id){
+  ['home','stage','intake','diagnostic','results'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+  document.getElementById('screen-'+id).classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+</script>
 <script>
 const LEVEL_CONTENT = [
 {
@@ -288,7 +520,7 @@ function setActiveNav(id){
   const el=document.getElementById(id); if(el) el.classList.add('active');
 }
 function goHome(){
-  document.getElementById('screen-stage').classList.add('hidden');
+  ['stage','intake','diagnostic','results'].forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
   document.getElementById('screen-home').classList.remove('hidden');
   setActiveNav('navHome');
   window.scrollTo({top:0,behavior:'smooth'});
@@ -310,7 +542,7 @@ function renderHomeLadder(){
 function openStage(n){
   currentLevelN=n;
   const s=LEVEL_CONTENT.find(x=>x.n===n);
-  document.getElementById('screen-home').classList.add('hidden');
+  ['home','intake','diagnostic','results'].forEach(sc=>{const el=document.getElementById('screen-'+sc); if(el) el.classList.add('hidden');});
   document.getElementById('screen-stage').classList.remove('hidden');
   setActiveNav('navStage'+n);
   window.scrollTo({top:0,behavior:'smooth'});
