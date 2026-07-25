@@ -454,7 +454,24 @@ function renderQuestion(){
 function answer(points){
   answers[qIndex]=points;
   if(qIndex<QUESTIONS.length-1){ qIndex++; renderQuestion(); }
-  else{ computeResults(); goScreen('results'); renderResults(); }
+  else{ computeResults(); goScreen('results'); renderResults(); submitDiagnosticToBackend(); }
+}
+function submitDiagnosticToBackend(){
+  const scores={};
+  for(let n=1;n<=7;n++) scores['stage'+n]=diagResult.levelScores[n];
+  const rec=LEVEL_CONTENT.find(s=>s.n===diagResult.overallLevel);
+  return backendCall({
+    action:'submitDiagnostic',
+    business:intake.business||'', contactName:intake.contact||'', number:intake.number||'',
+    region:intake.region||'', industry:intake.industry||'', years:intake.years||'', staff:intake.staff||'',
+    revenueBand:intake.revenue||'', headache:intake.headache||'',
+    answers:JSON.stringify(answers),
+    scores:JSON.stringify(scores),
+    overallStage:diagResult.overallLevel, overallScore:diagResult.overallScore,
+    topGaps:diagResult.topGaps.join(' | '),
+    recommendedPackage:rec?rec.name:'',
+    ctaChosen:''
+  });
 }
 function prevQuestion(){ if(qIndex>0){ qIndex--; renderQuestion(); } else goScreen('intake'); }
 
@@ -507,6 +524,13 @@ function bookConsultation(){
   const msg='Hi BYINFORGH, I just completed the Business Infrastructure Audit for '+(intake.business||'my business')+
     ' — it came out at Level '+diagResult.overallLevel+' ('+diagResult.overallScore+'%). I would like to book a full consultation.';
   window.open('https://wa.me/233509960980?text='+encodeURIComponent(msg),'_blank');
+  backendCall({
+    action:'bookConsultation',
+    business:intake.business||'', contactName:intake.contact||'', number:intake.number||'',
+    region:intake.region||'', preferredTime:'',
+    diagStage:diagResult?diagResult.overallLevel:'', diagScore:diagResult?diagResult.overallScore:'',
+    notes:'Requested from the audit results screen'
+  });
 }
 function goScreen(id){
   ['home','stage','intake','diagnostic','results','selection'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
@@ -1056,6 +1080,54 @@ function buildSelectionSummary(){
   });
   return lines;
 }
+// Rough estimate only — extracts GH₵ figures from the price/package
+// strings so the backend Orders sheet has a starting number to work from.
+// The UI is explicit throughout that this is not a final quote.
+function extractGHSNumbers(str){
+  const nums=[]; const re=/GH₵\s?([\d,]+)/g; let m;
+  while(m=re.exec(str||'')) nums.push(parseInt(m[1].replace(/,/g,''),10));
+  return nums;
+}
+function estimateSelectionTotals(){
+  let oneTime=0, monthly=0;
+  selection.levels.forEach(n=>{
+    const s=LEVEL_CONTENT.find(x=>x.n===n);
+    const nums=extractGHSNumbers(s.price);
+    if(nums.length) oneTime+=nums[0];
+  });
+  selection.custom.forEach(key=>{
+    const parts=key.split('::'); const n=parseInt(parts[0]);
+    if(parts[1]==='deliv') return; // individual deliverables have no standalone price
+    const pkgName=parts.slice(1).join('::');
+    const pkg=(CORP_PACKAGES[n]||[]).find(p=>p.name===pkgName);
+    if(!pkg) return;
+    const nums=extractGHSNumbers(pkg.price);
+    if(!nums.length) return;
+    if(/\/mo/i.test(pkg.price)){
+      monthly+=nums[nums.length-1];
+      oneTime+=nums.slice(0,-1).reduce((a,b)=>a+b,0);
+    } else {
+      oneTime+=nums[0];
+    }
+  });
+  return {oneTime,monthly};
+}
+function submitOrderToBackend(){
+  const lines=buildSelectionSummary();
+  const totals=estimateSelectionTotals();
+  return backendCall({
+    action:'submitOrder',
+    business:document.getElementById('sel_business').value.trim(),
+    contactName:document.getElementById('sel_contact').value.trim(),
+    number:document.getElementById('sel_number').value.trim(),
+    region:'',
+    selectedPackages:lines.join(', '),
+    totalOneTime:totals.oneTime,
+    totalMonthly:totals.monthly,
+    paymentMethod:'To be confirmed at consultation',
+    notes:document.getElementById('sel_notes').value.trim()
+  });
+}
 function emailSelection(){
   const business=document.getElementById('sel_business').value.trim();
   const contact=document.getElementById('sel_contact').value.trim();
@@ -1063,6 +1135,7 @@ function emailSelection(){
   const notes=document.getElementById('sel_notes').value.trim();
   if(selectionCount()===0){ document.getElementById('selErr').textContent='Add at least one level or custom item first.'; return; }
   const lines=buildSelectionSummary();
+  submitOrderToBackend();
   const subject='Business Solutions Selection — '+(business||'New enquiry');
   const body='Business: '+business+'\nContact: '+contact+'\nWhatsApp: '+number+'\n\nSelection:\n- '+lines.join('\n- ')+(notes?'\n\nNotes: '+notes:'');
   window.location.href='mailto:solutions@byinforgh.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
@@ -1077,6 +1150,7 @@ function checkoutSelection(){
   if(!business||!contact||!number){ err.textContent='Business name, your name and WhatsApp number are required.'; return; }
   err.textContent='';
   const lines=buildSelectionSummary();
+  submitOrderToBackend();
   const msg='Hi BYINFORGH, I would like to check out this selection for '+business+' (contact: '+contact+', '+number+'):\n- '+lines.join('\n- ')+
     (notes?'\nNotes: '+notes:'')+'\nPlease send a combined quote and next steps.';
   window.open('https://wa.me/233509960980?text='+encodeURIComponent(msg),'_blank');
@@ -1088,4 +1162,3 @@ goHome();
 </script>
 </body>
 </html>
-
