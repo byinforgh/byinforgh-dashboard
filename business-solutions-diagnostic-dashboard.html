@@ -83,6 +83,31 @@ border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:
 .deliv-card h5{font-size:13.5px;font-weight:700;margin-bottom:6px;}
 .deliv-card p{font-size:12px;color:var(--ink-dim);line-height:1.6;}
 .deliv-card .detail{font-size:12px;color:var(--ink);line-height:1.7;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+.detail-row{margin-bottom:8px;}
+.detail-row b{color:var(--teal-dark);font-size:10px;letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:2px;}
+.detail-row.tip{background:var(--highlight);border-radius:6px;padding:8px 10px;margin-top:10px;}
+.detail-row.tip b{color:var(--orange);}
+
+.select-toggle{display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);cursor:pointer;width:fit-content;}
+.select-toggle input{width:auto;margin:0;}
+.select-toggle span{color:#fff;font-size:12px;font-weight:700;}
+.ladder-select{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;font-weight:700;color:var(--teal-dark);}
+.ladder-select input{width:auto;}
+
+.selbar{position:fixed;bottom:0;left:0;right:0;background:var(--teal-deep);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;z-index:200;gap:14px;flex-wrap:wrap;}
+.selbar.hidden{display:none !important;}
+.selbar .count{font-weight:800;font-size:13px;}
+.selbar .btn{padding:10px 18px;font-size:12px;}
+
+.sel-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.sel-item .rm{color:var(--red);font-weight:700;font-size:11px;cursor:pointer;background:none;border:none;}
+.custom-group{margin-bottom:18px;}
+.custom-group .glabel{font-size:11px;font-weight:800;color:var(--teal-dark);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.custom-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:12.5px;border-bottom:1px solid var(--line);}
+.custom-item input{width:auto;margin-top:2px;}
+.total-box{background:var(--highlight);border-radius:10px;padding:16px 18px;margin:16px 0;font-size:14px;font-weight:800;color:var(--teal-dark);font-family:'Space Mono',monospace;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--teal-dark);color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;}
 
 .pkg-section{background:var(--highlight);border-radius:16px;padding:28px;}
 .pkg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px;}
@@ -138,7 +163,10 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
     </svg>
     <div><div class="brand-name">BYINFORGH</div><div class="brand-tag">Business Solutions</div></div>
   </div>
-  <div class="tier-badge">Corporate Tier</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="btn btn-gold" style="padding:9px 16px;font-size:12px;" onclick="goScreen('selection')">🧺 My Selection <span id="selCountTop">(0)</span></button>
+    <div class="tier-badge">Corporate Tier</div>
+  </div>
 </div>
 
 <div class="stagenav" id="stageNav"></div>
@@ -159,6 +187,7 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
     <button class="btn btn-ghost" onclick="openStage(1)">Learn about Level 1 →</button>
   </div>
   <div class="contact-strip">Prefer to talk it through first? Call/WhatsApp <a href="tel:0509960980">0509 960 980</a> or email <a href="mailto:solutions@byinforgh.com">solutions@byinforgh.com</a></div>
+  <div class="contact-strip" style="margin-top:4px;">Tick any level below to add it to <b>My Selection</b> — pick one, several, or build a fully custom package, then check out or book a consultation whenever you're ready.</div>
 
   <div class="section-label" style="margin-top:40px" id="ladderAnchor">THE EIGHT BUSINESS MATURITY LEVELS</div>
   <div class="ladder-grid" id="homeLadderGrid"></div>
@@ -246,10 +275,50 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
     <div id="resRecText" style="font-size:13px;line-height:1.7;"></div>
   </div>
   <button class="btn btn-primary btn-full" id="resGoStageBtn" onclick="goToRecommendedStage()">See the recommended level in detail →</button>
-  <button class="btn btn-gold btn-full" style="margin-top:8px" onclick="bookConsultation()">Book a Full Consultation</button>
+  <button class="btn btn-gold btn-full" style="margin-top:8px" onclick="addRecommendedToSelection()">Add Level <span id="resRecLevelNum"></span> to My Selection →</button>
+  <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="bookConsultation()">Book a Full Consultation</button>
   <div class="contact-strip" style="justify-content:center">Call/WhatsApp <a href="tel:0509960980">0509 960 980</a> · Email <a href="mailto:solutions@byinforgh.com">solutions@byinforgh.com</a></div>
   <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="goHome()">Back to the 8 levels</button>
 </div>
+
+<!-- ======================= MY SELECTION / CUSTOM PACKAGE / CHECKOUT ======================= -->
+<div id="screen-selection" class="page-narrow hidden">
+  <div class="eyebrow">My Selection</div>
+  <h1 style="font-size:22px">Build your package.</h1>
+  <p class="lead" style="font-size:13px">Pick one level, several levels, or mix in individual deliverables to build a fully custom package. Nothing here is a final invoice — it's a clear, specific request that goes straight to a human at BYINFORGH.</p>
+
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:10px">LEVELS SELECTED</div>
+    <div id="selLevelsList"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:4px">BUILD A CUSTOM PACKAGE</div>
+    <p style="font-size:12px;color:var(--ink-dim);margin-bottom:10px">Don't need a whole level? Tick individual deliverables from any level instead — BYINFORGH will price the exact combination for you.</p>
+    <button class="btn btn-ghost btn-full" onclick="toggleCustomBuilder()" id="customToggleBtn">+ Show every deliverable, by level</button>
+    <div id="customBuilderList" class="hidden" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="total-box" id="selTotalBox">Nothing selected yet.</div>
+
+  <label>Business name *</label><input id="sel_business" placeholder="Business name">
+  <label>Your name *</label><input id="sel_contact" placeholder="Full name">
+  <label>WhatsApp number *</label><input id="sel_number" type="tel" placeholder="024 123 4567">
+  <label>Anything else to add?</label><textarea id="sel_notes" rows="2" placeholder="Timeline, budget, specific concerns..."></textarea>
+  <div class="err" id="selErr"></div>
+
+  <button class="btn btn-gold btn-full" onclick="checkoutSelection()">Send My Selection via WhatsApp — Checkout →</button>
+  <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="emailSelection()">Email My Selection Instead</button>
+  <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="bookConsultation()">Book a Full Consultation Instead</button>
+  <div class="contact-strip" style="justify-content:center">Call/WhatsApp <a href="tel:0509960980">0509 960 980</a> · Email <a href="mailto:solutions@byinforgh.com">solutions@byinforgh.com</a></div>
+  <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="goHome()">Keep browsing the levels</button>
+</div>
+
+<div class="selbar hidden" id="selBar">
+  <div class="count"><span id="selBarCount">0</span> item(s) in My Selection</div>
+  <button class="btn btn-gold" onclick="goScreen('selection')">View & Checkout →</button>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
 const QUESTIONS = [
@@ -363,17 +432,24 @@ function renderResults(){
   document.getElementById('resRecText').innerHTML=
     `Based on this audit, ${intake.business||'this business'} should start at <b>Level ${lvl.label} — ${lvl.name}</b>. ${pkgLine} `+
     `A Business Infrastructure Audit consultation with BYINFORGH will confirm this in person and scope the exact engagement — nothing here is a final quote.`;
+  document.getElementById('resRecLevelNum').textContent=lvl.label;
 }
 function goToRecommendedStage(){ openStage(diagResult.overallLevel); }
+function addRecommendedToSelection(){
+  toggleLevelSelection(diagResult.overallLevel, true);
+  showToast('Level '+diagResult.overallLevel+' added to My Selection');
+  goScreen('selection');
+}
 function bookConsultation(){
   const msg='Hi BYINFORGH, I just completed the Business Infrastructure Audit for '+(intake.business||'my business')+
     ' — it came out at Level '+diagResult.overallLevel+' ('+diagResult.overallScore+'%). I would like to book a full consultation.';
   window.open('https://wa.me/233509960980?text='+encodeURIComponent(msg),'_blank');
 }
 function goScreen(id){
-  ['home','stage','intake','diagnostic','results'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+  ['home','stage','intake','diagnostic','results','selection'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
   document.getElementById('screen-'+id).classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='selection') renderSelectionScreen();
 }
 
 </script>
@@ -386,9 +462,24 @@ const LEVEL_CONTENT = [
   reality:'Most businesses have never had anyone explain the difference between a website and an infrastructure. Level 0 exists so a business can self-assess for free — a Business Health Checklist, a short guide, a diagnostic conversation — before deciding whether a paid audit is worth it.',
   outcome:'The business owner understands the Business Maturity Model and can see, roughly, where their business sits on it.',
   deliverables:[
-    {ic:'📘',t:'The Signal Guide',d:'A free 10-chapter guide covering visibility, WhatsApp, sales and systems.',detail:'Covers AI for business, social media, WhatsApp Business growth, side hustles, video content, personal branding, digital sales, Canva design, content systems, and small business growth systems. Includes a free Business Health Checklist that scores the business across Visibility, Trust, WhatsApp, Sales and Authority.'},
-    {ic:'✅',t:'Business Health Checklist',d:'A free self-scored checklist across 5 categories.',detail:'25 yes/no statements across Visibility, Trust, WhatsApp Business, Sales, and Authority. A score of 0–9 signals immediate attention needed, 10–19 signals growth opportunity, 20–25 signals a strong foundation ready to scale.'},
-    {ic:'💬',t:'Free Diagnostic Conversation',d:'A short, no-obligation call to place the business on the maturity ladder.',detail:'BYINFORGH asks a handful of pointed questions — about documentation, systems, staff consistency — and gives an honest read on which Level the business is really operating at, not where the owner assumes it is.'}
+    {ic:'📘',t:'The Signal Guide',d:'A free 10-chapter guide covering visibility, WhatsApp, sales and systems.',
+      why:'Gives an owner real, usable tools before they ever spend a cedi, so trust is earned rather than asked for.',
+      how:'Delivered instantly as a downloadable guide covering AI for business, social media, WhatsApp growth, video content, personal branding, sales and content systems.',
+      who:'Any Ghanaian business owner, whatever stage they are at — this is the front door for everyone.',
+      when:'Day one, before any conversation about paid work.',
+      tip:'Read it once fully, then come back to the chapter that matches your lowest Health Checklist score.'},
+    {ic:'✅',t:'Business Health Checklist',d:'A free self-scored checklist across 5 categories.',
+      why:'Turns a vague feeling of "something is wrong" into a specific, honest number you can act on.',
+      how:'25 yes/no statements across Visibility, Trust, WhatsApp Business, Sales, and Authority, scored 0–25.',
+      who:'The owner or the most senior manager — whoever actually sees the whole business.',
+      when:'Takes under 5 minutes; do it before the free diagnostic call so the conversation starts from real numbers.',
+      tip:'Score 0–9 means start with WhatsApp and social media first — those are the fastest wins.'},
+    {ic:'💬',t:'Free Diagnostic Conversation',d:'A short, no-obligation call to place the business on the maturity ladder.',
+      why:'A checklist tells you a score; a conversation tells you which score actually matters right now.',
+      how:'BYINFORGH asks pointed questions about documentation, systems and staff consistency and gives an honest read on the real Level, not the one the owner assumes.',
+      who:'Owners who want a second opinion before committing to a paid audit.',
+      when:'Book any time via WhatsApp — no obligation to buy anything after.',
+      tip:'Bring your single biggest headache to the call; it usually points straight at the real gap.'}
   ]
 },
 {
@@ -398,12 +489,42 @@ const LEVEL_CONTENT = [
   reality:'Almost every established business skips this. People rush to open, brand, sell, and hire — but never define the business. When staff arrive, everyone teaches differently, managers make different decisions, customers receive inconsistent service, and everything depends on the owner being physically present. This is exactly what BYINFORGH found on the ground at The White House GH: a running, profitable business with no documented standards.',
   outcome:'The business finally knows why it exists, who it serves, where it is going, and how decisions are made — independent of any one person.',
   deliverables:[
-    {ic:'🔍',t:'Full Business Infrastructure Audit',d:'The audit that determines everything after it.',detail:'Maps current maturity stage, infrastructure gaps, operational risks, priority improvements, a recommended roadmap, an estimated investment, and expected outcomes. This is always the entry point of a corporate engagement and is priced and delivered separately (GH₵5,000–25,000) before any Foundation work begins.'},
-    {ic:'🎯',t:'Vision, Mission & Core Values',d:'Written statements of why the business exists and where it is going.'},
-    {ic:'📜',t:'Company Philosophy & Customer Promise',d:'Who the business serves, what problems it solves, and what customers can always expect.'},
-    {ic:'📘',t:'Company Documents',d:'Employee handbook, staff code of conduct, policies, health & safety, recruitment and training standards.'},
-    {ic:'🏢',t:'Organisational Structure',d:'Who does what, and who reports to whom, documented rather than assumed.'},
-    {ic:'🗺️',t:'Business Roadmap & Positioning',d:'SWOT, market research, competitor review, customer personas, and a documentation framework.'}
+    {ic:'🔍',t:'Full Business Infrastructure Audit',d:'The audit that determines everything after it.',
+      why:'You cannot fix what you have not measured — this replaces guessing with an evidenced starting point.',
+      how:'Maps current maturity stage, infrastructure gaps, operational risks, priority improvements, a recommended roadmap and an estimated investment.',
+      who:'The owner plus senior managers, interviewed directly — not just a document review.',
+      when:'Always first, before any Foundation work begins. Priced and delivered separately (GH₵5,000–25,000).',
+      tip:'Insist on seeing the audit in writing before agreeing to any Level 1 build — a real audit is a deliverable in its own right.'},
+    {ic:'🎯',t:'Vision, Mission & Core Values',d:'Written statements of why the business exists and where it is going.',
+      why:'Without this, every manager improvises a different answer to "what are we actually trying to do here."',
+      how:'Built through structured interviews with ownership, then written, tested against real staff and customers, and finalised.',
+      who:'Written for the owner, but written to be understood by the newest staff member on day one.',
+      when:'The very first deliverable produced in the engagement.',
+      tip:'Keep it to one page. If staff cannot recite it, it is too long.'},
+    {ic:'📜',t:'Company Philosophy & Customer Promise',d:'Who the business serves, what problems it solves, and what customers can always expect.',
+      why:'Sets the standard customers are held to expect, and staff are held to deliver, consistently.',
+      how:'Defined from the vision/mission work, then converted into a plain-language promise your team can repeat verbatim.',
+      who:'Every customer-facing staff member should know this by heart.',
+      when:'Runs alongside the Vision/Mission work in week one of Foundation.',
+      tip:'Print it and put it where staff clock in — repetition is what makes it real, not the document itself.'},
+    {ic:'📘',t:'Company Documents',d:'Employee handbook, staff code of conduct, policies, health & safety, recruitment and training standards.',
+      why:'This is the single biggest fix for "staff problems" — most staff issues are actually undocumented-standard problems.',
+      how:'Drafted from your existing (often informal) rules, formalised, and reviewed with you before rollout.',
+      who:'HR/management team and every current and future employee.',
+      when:'Delivered mid-Foundation, once vision and values are locked.',
+      tip:'Have every current staff member sign an acknowledgement — it converts a document into an enforceable standard.'},
+    {ic:'🏢',t:'Organisational Structure',d:'Who does what, and who reports to whom, documented rather than assumed.',
+      why:'Removes the daily bottleneck of everything routing through the owner because no one else has clear authority.',
+      how:'Mapped from current roles, then rebuilt around what the business actually needs at its next stage of growth.',
+      who:'Owner, managers, and any supervisory staff.',
+      when:'Produced once the audit has identified the real reporting gaps.',
+      tip:'Even a 3-person business benefits from writing down who decides what — it prevents decisions defaulting to whoever is loudest.'},
+    {ic:'🗺️',t:'Business Roadmap & Positioning',d:'SWOT, market research, competitor review, customer personas, and a documentation framework.',
+      why:'Tells you where to compete and where not to — most Ghanaian SMEs try to serve "anyone who comes."',
+      how:'Combines desk research on your specific niche and region with the audit findings into one working document.',
+      who:'Owner and anyone involved in pricing or marketing decisions.',
+      when:'Final Foundation deliverable, feeding directly into Level 2 planning.',
+      tip:'Revisit this every 12 months — positioning that was right at launch drifts as the market moves.'}
   ]
 },
 {
@@ -413,11 +534,36 @@ const LEVEL_CONTENT = [
   reality:'Once the foundation exists, most corporate operations still run on WhatsApp chats, memory, and paper. Stock counts don\'t match sales, nobody can find the business on Google, and every customer touchpoint looks different. This is the phase where BYINFORGH built the Command Centre-style digital presence, dashboards and operational workflows for The White House GH.',
   outcome:'The business moves from disconnected tasks to integrated systems everyone can rely on.',
   deliverables:[
-    {ic:'🌐',t:'Digital Presence',d:'Website, SEO, social media systems, CRM.'},
-    {ic:'📦',t:'Operations Systems',d:'Inventory, stock, finance, payroll, procurement.'},
-    {ic:'📱',t:'Customer Experience',d:'QR ordering, membership, digital menu.'},
-    {ic:'📊',t:'Management Layer',d:'Executive dashboard, reporting, analytics.',detail:'This is the same architecture as the BYINFORGH Command Centre: a CRM and customer database, sales pipeline and revenue tracking, a WhatsApp workflow engine, call management, and a field operations router — all reporting into one live executive dashboard.'},
-    {ic:'📋',t:'Training & Documentation',d:'SOPs, manuals, documentation so tasks don\'t live only in someone\'s head.'}
+    {ic:'🌐',t:'Digital Presence',d:'Website, SEO, social media systems, CRM.',
+      why:'If customers can\'t find you or verify you online, you lose them to a competitor who is easier to trust in five seconds.',
+      how:'Custom-built site, Google Business optimisation, consistent social presence, and a CRM to capture every enquiry.',
+      who:'Anyone-facing team members plus whoever currently "does the Facebook page."',
+      when:'First build inside Level 2, once Level 1 identity exists to build the brand around.',
+      tip:'Get on Google Maps correctly before spending on ads — it is free and most local searches start there.'},
+    {ic:'📦',t:'Operations Systems',d:'Inventory, stock, finance, payroll, procurement.',
+      why:'This is where revenue quietly leaks — stock that doesn\'t match sales, payroll that depends on memory.',
+      how:'Digitised tracking replacing paper/WhatsApp records, built around your actual daily workflow.',
+      who:'Whoever currently handles stock, cash and payroll — usually the owner or one trusted staff member.',
+      when:'Runs in parallel with digital presence work.',
+      tip:'Start tracking one category (stock or cash) properly before trying to digitise everything at once.'},
+    {ic:'📱',t:'Customer Experience',d:'QR ordering, membership, digital menu.',
+      why:'Removes order-taking errors and speeds up service without adding staff.',
+      how:'QR-based ordering and digital menus built to match your actual floor layout and menu structure.',
+      who:'Front-of-house staff and customers directly.',
+      when:'Built once operations systems are stable enough to feed it accurate data.',
+      tip:'Pilot on your quietest day first — see Level 3 before rolling out on a Friday night.'},
+    {ic:'📊',t:'Management Layer',d:'Executive dashboard, reporting, analytics.',
+      why:'This is what turns daily activity into something the owner can actually see and act on.',
+      how:'Same architecture as the BYINFORGH Command Centre — CRM, sales pipeline, revenue tracking, a WhatsApp workflow engine, call management and a field operations router, all reporting into one live dashboard.',
+      who:'Owner and management team, viewed daily.',
+      when:'Delivered once the underlying operations and customer systems are feeding it real data.',
+      tip:'Check the dashboard at the same time every day — consistency of habit matters more than the tool itself.'},
+    {ic:'📋',t:'Training & Documentation',d:'SOPs, manuals, documentation so tasks don\'t live only in someone\'s head.',
+      why:'Without this, every system you just built quietly reverts to the old manual way within weeks.',
+      how:'Step-by-step SOPs written for each new system, delivered as manuals staff can reference without asking.',
+      who:'Every staff member who touches any of the new systems.',
+      when:'Final Level 2 deliverable, feeding directly into Level 3 testing.',
+      tip:'Keep SOPs one page per task — long manuals don\'t get read on a busy shift.'}
   ]
 },
 {
@@ -427,10 +573,30 @@ const LEVEL_CONTENT = [
   reality:'Nothing should go live immediately. A new process, a new order form, a new price list — none of it should be trusted until it survives contact with real customers and a busy Saturday.',
   outcome:'Weaknesses are discovered while they are still inexpensive to fix, not after they\'ve cost the business customers.',
   deliverables:[
-    {ic:'🧪',t:'Pilot Deployment',d:'A small, controlled run before full rollout.'},
-    {ic:'🎓',t:'Staff & Customer Testing',d:'Real people using the real system, observed and coached.'},
-    {ic:'🐞',t:'Error & Bug Tracking',d:'Every failure logged and fed back into the build.'},
-    {ic:'📝',t:'Workflow Reviews',d:'Documentation updates and training session refinements.'}
+    {ic:'🧪',t:'Pilot Deployment',d:'A small, controlled run before full rollout.',
+      why:'Finding a problem with 5 customers on a Tuesday is cheap. Finding it with 200 customers on a Friday is expensive.',
+      how:'The new systems run for a limited period, with a small group of staff and customers, closely observed.',
+      who:'A small, trusted subset of staff — not the whole team on day one.',
+      when:'Immediately after Level 2 systems are built, before any public rollout.',
+      tip:'Pick your most honest staff member for the pilot, not your most agreeable one — you need real feedback.'},
+    {ic:'🎓',t:'Staff & Customer Testing',d:'Real people using the real system, observed and coached.',
+      why:'A system that works on paper often breaks the moment a real customer asks an unexpected question.',
+      how:'Staff are observed handling live orders/enquiries end-to-end; customers are asked for direct feedback.',
+      who:'Frontline staff and a sample of real customers.',
+      when:'Runs throughout the pilot period.',
+      tip:'Watch, don\'t help — if you jump in to fix things, you won\'t see the real gaps.'},
+    {ic:'🐞',t:'Error & Bug Tracking',d:'Every failure logged and fed back into the build.',
+      why:'Untracked problems repeat. Tracked problems get fixed once, permanently.',
+      how:'A simple log of every issue — a wrong price, a missed order, a confused staff member — reviewed daily.',
+      who:'Whoever runs the pilot day-to-day, reporting back to BYINFORGH.',
+      when:'Continuous throughout Level 3.',
+      tip:'Log the small annoyances too, not just the big failures — small friction adds up to lost customers.'},
+    {ic:'📝',t:'Workflow Reviews',d:'Documentation updates and training session refinements.',
+      why:'The SOPs written in Level 2 are a first draft — this is where they get corrected against reality.',
+      how:'Every logged issue is reviewed and the relevant SOP or workflow is updated before full deployment.',
+      who:'BYINFORGH and the management team jointly.',
+      when:'Final step of Level 3, gating entry into Level 4.',
+      tip:'Don\'t skip this step under pressure to "just go live" — it is the cheapest insurance in the whole engagement.'}
   ]
 },
 {
@@ -440,10 +606,30 @@ const LEVEL_CONTENT = [
   reality:'Many businesses launch once and never touch the system again. Staff quietly revert to old habits. Nobody reviews what\'s working. From Level 4 onward, BYINFORGH moves the client onto a monthly retainer rather than repeat one-off projects.',
   outcome:'The business begins improving every day rather than only reacting when something breaks.',
   deliverables:[
-    {ic:'🚀',t:'Live Rollout',d:'The system goes fully live, everyone using it, not just some.'},
-    {ic:'🧑‍🏫',t:'Team Training & Coaching',d:'Customer launch support with staff coaching to keep adoption real.'},
-    {ic:'📈',t:'Daily Monitoring',d:'Regular, scheduled review of how things are actually going.'},
-    {ic:'🔁',t:'Continuous Improvement',d:'Dashboard optimisation and reporting based on real feedback, not guesswork.'}
+    {ic:'🚀',t:'Live Rollout',d:'The system goes fully live, everyone using it, not just some.',
+      why:'A pilot proves the system works. Rollout proves it works at full volume, with every staff member, every day.',
+      how:'Full public launch — every location, every staff member, every customer touchpoint switched over together.',
+      who:'The entire team, plus customers from day one.',
+      when:'Once Level 3 testing has closed out its major issues.',
+      tip:'Announce the launch to customers — a visible relaunch builds goodwill even if small issues surface in week one.'},
+    {ic:'🧑‍🏫',t:'Team Training & Coaching',d:'Customer launch support with staff coaching to keep adoption real.',
+      why:'Staff revert to old habits under pressure unless someone is actively coaching them through the new way.',
+      how:'On-the-floor coaching during the first weeks of live operation, not a one-off training session.',
+      who:'Every staff member, with extra attention to the slowest adopters.',
+      when:'Concentrated in the first 2–4 weeks after go-live.',
+      tip:'Identify one internal "champion" per shift who can answer questions when BYINFORGH isn\'t on site.'},
+    {ic:'📈',t:'Daily Monitoring',d:'Regular, scheduled review of how things are actually going.',
+      why:'Problems caught on day 2 are a quick fix. Problems caught in month 3 are a habit to break.',
+      how:'Scheduled daily or weekly check-ins against the new dashboards, with issues raised immediately.',
+      who:'Owner/manager plus BYINFORGH during the retainer period.',
+      when:'Ongoing from launch through the Growth Partnership retainer.',
+      tip:'Put the check-in on the calendar as a recurring event — "when we get time" never happens.'},
+    {ic:'🔁',t:'Continuous Improvement',d:'Dashboard optimisation and reporting based on real feedback, not guesswork.',
+      why:'The business, the market and your customers keep changing — a system frozen at launch slowly goes stale.',
+      how:'Monthly review of what the data shows, with small adjustments made continuously rather than in one big overhaul.',
+      who:'Owner and BYINFORGH, as part of the Corporate Growth Partnership retainer.',
+      when:'Ongoing, monthly, for as long as the retainer runs.',
+      tip:'Ask "what changed this month" at every review — improvement compounds, it doesn\'t happen in one sitting.'}
   ]
 },
 {
@@ -453,10 +639,30 @@ const LEVEL_CONTENT = [
   reality:'Many corporate operations are busy — very few understand their own numbers. Sales happen, but nobody can say what the actual profit was last month, or which line is quietly losing money. Average luxury hospitality venues alone lose 10–15% of monthly revenue to manual tracking gaps.',
   outcome:'Owners stop guessing and start managing through data.',
   deliverables:[
-    {ic:'💰',t:'Financial Systems',d:'Revenue, expenses, profitability, KPIs, forecasting, cash flow.'},
-    {ic:'📦',t:'Inventory & Customer Analytics',d:'Stock value tracked separately from cost, plus customer behaviour data.'},
-    {ic:'👥',t:'Staff Performance',d:'Business intelligence on team output, not just attendance.'},
-    {ic:'📊',t:'Executive Dashboards',d:'Sales, margin, and KPIs visible at a glance, updating in real time.'}
+    {ic:'💰',t:'Financial Systems',d:'Revenue, expenses, profitability, KPIs, forecasting, cash flow.',
+      why:'Revenue tells you the business is busy. Only margin tells you if it is actually profitable.',
+      how:'Cost-per-item mapped against selling price, cash and MoMo income reconciled separately, and monthly forecasting set up.',
+      who:'Owner and whoever handles bookkeeping/accounts.',
+      when:'First build inside Level 5, once operations data from Level 2–4 is reliable enough to trust.',
+      tip:'Start with one number — true monthly profit — before trying to track everything at once.'},
+    {ic:'📦',t:'Inventory & Customer Analytics',d:'Stock value tracked separately from cost, plus customer behaviour data.',
+      why:'Stock tied up in slow-moving items is cash you can\'t use elsewhere — most owners never see this clearly.',
+      how:'Stock value reporting linked to sales velocity, plus repeat-customer and spend-pattern tracking.',
+      who:'Operations manager and owner.',
+      when:'Runs alongside financial systems build.',
+      tip:'Identify your slowest-moving 10% of stock first — that\'s usually where the trapped cash is.'},
+    {ic:'👥',t:'Staff Performance',d:'Business intelligence on team output, not just attendance.',
+      why:'Two staff can both "be present" while one closes twice the sales — attendance alone hides this.',
+      how:'Output-based tracking (sales per staff, tasks completed, service speed) rather than clock-in records alone.',
+      who:'Managers, used for coaching, not punishment.',
+      when:'Built once daily monitoring habits from Level 4 are established.',
+      tip:'Share performance data with staff, not just management — visibility motivates more than surveillance.'},
+    {ic:'📊',t:'Executive Dashboards',d:'Sales, margin, and KPIs visible at a glance, updating in real time.',
+      why:'This is the payoff of everything before it — one screen that replaces asking five people for numbers.',
+      how:'All financial, inventory and staff data consolidated into a single live view, mirroring the Command Centre pattern.',
+      who:'Owner, primarily, shared selectively with senior managers.',
+      when:'Final Level 5 deliverable.',
+      tip:'Set one target number on the dashboard (e.g. monthly margin %) and check it first every time you open it.'}
   ]
 },
 {
@@ -466,10 +672,30 @@ const LEVEL_CONTENT = [
   reality:'The BYINFORGH Test: if the owner disappeared for two weeks, would the business keep running successfully? For most businesses at this point, the honest answer is still no.',
   outcome:'The business becomes self-sustaining and less dependent on the founder.',
   deliverables:[
-    {ic:'📡',t:'Automated Reporting',d:'Executive dashboards and management reports delivered without chasing anyone.'},
-    {ic:'⚙️',t:'Automation & Accountability',d:'Department KPIs and staff accountability built into the system, not memory.'},
-    {ic:'📚',t:'Complete Documentation',d:'Every role, process and protocol written down.'},
-    {ic:'🧭',t:'Leadership Systems',d:'Investor documentation begins here, in preparation for Level 7.'}
+    {ic:'📡',t:'Automated Reporting',d:'Executive dashboards and management reports delivered without chasing anyone.',
+      why:'If the owner has to ask for the numbers, the business is still dependent on the owner asking.',
+      how:'Reports generate and deliver automatically on a schedule — daily, weekly, monthly — with no manual compilation.',
+      who:'Owner and any board/investor-facing stakeholders.',
+      when:'Built once Level 5 dashboards have run reliably for a full reporting cycle.',
+      tip:'Set reports to arrive before you\'d think to ask for them — that\'s the actual test of automation.'},
+    {ic:'⚙️',t:'Automation & Accountability',d:'Department KPIs and staff accountability built into the system, not memory.',
+      why:'Accountability that depends on the owner noticing collapses the moment the owner isn\'t watching.',
+      how:'Each department gets measurable KPIs tracked automatically, with clear ownership of each number.',
+      who:'Department heads/managers.',
+      when:'Runs alongside automated reporting.',
+      tip:'Tie one KPI per role directly to a consequence or reward — an unmeasured KPI is just a suggestion.'},
+    {ic:'📚',t:'Complete Documentation',d:'Every role, process and protocol written down.',
+      why:'This is the direct answer to the BYINFORGH Test — could the business run for two weeks without the owner?',
+      how:'Every Level 1–5 document is consolidated, updated and expanded into a single operating manual per role.',
+      who:'Every role in the business, from frontline to management.',
+      when:'A major Level 6 deliverable, drawing on everything built in earlier levels.',
+      tip:'Test it properly: have someone follow only the documentation for a full shift with no verbal help.'},
+    {ic:'🧭',t:'Leadership Systems',d:'Investor documentation begins here, in preparation for Level 7.',
+      why:'Predictability is what makes a business investable — this is where that story starts being told on paper.',
+      how:'Leadership roles, decision rights, and a preliminary financial/operational record start being organised for outside review.',
+      who:'Owner and any co-founders/senior leadership.',
+      when:'Final Level 6 deliverable, bridging directly into Level 7.',
+      tip:'Start this even if you have no immediate plan to raise capital or sell — it is cheaper to build gradually than all at once.'}
   ]
 },
 {
@@ -479,10 +705,30 @@ const LEVEL_CONTENT = [
   reality:'Once a business is predictable, it becomes investable — but most businesses never organise their records or their story well enough for an investor, bank, or partner to say yes quickly.',
   outcome:'The business is no longer simply providing an income — it creates long-term wealth and can outlive its founder.',
   deliverables:[
-    {ic:'📁',t:'Investor Data Room',d:'Clean, organised financial history ready to show.'},
-    {ic:'🗺️',t:'Multi-Location Playbook',d:'Franchise and expansion readiness, board reporting, governance.'},
-    {ic:'🤝',t:'Succession Planning',d:'A plan for what happens to the business if something happens to the founder.'},
-    {ic:'📈',t:'Valuation & Long-Term Roadmap',d:'Knowing what the business is actually worth, and where it is going.'}
+    {ic:'📁',t:'Investor Data Room',d:'Clean, organised financial history ready to show.',
+      why:'An investor or bank that asks for records and gets silence has already made their decision.',
+      how:'Financial history, contracts, SOPs and system architecture organised into one reviewable package.',
+      who:'Owner, prepared for external eyes — investors, banks, or acquisition partners.',
+      when:'Built once Level 6 documentation and reporting are stable.',
+      tip:'Build this before you need it — scrambling to produce records under investor deadline pressure is a bad negotiating position.'},
+    {ic:'🗺️',t:'Multi-Location Playbook',d:'Franchise and expansion readiness, board reporting, governance.',
+      why:'What makes the business work has to be repeatable, or growth just multiplies the same problems in a new location.',
+      how:'Every Level 1–6 system packaged as a step-by-step playbook a new manager could follow to replicate the business.',
+      who:'Owner and any future location managers or franchise partners.',
+      when:'Runs alongside investor data room preparation.',
+      tip:'Pilot the playbook internally — promote from within or open a second till/section before opening a full second site.'},
+    {ic:'🤝',t:'Succession Planning',d:'A plan for what happens to the business if something happens to the founder.',
+      why:'Every business built entirely around one person is one accident away from collapsing overnight.',
+      how:'A documented plan covering who takes over, how, and what authority transfers, agreed with family/partners as relevant.',
+      who:'Owner, family, and senior leadership.',
+      when:'Addressed directly in Level 7, though the groundwork starts in Level 6 documentation.',
+      tip:'This conversation is uncomfortable — have it anyway, while there is no pressure to rush it.'},
+    {ic:'📈',t:'Valuation & Long-Term Roadmap',d:'Knowing what the business is actually worth, and where it is going.',
+      why:'You can\'t negotiate an investment, a sale, or a partnership from a position of strength without knowing your real number.',
+      how:'Valuation built from the financial history in the data room, plus a long-term growth roadmap beyond the current operation.',
+      who:'Owner, and any board or investment stakeholders.',
+      when:'Final Level 7 deliverable — the natural endpoint of the full seven-level engagement.',
+      tip:'Revisit valuation annually — a business that has done Levels 1–7 properly should see this number move.'}
   ]
 }
 ];
@@ -520,11 +766,12 @@ function setActiveNav(id){
   const el=document.getElementById(id); if(el) el.classList.add('active');
 }
 function goHome(){
-  ['stage','intake','diagnostic','results'].forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
+  ['stage','intake','diagnostic','results','selection'].forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
   document.getElementById('screen-home').classList.remove('hidden');
   setActiveNav('navHome');
   window.scrollTo({top:0,behavior:'smooth'});
   renderHomeLadder();
+  renderSelBar();
 }
 function scrollToLadder(){ document.getElementById('ladderAnchor').scrollIntoView({behavior:'smooth'}); }
 
@@ -536,13 +783,17 @@ function renderHomeLadder(){
       <p>${s.tagline}</p>
       <div class="price">${s.price}</div>
       <div class="arrow">Read the full level →</div>
+      ${s.n>0?`<label class="ladder-select" onclick="event.stopPropagation()">
+        <input type="checkbox" id="ladderChk-${s.n}" onchange="toggleLevelSelection(${s.n}, this.checked)" ${selection.levels.includes(s.n)?'checked':''}>
+        Add Level ${s.label} to My Selection
+      </label>`:''}
     </div>`).join('');
 }
 
 function openStage(n){
   currentLevelN=n;
   const s=LEVEL_CONTENT.find(x=>x.n===n);
-  ['home','intake','diagnostic','results'].forEach(sc=>{const el=document.getElementById('screen-'+sc); if(el) el.classList.add('hidden');});
+  ['home','intake','diagnostic','results','selection'].forEach(sc=>{const el=document.getElementById('screen-'+sc); if(el) el.classList.add('hidden');});
   document.getElementById('screen-stage').classList.remove('hidden');
   setActiveNav('navStage'+n);
   window.scrollTo({top:0,behavior:'smooth'});
@@ -554,6 +805,10 @@ function openStage(n){
       <div class="tagline">"${s.tagline}"</div>
       <div class="pricebox"><div class="lbl">Corporate Investment</div><div class="val">${s.price}</div></div>
       ${s.priceNote?`<div style="margin-top:8px;font-size:12px;color:#dff2ef;">${s.priceNote}</div>`:''}
+      ${n>0?`<label class="select-toggle">
+        <input type="checkbox" id="heroChk-${n}" onchange="toggleLevelSelection(${n}, this.checked)" ${selection.levels.includes(n)?'checked':''}>
+        <span>Add Level ${s.label} to My Selection</span>
+      </label>`:''}
     </div>`;
 
   document.getElementById('stageTwoCol').innerHTML=`
@@ -563,21 +818,32 @@ function openStage(n){
 
   document.getElementById('stageDelivGrid').innerHTML = s.deliverables.map((d,i)=>`
     <div class="deliv-card" onclick="toggleDetail(${n},${i})">
-      <div class="dic"><span>${d.ic}</span><span class="toggle" id="tgl-${n}-${i}">${d.detail?'+ more':''}</span></div>
+      <div class="dic"><span>${d.ic}</span><span class="toggle" id="tgl-${n}-${i}">+ why / how / who</span></div>
       <h5>${d.t}</h5><p>${d.d}</p>
-      ${d.detail?`<div class="detail hidden" id="det-${n}-${i}">${d.detail}</div>`:''}
+      <div class="detail hidden" id="det-${n}-${i}">
+        ${d.why?`<div class="detail-row"><b>Why it matters</b>${d.why}</div>`:''}
+        ${d.how?`<div class="detail-row"><b>How it's delivered</b>${d.how}</div>`:''}
+        ${d.who?`<div class="detail-row"><b>Who it's for</b>${d.who}</div>`:''}
+        ${d.when?`<div class="detail-row"><b>When it happens</b>${d.when}</div>`:''}
+        ${d.tip?`<div class="detail-row tip"><b>💡 Tip</b>${d.tip}</div>`:''}
+      </div>
     </div>`).join('');
 
   const pkgs = CORP_PACKAGES[n] || [];
-  document.getElementById('stagePkgGrid').innerHTML = pkgs.map(p=>`
-    <div class="pkg-card">
+  document.getElementById('stagePkgGrid').innerHTML = pkgs.map((p,pi)=>{
+    const key=n+'::'+p.name;
+    const isSel=selection.custom.includes(key);
+    return `<div class="pkg-card">
       <div class="pn">${p.name}</div><div class="pt">${p.tier}</div>
       <div class="pd">${p.desc}</div>
       <div class="pp">${p.price}</div>
-    </div>`).join('');
+      <button class="btn ${isSel?'btn-primary':'btn-ghost'} btn-full" style="margin-top:10px;font-size:12px;padding:9px 14px;" onclick="toggleCustomItem('${key.replace(/'/g,"\\'")}', '${p.name.replace(/'/g,"\\'")}', '${p.price.replace(/'/g,"\\'")}', ${n})">${isSel?'✓ Added':'+ Add this package'}</button>
+    </div>`;
+  }).join('');
 
   document.getElementById('stagePrevBtn').disabled = n===0;
   document.getElementById('stageNextBtn').textContent = n===7 ? 'Back to overview →' : 'Next level →';
+  renderSelBar();
 }
 function jumpStage(dir){
   if(currentLevelN===7 && dir===1){ goHome(); return; }
@@ -589,7 +855,127 @@ function toggleDetail(n,i){
   const tgl=document.getElementById(`tgl-${n}-${i}`);
   if(!det) return;
   det.classList.toggle('hidden');
-  tgl.textContent = det.classList.contains('hidden') ? '+ more' : '− less';
+  tgl.textContent = det.classList.contains('hidden') ? '+ why / how / who' : '− close';
+}
+
+// ============================================================
+// MY SELECTION — multi-level, custom package, checkout
+// ============================================================
+let selection = { levels: [], custom: [] }; // levels: [1,2,...]; custom: ['n::PackageName', ...]
+
+function toggleLevelSelection(n, checked){
+  const idx=selection.levels.indexOf(n);
+  if(checked && idx===-1){ selection.levels.push(n); showToast('Level '+n+' added to My Selection'); }
+  else if(!checked && idx!==-1){ selection.levels.splice(idx,1); showToast('Level '+n+' removed'); }
+  // keep checkboxes in sync wherever they appear
+  const a=document.getElementById('ladderChk-'+n); if(a) a.checked=checked;
+  const b=document.getElementById('heroChk-'+n); if(b) b.checked=checked;
+  renderSelBar();
+}
+function toggleCustomItem(key, name, price, levelN){
+  const idx=selection.custom.indexOf(key);
+  if(idx===-1){ selection.custom.push(key); showToast(name+' added to My Selection'); }
+  else{ selection.custom.splice(idx,1); showToast(name+' removed'); }
+  if(currentLevelN===levelN) openStage(levelN); // re-render package buttons state
+  renderSelBar();
+}
+function selectionCount(){ return selection.levels.length + selection.custom.length; }
+function renderSelBar(){
+  const count=selectionCount();
+  document.getElementById('selCountTop').textContent='('+count+')';
+  const bar=document.getElementById('selBar');
+  const barCount=document.getElementById('selBarCount');
+  if(!bar) return;
+  barCount.textContent=count;
+  bar.classList.toggle('hidden', count===0);
+}
+function toggleCustomBuilder(){
+  const list=document.getElementById('customBuilderList');
+  const btn=document.getElementById('customToggleBtn');
+  list.classList.toggle('hidden');
+  if(!list.classList.contains('hidden')) renderCustomBuilder();
+  btn.textContent = list.classList.contains('hidden') ? '+ Show every deliverable, by level' : '− Hide deliverable list';
+}
+function renderCustomBuilder(){
+  document.getElementById('customBuilderList').innerHTML = LEVEL_CONTENT.filter(s=>s.n>0).map(s=>`
+    <div class="custom-group">
+      <div class="glabel">LEVEL ${s.label} — ${s.name} (${s.price})</div>
+      ${s.deliverables.map((d,i)=>{
+        const key=s.n+'::deliv::'+i;
+        const checked=selection.custom.includes(key);
+        return `<label class="custom-item">
+          <input type="checkbox" ${checked?'checked':''} onchange="toggleCustomItem('${key}', '${d.t.replace(/'/g,"\\'")}', '', ${s.n})">
+          <span><b>${d.t}</b> — ${d.d}</span>
+        </label>`;
+      }).join('')}
+    </div>`).join('');
+}
+function renderSelectionScreen(){
+  document.getElementById('selLevelsList').innerHTML = selection.levels.length
+    ? selection.levels.sort((a,b)=>a-b).map(n=>{
+        const s=LEVEL_CONTENT.find(x=>x.n===n);
+        return `<div class="sel-item"><span><b>Level ${s.label} — ${s.name}</b><br><span style="color:var(--ink-dim);font-size:11px">${s.price}</span></span>
+          <button class="rm" onclick="toggleLevelSelection(${n}, false); renderSelectionScreen();">Remove</button></div>`;
+      }).join('')
+    : '<div style="font-size:12px;color:var(--ink-dim)">No full levels selected yet — tick a level from any page, or build a custom package below.</div>';
+
+  const customLines = selection.custom.map(key=>{
+    const parts=key.split('::');
+    const n=parseInt(parts[0]);
+    const s=LEVEL_CONTENT.find(x=>x.n===n);
+    let label;
+    if(parts[1]==='deliv'){ const d=s.deliverables[parseInt(parts[2])]; label=d.t+' (Level '+n+')'; }
+    else{ label=parts[1]+' (Level '+n+')'; }
+    return `<div class="sel-item"><span>${label}</span><button class="rm" onclick="toggleCustomItem('${key}','','',${n}); renderSelectionScreen();">Remove</button></div>`;
+  }).join('');
+  if(customLines) document.getElementById('selLevelsList').innerHTML += customLines;
+
+  const count=selectionCount();
+  document.getElementById('selTotalBox').textContent = count===0
+    ? 'Nothing selected yet.'
+    : count+' item(s) selected — this is a custom, multi-level engagement. BYINFORGH will send one combined quote covering everything on this list, scoped after a short confirmation call.';
+  renderSelBar();
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+function buildSelectionSummary(){
+  let lines=[];
+  selection.levels.sort((a,b)=>a-b).forEach(n=>{ const s=LEVEL_CONTENT.find(x=>x.n===n); lines.push('Level '+s.label+' — '+s.name+' ('+s.price+')'); });
+  selection.custom.forEach(key=>{
+    const parts=key.split('::'); const n=parseInt(parts[0]); const s=LEVEL_CONTENT.find(x=>x.n===n);
+    if(parts[1]==='deliv'){ lines.push(s.deliverables[parseInt(parts[2])].t+' (Level '+n+' item)'); }
+    else{ lines.push(parts[1]+' (Level '+n+' package)'); }
+  });
+  return lines;
+}
+function emailSelection(){
+  const business=document.getElementById('sel_business').value.trim();
+  const contact=document.getElementById('sel_contact').value.trim();
+  const number=document.getElementById('sel_number').value.trim();
+  const notes=document.getElementById('sel_notes').value.trim();
+  if(selectionCount()===0){ document.getElementById('selErr').textContent='Add at least one level or custom item first.'; return; }
+  const lines=buildSelectionSummary();
+  const subject='Business Solutions Selection — '+(business||'New enquiry');
+  const body='Business: '+business+'\nContact: '+contact+'\nWhatsApp: '+number+'\n\nSelection:\n- '+lines.join('\n- ')+(notes?'\n\nNotes: '+notes:'');
+  window.location.href='mailto:solutions@byinforgh.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+}
+function checkoutSelection(){
+  const err=document.getElementById('selErr');
+  const business=document.getElementById('sel_business').value.trim();
+  const contact=document.getElementById('sel_contact').value.trim();
+  const number=document.getElementById('sel_number').value.trim();
+  const notes=document.getElementById('sel_notes').value.trim();
+  if(selectionCount()===0){ err.textContent='Add at least one level or custom item first.'; return; }
+  if(!business||!contact||!number){ err.textContent='Business name, your name and WhatsApp number are required.'; return; }
+  err.textContent='';
+  const lines=buildSelectionSummary();
+  const msg='Hi BYINFORGH, I would like to check out this selection for '+business+' (contact: '+contact+', '+number+'):\n- '+lines.join('\n- ')+
+    (notes?'\nNotes: '+notes:'')+'\nPlease send a combined quote and next steps.';
+  window.open('https://wa.me/233509960980?text='+encodeURIComponent(msg),'_blank');
+  showToast('Selection sent — BYINFORGH will follow up on WhatsApp');
 }
 
 buildStageNav();
