@@ -409,7 +409,7 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
 // silently skipped and the WhatsApp/email links still work exactly
 // as before — nothing here can block a real submission.
 // ============================================================
-const APPS_SCRIPT_URL = 'PASTE_YOUR_BUSINESS_SOLUTIONS_EXEC_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQcFIitJAH-ezedgxmaUotkVcalQDuaHorMIbZ_NBxNiVP4dPYk4yb6SOQsKuOTFwIww/exec';
 
 function backendCall(params){
   if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR')===0) return Promise.resolve(null);
