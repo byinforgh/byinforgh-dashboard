@@ -157,8 +157,7 @@ select:focus{border-color:var(--gold);}
 <body>
 <div class="header">
   <div class="logo">BYINFORGH <span>COMMAND CENTRE v21.0</span></div>
-  <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div>
-</div>
+<div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
   <div><div style="font-size:14px;font-weight:600;color:var(--gold)">Shabbat &mdash; Rest Day</div><div style="font-size:12px;color:var(--gold-dim)">No outreach today. Yahuah holds it. Resume Sunday.</div></div>
@@ -180,6 +179,7 @@ select:focus{border-color:var(--gold);}
   <button class="tab" onclick="switchTab('contacts',event)">ALL CONTACTS</button>
   <button class="tab" onclick="switchTab('tracker',event)">TRACKER</button>
   <button class="tab" onclick="switchTab('archive',event)">&#128465; ARCHIVE</button>
+  <button class="tab" onclick="switchTab('bizsolutions',event)">🏢 BIZ SOLUTIONS</button>
 </div>
 
 <!-- TODAY -->
@@ -294,6 +294,29 @@ select:focus{border-color:var(--gold);}
   </div>
   <div class="metrics-grid" id="archiveMetrics" style="margin-bottom:20px"></div>
   <div id="archiveList"></div>
+</div>
+
+<!-- BUSINESS SOLUTIONS (read-only) -->
+<div class="tab-content" id="tab-bizsolutions">
+  <div style="background:#001a1a;border:1px solid var(--teal);border-radius:6px;padding:14px 18px;margin-bottom:20px">
+    <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:6px">🏢 BUSINESS SOLUTIONS — CORPORATE DIAGNOSTIC PIPELINE</div>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.7">Read-only view of the corporate Business Maturity Levels dashboard: diagnostics, consultation bookings and orders submitted there, and whether each one bridged successfully into this CRM. This data comes live from the Business Solutions Apps Script, not from this sheet.</div>
+  </div>
+  <div class="metrics-grid" id="bizSolMetrics"><div class="loading">Loading data</div></div>
+  <div class="section-title" style="margin-top:20px">STAGE DISTRIBUTION — AUDIT RESULTS</div>
+  <div id="bizSolStageBars" style="margin-bottom:20px"></div>
+  <div class="two-col">
+    <div>
+      <div class="section-title">RECENT DIAGNOSTICS</div>
+      <div id="bizSolDiagList"></div>
+    </div>
+    <div>
+      <div class="section-title">RECENT CONSULTATION BOOKINGS</div>
+      <div id="bizSolBookingsList"></div>
+    </div>
+  </div>
+  <div class="section-title" style="margin-top:20px">RECENT ORDERS</div>
+  <div id="bizSolOrdersList"></div>
 </div>
 
 <!-- FOLLOW-UPS -->
@@ -748,8 +771,11 @@ select:focus{border-color:var(--gold);}
 
 <div class="toast" id="toast"></div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycby9X4OTmZERFAsLlHXf80G3C59rlHeyshTD6eKF-l0azZjWp_SHagxi8L7E4yUenEH1/exec';let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};
-let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
+const API_URL='https://script.google.com/macros/s/AKfycby9X4OTmZERFAsLlHXf80G3C59rlHeyshTD6eKF-l0azZjWp_SHagxi8L7E4yUenEH1/exec';
+// Business Solutions Apps Script — read-only source for the BIZ SOLUTIONS reporting tab.
+const BIZ_SOLUTIONS_API_URL='https://script.google.com/macros/s/AKfycbzQcFIitJAH-ezedgxmaUotkVcalQDuaHorMIbZ_NBxNiVP4dPYk4yb6SOQsKuOTFwIww/exec';
+let bizSolData=null;
+let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
 const FOLLOWUP_PAGE_SIZE=12,ACTIVITY_PAGE_SIZE=15;
 let followupAllContacts=[],activityAllItems=[],aiHistory=[],trackerData={activities:[],statusViewers:[],outreachLog:[],conversions:[],callLogs:[],todayOutreachCount:0,totalOutreachCount:0};
@@ -804,8 +830,7 @@ let versionManuallySet=false;
 
 // Order must match the .tab buttons in the header exactly — used by activateTab()
 // so metric cards / WA board items can jump straight to a tab from code.
-const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','analytics','contacts','tracker','archive'];
-
+const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','analytics','contacts','tracker','archive','bizsolutions'];
 // Daily rotation: changes each calendar day so messages are never the same two days running
 const TODAY_SEED=(()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})();
 
@@ -1225,6 +1250,7 @@ function activateTab(name){
   if(name==='sme')renderSME();
   if(name==='archive')renderArchive();
   if(name==='calendar')renderCalendar();
+  if(name==='bizsolutions')renderBizSolutions();
   el&&el.scrollIntoView&&window.scrollTo({top:0,behavior:'smooth'});
 }
 function switchTab(name,evt){activateTab(name);}
@@ -3272,6 +3298,62 @@ async function logActivityTap(){
 }
 
 async function loadSettings(){try{const r=await fetch(API_URL+'?action=getSettings&t='+Date.now());const d=await r.json();if(!d.error)state.settings=d;}catch(e){state.settings={monthly_target:'5400',working_days:'26',daily_target:'180'};}}
+// =====================
+// BUSINESS SOLUTIONS — read-only reporting tab.
+// Pulls live from the Business Solutions Apps Script (BIZ_SOLUTIONS_API_URL),
+// never writes to it. Surfaces bridge/duplicate status per record so a lead
+// that silently matched an existing CRM contact (instead of creating a new
+// one) is visible here rather than invisible, per the sign-off's open item.
+// =====================
+async function renderBizSolutions(){
+  try{
+    const res=await fetch(BIZ_SOLUTIONS_API_URL+'?action=getData&t='+Date.now());
+    const data=await res.json();
+    if(data.fatalError)throw new Error(data.fatalError);
+    bizSolData=data;
+    renderBizSolMetrics(data);
+    renderBizSolStageBars(data);
+    renderBizSolDiagnostics(data);
+    renderBizSolBookings(data);
+    renderBizSolOrders(data);
+  }catch(e){
+    document.getElementById('bizSolMetrics').innerHTML='<div class="error-msg">Could not load Business Solutions data — '+(e.message||'check connection')+'. Confirm the Business Solutions Apps Script is deployed and BIZ_SOLUTIONS_API_URL is correct.</div>';
+  }
+}
+function renderBizSolMetrics(data){
+  document.getElementById('bizSolMetrics').innerHTML=`
+    <div class="metric-card teal"><div class="metric-label">TOTAL DIAGNOSTICS</div><div class="metric-value">${data.totalDiagnostics||0}</div><div class="metric-sub">${data.todayDiagnostics||0} today</div></div>
+    <div class="metric-card gold"><div class="metric-label">PENDING ORDERS</div><div class="metric-value">${data.pendingOrders||0}</div><div class="metric-sub">awaiting confirmation</div></div>
+    <div class="metric-card blue"><div class="metric-label">PENDING BOOKINGS</div><div class="metric-value">${data.pendingBookings||0}</div><div class="metric-sub">consultation requests</div></div>`;
+}
+function renderBizSolStageBars(data){
+  const sd=data.stageDistribution||{};
+  const max=Math.max(1,...Object.values(sd).map(v=>parseInt(v)||0));
+  document.getElementById('bizSolStageBars').innerHTML=['1','2','3','4','5','6','7'].map(s=>{
+    const count=parseInt(sd[s])||0;
+    const w=Math.max(6,Math.round((count/max)*100));
+    return `<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>Level ${s}</span><span style="font-weight:700;color:var(--teal)">${count}</span></div><div class="progress-track"><div class="progress-fill" style="width:${w}%;background:var(--teal)"></div></div></div>`;
+  }).join('');
+}
+function bizSolBridgeTag(bridged, crmId){
+  if(bridged==='Yes'){
+    if(crmId==='DUPLICATE')return '<span style="font-size:9px;color:var(--gold);border:1px solid var(--gold);border-radius:3px;padding:1px 5px" title="Matched an existing CRM contact instead of creating a new one">⚠ MATCHED EXISTING</span>';
+    return '<span style="font-size:9px;color:var(--green);border:1px solid var(--green);border-radius:3px;padding:1px 5px">✓ IN CRM</span>';
+  }
+  return '<span style="font-size:9px;color:var(--orange);border:1px solid var(--orange);border-radius:3px;padding:1px 5px" title="Not bridged — check COMMAND_CENTRE_API_URL is configured in the Business Solutions script">⚠ NOT BRIDGED</span>';
+}
+function renderBizSolDiagnostics(data){
+  const rows=data.recentDiagnostics||[];
+  document.getElementById('bizSolDiagList').innerHTML=rows.length?rows.map(r=>`<div class="followup-item"><div class="followup-header"><div style="flex:1"><div class="followup-name">${r.business||'—'} ${bizSolBridgeTag(r.bridged,r.crmId)}</div><div class="followup-meta">${r.number||'—'} · ${r.region||'—'} · ${r.industry||'—'}</div><div class="followup-meta" style="margin-top:4px">Level ${r.overallStage||'—'} (${r.overallScore||'—'}%) · Recommended: ${r.recommendedPackage||'—'}</div></div></div></div>`).join(''):'<div class="empty">No diagnostics submitted yet</div>';
+}
+function renderBizSolBookings(data){
+  const rows=data.bookings||[];
+  document.getElementById('bizSolBookingsList').innerHTML=rows.length?rows.map(r=>`<div class="followup-item"><div class="followup-header"><div style="flex:1"><div class="followup-name">${r.business||'—'} ${bizSolBridgeTag(r.bridged,r.crmId)}</div><div class="followup-meta">${r.number||'—'} · Preferred: ${r.preferredTime||'not specified'}</div><div class="followup-meta" style="margin-top:4px">Diagnostic Level ${r.diagStage||'—'} (${r.diagScore||'—'}%) · Status: ${r.status||'—'}</div></div></div></div>`).join(''):'<div class="empty">No consultation bookings yet</div>';
+}
+function renderBizSolOrders(data){
+  const rows=data.orders||[];
+  document.getElementById('bizSolOrdersList').innerHTML=rows.length?`<div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>PACKAGES</th><th>ONE-TIME</th><th>MONTHLY</th><th>PAYMENT</th><th>STATUS</th><th>CRM</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r.business||'—'}</strong></td><td style="font-size:11px;max-width:220px">${r.packages||'—'}</td><td style="font-family:'Space Mono',monospace">&#8373;${r.oneTime||0}</td><td style="font-family:'Space Mono',monospace">&#8373;${r.monthly||0}</td><td style="font-size:11px">${r.paymentMethod||'—'}</td><td>${r.paymentStatus||'—'}</td><td>${bizSolBridgeTag(r.bridged,r.crmId)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">No orders submitted yet</div>';
+}
 
 document.addEventListener('DOMContentLoaded',()=>{
   checkShabbat();
