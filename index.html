@@ -156,7 +156,7 @@ select:focus{border-color:var(--gold);}
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v21.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v25.0</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -370,6 +370,7 @@ select:focus{border-color:var(--gold);}
         <button class="cal-nav-btn" onclick="calNavMonth(1)">&#8250;</button>
       </div>
       <button class="cal-today-btn" onclick="calGoToday()">TODAY</button>
+      <button class="cal-today-btn" style="background:var(--teal)" onclick="openBookAppointmentModal()">+ BOOK APPOINTMENT</button>
     </div>
     <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Tap a contact to view full notes · Red border = overdue follow-ups present</div>
     <div class="cal-grid" id="calGrid"></div>
@@ -769,6 +770,48 @@ select:focus{border-color:var(--gold);}
   </div>
 </div>
 
+<!-- Book Appointment Modal -->
+<div id="apptModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div style="background:var(--card);border:1px solid var(--teal);border-radius:8px;padding:24px;width:100%;max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:800;letter-spacing:2px;color:var(--teal)">&#128197; BOOK APPOINTMENT</div>
+      <button onclick="document.getElementById('apptModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button>
+    </div>
+    <div class="filter-row" style="margin-bottom:14px">
+      <button class="filter-btn active" id="apptModeExisting" onclick="setApptMode('existing')">EXISTING CONTACT</button>
+      <button class="filter-btn" id="apptModeNew" onclick="setApptMode('new')">NEW CONTACT</button>
+    </div>
+    <div id="apptExistingFields">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">BUSINESS</div>
+      <div class="contact-search-wrap" style="margin-bottom:8px">
+        <input class="contact-search-input" id="apptContactInput" placeholder="Type to search..." autocomplete="off" oninput="filterContactSearch('appt',this.value)" onfocus="openContactSearch('appt')" onblur="setTimeout(()=>closeContactSearch('appt'),200)">
+        <div class="contact-search-dropdown" id="apptContactDropdown"></div>
+      </div>
+      <div class="contact-selected" id="apptContactSelected"><span id="apptContactLabel">&mdash;</span><span class="contact-selected-clear" onclick="clearContactSearch('appt')">&#x2715;</span></div>
+      <input type="hidden" id="apptContact" value="">
+    </div>
+    <div id="apptNewFields" style="display:none">
+      <input id="apptNewBusiness" class="search-input" placeholder="Business name*">
+      <input id="apptNewNumber" class="search-input" placeholder="WhatsApp number* (0XXXXXXXXX)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input id="apptNewTown" class="search-input" style="margin:0" placeholder="Town">
+        <input id="apptNewCategory" class="search-input" style="margin:0" placeholder="Category">
+      </div>
+      <input id="apptNewContactName" class="search-input" placeholder="Contact person name">
+      <select id="apptNewSheetSource" style="margin-bottom:8px">
+        <option value="Master CRM">Master CRM (general outreach)</option>
+        <option value="Koforidua Master">Koforidua Master (physical visit)</option>
+      </select>
+    </div>
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:10px 0 4px">APPOINTMENT DATE*</div>
+    <input type="date" id="apptDate" class="search-input" style="margin-bottom:8px">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">REASON / NOTES</div>
+    <textarea id="apptReason" class="conv-review-area" style="min-height:60px" placeholder="e.g. In-person visit to review audit results"></textarea>
+    <button class="refresh-btn" onclick="submitBookAppointment()" style="background:var(--teal);color:var(--black);width:100%;margin-top:12px;padding:10px;font-weight:800">&#128197; BOOK APPOINTMENT</button>
+    <div id="apptResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycby9X4OTmZERFAsLlHXf80G3C59rlHeyshTD6eKF-l0azZjWp_SHagxi8L7E4yUenEH1/exec';
@@ -777,6 +820,7 @@ const BIZ_SOLUTIONS_API_URL='https://script.google.com/macros/s/AKfycbzQcFIitJAH
 let bizSolData=null;
 let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
+let apptMode='existing'; // v25.0: Book Appointment modal — 'existing' or 'new'
 const FOLLOWUP_PAGE_SIZE=12,ACTIVITY_PAGE_SIZE=15;
 let followupAllContacts=[],activityAllItems=[],aiHistory=[],trackerData={activities:[],statusViewers:[],outreachLog:[],conversions:[],callLogs:[],todayOutreachCount:0,totalOutreachCount:0};
 const contactSearchState={};
@@ -1891,6 +1935,67 @@ function calShowDayList(key){
   document.getElementById('notesModalMeta').textContent='Tap a name in the list below to view its notes separately';
   document.getElementById('notesModalBody').innerHTML=items.map(c=>`<div style="padding:8px 0;border-bottom:1px solid #1a1a1a;cursor:pointer" onclick="showFullNotes('${escJs(c.Business)}','${escJs((c.Notes||'').substring(0,200))}','${escJs(c.Stage||'')}','${c.Number||''}','${c.Category||''}')"><strong>${getWAEmoji(c.WA_Label)} ${c.Business}</strong><br><span style="font-size:11px;color:var(--text-dim)">${c.Number||'—'} · ${c.Stage||'—'}</span></div>`).join('');
   document.getElementById('notesModal').style.display='flex';
+}
+
+// =====================================================
+// v25.0: BOOK APPOINTMENT — powers the "+ BOOK APPOINTMENT" button on the
+// Calendar tab. Lets you set Next_Follow_Up to ANY date, for an existing
+// contact or a brand-new one, whenever you want — not just "due today".
+// =====================================================
+function openBookAppointmentModal(){
+  document.getElementById('apptModal').style.display='flex';
+  document.getElementById('apptResult').innerHTML='';
+  const d=new Date();
+  document.getElementById('apptDate').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  setApptMode('existing');
+}
+function setApptMode(mode){
+  apptMode=mode;
+  document.getElementById('apptModeExisting').classList.toggle('active',mode==='existing');
+  document.getElementById('apptModeNew').classList.toggle('active',mode==='new');
+  document.getElementById('apptExistingFields').style.display = mode==='existing' ? 'block' : 'none';
+  document.getElementById('apptNewFields').style.display = mode==='new' ? 'block' : 'none';
+}
+async function submitBookAppointment(){
+  const dateVal=document.getElementById('apptDate').value;
+  const reason=document.getElementById('apptReason').value.trim();
+  const resultEl=document.getElementById('apptResult');
+  if(!dateVal){resultEl.innerHTML='<span style="color:var(--red)">Pick a date.</span>';return;}
+  const apptDate=dateInputToSheetFormat(dateVal);
+  let url='';
+  if(apptMode==='existing'){
+    const h=document.getElementById('apptContact');
+    if(!h.value){resultEl.innerHTML='<span style="color:var(--red)">Search and select a contact first.</span>';return;}
+    const business=h.value.split('|')[0];
+    const c=state.contacts.find(x=>x.Business===business);
+    const sheetSource=c?c.Sheet_Source:'Master CRM';
+    url=API_URL+'?action=bookAppointment&existing=1&business='+encodeURIComponent(business)+'&sheetSource='+encodeURIComponent(sheetSource)+'&apptDate='+encodeURIComponent(apptDate)+'&reason='+encodeURIComponent(reason)+'&t='+Date.now();
+  }else{
+    const business=document.getElementById('apptNewBusiness').value.trim();
+    const number=normalizePhoneClient(document.getElementById('apptNewNumber').value);
+    const town=document.getElementById('apptNewTown').value.trim();
+    const category=document.getElementById('apptNewCategory').value.trim();
+    const contactName=document.getElementById('apptNewContactName').value.trim();
+    const sheetSource=document.getElementById('apptNewSheetSource').value;
+    if(!business||!number){resultEl.innerHTML='<span style="color:var(--red)">Business name and number are required.</span>';return;}
+    if(!/^0\d{9}$/.test(number)){resultEl.innerHTML='<span style="color:var(--red)">Number should be 10 digits starting with 0.</span>';return;}
+    url=API_URL+'?action=bookAppointment&existing=0&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&town='+encodeURIComponent(town)+'&category='+encodeURIComponent(category)+'&contactName='+encodeURIComponent(contactName)+'&sheetSource='+encodeURIComponent(sheetSource)+'&apptDate='+encodeURIComponent(apptDate)+'&reason='+encodeURIComponent(reason)+'&t='+Date.now();
+  }
+  resultEl.innerHTML='<span style="color:var(--muted)">Booking...</span>';
+  try{
+    const res=await fetch(url);const data=await res.json();
+    if(data.success){
+      resultEl.innerHTML='<span style="color:var(--green);font-weight:700">&#10003; Appointment booked for '+dateVal+'</span>';
+      showToast('Appointment booked — '+data.business);
+      clearContactSearch('appt');
+      setTimeout(()=>{
+        document.getElementById('apptModal').style.display='none';
+        loadData().then(()=>{ if(document.getElementById('tab-calendar').classList.contains('active')) renderCalendar(); });
+      },1200);
+    }else{
+      resultEl.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not book')+'</span>';
+    }
+  }catch(e){resultEl.innerHTML='<span style="color:var(--red)">Connection error — try again</span>';}
 }
 
 function renderPipeline(){
