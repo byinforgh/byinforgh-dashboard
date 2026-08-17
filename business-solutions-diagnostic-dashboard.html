@@ -180,6 +180,43 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
 .contact-strip{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-dim);margin-top:10px;}
 .contact-strip a{color:var(--teal-dark);font-weight:700;text-decoration:none;}
 
+/* ---------- BYINFORGH STAFF CONSOLE ---------- */
+.staff-link{font-size:10.5px;color:var(--ink-dim);opacity:.55;text-decoration:none;letter-spacing:.5px;}
+.staff-link:hover{opacity:1;color:var(--teal-dark);}
+.staff-topbadge{background:#16333a;color:#f5c842;font-size:9.5px;font-weight:800;letter-spacing:1.5px;padding:4px 9px;border-radius:20px;text-transform:uppercase;}
+.gate-box{max-width:360px;margin:80px auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:30px 26px;text-align:center;}
+.gate-box .lock{font-size:34px;margin-bottom:10px;}
+.gate-box input{text-align:center;letter-spacing:6px;font-size:20px;font-family:'Space Mono',monospace;}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:24px 0;}
+.mode-card{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:24px;cursor:pointer;transition:transform .15s,border-color .15s;}
+.mode-card:hover{transform:translateY(-3px);border-color:var(--teal);}
+.mode-card .mic{font-size:28px;margin-bottom:10px;}
+.mode-card h3{font-size:16px;margin-bottom:6px;}
+.mode-card p{font-size:12.5px;color:var(--ink-dim);line-height:1.6;margin-bottom:10px;}
+.mode-card .tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;color:var(--teal-dark);background:var(--highlight);border-radius:20px;padding:3px 10px;}
+.sub-mode-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.sub-mode-row button{flex:1;min-width:140px;}
+.session-meta{background:var(--highlight);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--ink-dim);margin-bottom:16px;line-height:1.7;}
+.session-meta b{color:var(--teal-dark);}
+.section-stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.section-stepper .sstep{flex:1;min-width:36px;height:6px;border-radius:4px;background:var(--line);}
+.section-stepper .sstep.done{background:var(--teal);}
+.section-stepper .sstep.current{background:var(--gold);}
+.deep-item{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+.deep-item .dq{font-size:13.5px;font-weight:700;margin-bottom:4px;}
+.deep-item .dprompt{font-size:11.5px;color:var(--ink-dim);margin-bottom:10px;font-style:italic;}
+.deep-item .status-row{display:flex;gap:8px;margin-bottom:8px;}
+.deep-item .status-row button{flex:1;padding:9px 6px;font-size:11.5px;border-radius:7px;border:1px solid var(--line);background:#fff;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;}
+.deep-item .status-row button.sel-good{border-color:var(--green);background:#eaf6ee;color:var(--green);}
+.deep-item .status-row button.sel-partial{border-color:var(--orange);background:#fbf1e2;color:var(--orange);}
+.deep-item .status-row button.sel-missing{border-color:var(--red);background:#fbeceb;color:var(--red);}
+.deep-item textarea{font-size:12.5px;}
+.script-box{background:var(--teal-deep);color:#eafaf7;border-radius:12px;padding:18px 20px;font-size:13px;line-height:1.8;white-space:pre-wrap;margin-bottom:16px;}
+.script-box b{color:var(--gold);}
+.consult-open{margin-bottom:16px;}
+.consult-open label{margin-top:12px;}
+.notes-field{margin-top:8px;}
+
 /* ---------- MOBILE FIXES ---------- */
 @media (max-width: 640px){
   .topbar{padding:10px 14px;gap:8px;}
@@ -208,6 +245,12 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
   .selbar{padding:12px 16px;}
   .selbar .btn{padding:9px 14px;font-size:11.5px;}
   .rung .name{width:74px;font-size:11px;}
+
+  .gate-box{margin:40px auto;padding:24px 18px;}
+  .mode-grid{grid-template-columns:1fr;}
+  .staff-topbadge{font-size:8.5px;padding:3px 7px;}
+  .deep-item .status-row{flex-direction:column;}
+  .deep-item .status-row button{width:100%;}
 }
 </style>
 </head>
@@ -225,6 +268,7 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
   <div class="topbar-right">
     <button class="btn btn-gold" style="padding:9px 16px;font-size:12px;" onclick="goScreen('selection')">🧺 My Selection <span id="selCountTop">(0)</span></button>
     <div class="tier-badge">Corporate Tier</div>
+    <div class="staff-topbadge hidden" id="staffBadge" onclick="goStaffScreen('staffhome')" style="cursor:pointer">🔒 Staff Mode</div>
   </div>
 </div>
 
@@ -259,6 +303,10 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
 
   <div class="section-label" style="margin-top:40px" id="ladderAnchor">THE EIGHT BUSINESS MATURITY LEVELS</div>
   <div class="ladder-grid" id="homeLadderGrid"></div>
+
+  <div style="margin-top:50px;text-align:right;">
+    <a href="#" class="staff-link" onclick="goStaffScreen('staffgate');return false;">🔒 BYINFORGH staff — run a Full-Day Audit or Consulting session →</a>
+  </div>
 </div>
 
 <div id="screen-stage" class="page hidden">
@@ -392,6 +440,162 @@ font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
   <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="bookConsultation()">Book a Full Consultation Instead</button>
   <div class="contact-strip" style="justify-content:center">Call/WhatsApp <a href="tel:0509960980">0509 960 980</a> · Email <a href="mailto:solutions@byinforgh.com">solutions@byinforgh.com</a></div>
   <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="goHome()">Keep browsing the levels</button>
+</div>
+
+<!-- ======================= BYINFORGH STAFF CONSOLE ======================= -->
+<!-- Light client-side gate. This hides the console from casual visitors —
+     it is NOT real authentication (the PIN check runs in this file, in the
+     browser). Do not treat it as securing sensitive data; the same public
+     backend endpoint is used either way. See the "Staff Console — Backend
+     Notes" document for how to upgrade this to real login if you want it. -->
+<div id="screen-staffgate" class="page-narrow hidden">
+  <div class="gate-box">
+    <div class="lock">🔒</div>
+    <h1 style="font-size:18px;margin-bottom:6px;">BYINFORGH Staff Console</h1>
+    <p style="font-size:12px;color:var(--ink-dim);margin-bottom:18px;">Enter your PIN to run a Full-Day Audit or Consulting session.</p>
+    <input id="staffPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')checkStaffPin()">
+    <div class="err" id="staffPinErr"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="checkStaffPin()">Enter →</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="goHome()">Back to the public site</button>
+  </div>
+</div>
+
+<div id="screen-staffhome" class="page hidden">
+  <div class="eyebrow">BYINFORGH Staff Console</div>
+  <h1 style="font-size:26px">What are you running today?</h1>
+  <p class="lead" style="font-size:13px">Pick a mode. Both feed the same recommendation engine and land in the Command Centre's Biz Solutions tab, tagged by session type so they never get mixed up with self-serve customer submissions.</p>
+
+  <div class="mode-grid">
+    <div class="mode-card" onclick="goStaffScreen('staffintake');pendingStaffMode='consulting';pendingStaffDepth='';">
+      <div class="mic">💬</div>
+      <h3>Consulting Session</h3>
+      <p>A shorter, conversational discovery meeting — 30–45 min. Good for a first meeting, a phone/video call, or a walk-in. Ends with a clear recommendation and a pitch script.</p>
+      <span class="tag">~14 questions · fast</span>
+      <div style="margin-top:10px;font-family:'Space Mono',monospace;font-weight:700;color:var(--teal-dark);font-size:15px">GH₵600</div>
+    </div>
+    <div class="mode-card" onclick="goStaffScreen('staffintake');pendingStaffMode='audit';pendingStaffDepth='quick';">
+      <div class="mic">🗓️</div>
+      <h3>Full-Day Audit — Quick</h3>
+      <p>The full 34-question maturity audit, on-site, with a consultant notes field on every question. Use this for simpler, single-location businesses.</p>
+      <span class="tag">34 questions · ~2–3 hrs</span>
+      <div style="margin-top:10px;font-family:'Space Mono',monospace;font-weight:700;color:var(--teal-dark);font-size:15px">GH₵1,800</div>
+    </div>
+    <div class="mode-card" onclick="goStaffScreen('staffintake');pendingStaffMode='audit';pendingStaffDepth='deep';">
+      <div class="mic">🏗️</div>
+      <h3>Full-Day Audit — Deep</h3>
+      <p>The full operational walkthrough across 7 departments — Digital Presence, Operations, Customer Experience, Facilities, Management, Training, Support. Use this for multi-staff, multi-location or complex operations (hospitality, manufacturing, multi-branch).</p>
+      <span class="tag">7 sections · full day on-site</span>
+      <div style="margin-top:10px;font-family:'Space Mono',monospace;font-weight:700;color:var(--teal-dark);font-size:15px">GH₵1,800</div>
+    </div>
+  </div>
+  <p style="font-size:11.5px;color:var(--ink-dim);max-width:640px;margin-bottom:10px">Both audit depths are GH₵1,800 flat — depth is chosen by operational complexity, not price. This fee covers the audit/consulting session itself; any resulting build is scoped and quoted separately, and the client can choose to implement the recommendations themselves or have BYINFORGH implement them.</p>
+  <button class="btn btn-ghost" onclick="goHome()">← Back to the public site</button>
+  <button class="btn btn-ghost" style="margin-left:8px" onclick="lockStaffConsole()">🔒 Lock console</button>
+</div>
+
+<div id="screen-staffintake" class="page-narrow hidden">
+  <div class="eyebrow" id="staffIntakeEyebrow">Session Setup</div>
+  <h1 style="font-size:22px">Business & session details</h1>
+  <p class="lead" style="font-size:13px">Same intake as the public audit, plus who's running the session.</p>
+  <label>Consultant name *</label><input id="st_consultant" placeholder="Your name">
+  <label>Business name *</label><input id="st_business" placeholder="e.g. The White House GH">
+  <label>Owner / contact name *</label><input id="st_contact" placeholder="Full name">
+  <label>WhatsApp number *</label><input id="st_number" type="tel" placeholder="024 123 4567">
+  <label>Email (optional, needed to send report by email)</label><input id="st_email" type="email" placeholder="owner@business.com">
+  <label>Region / town *</label>
+  <select id="st_region"><option value="">Select region</option><option>Greater Accra</option><option>Ashanti</option>
+    <option>Eastern Region</option><option>Central Region</option><option>Western Region</option><option>Volta Region</option>
+    <option>Northern Region</option><option>Bono Region</option><option>Other</option></select>
+  <label>Industry / niche *</label>
+  <select id="st_industry"><option value="">Select industry</option><option>Retail & Fashion</option>
+    <option>Food & Beverage / Restaurant</option><option>Hospitality / Guest House / Hotel</option>
+    <option>Salon & Beauty</option><option>Transport & Logistics</option><option>Construction & Trade</option>
+    <option>Health & Wellness Clinic</option><option>Education / Training</option><option>Manufacturing / Agro-processing</option>
+    <option>Events</option><option>Real Estate</option><option>Automotive</option><option>Other</option></select>
+  <label>Years operating *</label>
+  <select id="st_years"><option value="">Select</option><option>Less than 6 months</option><option>6 months – 2 years</option>
+    <option>2 – 5 years</option><option>5 – 10 years</option><option>10+ years</option></select>
+  <label>Staff count (incl. owner) *</label>
+  <select id="st_staff"><option value="">Select</option><option>Just me</option><option>2–5</option><option>6–15</option>
+    <option>16–50</option><option>50+</option></select>
+  <label>Approx. monthly revenue</label>
+  <select id="st_revenue"><option value="">Prefer not to say</option><option>Under GH₵10,000</option>
+    <option>GH₵10,000–30,000</option><option>GH₵30,000–100,000</option><option>GH₵100,000–300,000</option><option>GH₵300,000+</option></select>
+  <label>Single biggest headache (in their words)</label>
+  <textarea id="st_headache" rows="2" placeholder="What they said when you asked"></textarea>
+  <div class="err" id="staffIntakeErr"></div>
+  <button class="btn btn-primary btn-full" onclick="startStaffSession()">Start the session →</button>
+  <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="goStaffScreen('staffhome')">Back</button>
+</div>
+
+<!-- Quick Audit / Consulting question flow (reuses the same yes/partial/no engine) -->
+<div id="screen-staffdiag" class="page-narrow hidden">
+  <div class="session-meta" id="staffDiagMeta"></div>
+  <div class="progress-track"><div class="progress-fill" id="staffDiagProgressFill" style="width:0%"></div></div>
+  <div class="card">
+    <div class="q-stage-tag" id="staffQStageTag">—</div>
+    <div class="q-text" id="staffQText">—</div>
+    <div class="ans-row">
+      <button class="ans-btn yes" onclick="staffAnswer(2)">Yes</button>
+      <button class="ans-btn partial" onclick="staffAnswer(1)">Partially</button>
+      <button class="ans-btn no" onclick="staffAnswer(0)">No</button>
+    </div>
+    <label>Consultant notes (what you saw/heard — optional but recommended)</label>
+    <textarea id="staffQNotes" rows="2" class="notes-field" placeholder="e.g. Owner tracks stock in a WhatsApp voice note to herself" oninput="saveStaffNote(this.value)"></textarea>
+  </div>
+  <button class="btn btn-ghost btn-full" onclick="staffPrevQuestion()">← Previous question</button>
+</div>
+
+<!-- Deep Full-Day Audit — section by section -->
+<div id="screen-deepaudit" class="page-narrow hidden">
+  <div class="session-meta" id="deepAuditMeta"></div>
+  <div class="section-stepper" id="deepStepper"></div>
+  <div class="card">
+    <div class="q-stage-tag" id="deepSectionTag">—</div>
+    <h2 id="deepSectionName" style="font-size:19px;margin-bottom:14px;">—</h2>
+    <div id="deepItemsList"></div>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-ghost btn-full" onclick="deepPrevSection()">← Previous section</button>
+    <button class="btn btn-primary btn-full" id="deepNextBtn" onclick="deepNextSection()">Next section →</button>
+  </div>
+</div>
+
+<!-- Consultant-only results / report screen -->
+<div id="screen-staffresults" class="page-narrow hidden">
+  <div class="eyebrow">Consultant Report</div>
+  <h1 id="staffResHeadline" style="font-size:22px">—</h1>
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:8px">MATURITY LADDER</div>
+    <div id="staffResLadder"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:10px">GAPS FOUND (WITH YOUR NOTES)</div>
+    <div id="staffResGaps"></div>
+  </div>
+  <div class="card" id="staffResIndustry">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:10px" class="ind-title">INDUSTRY-SPECIFIC FINDINGS</div>
+    <div class="ind-list"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--ink-dim);margin-bottom:10px">HOW DOES THE BUSINESS WANT TO ACT ON THIS?</div>
+    <div class="sub-mode-row">
+      <button class="btn btn-ghost" id="implDiyBtn" onclick="setImplementationChoice('diy')">🧑‍🔧 They implement it themselves</button>
+      <button class="btn btn-ghost" id="implDoneBtn" onclick="setImplementationChoice('done_for_you')">🏗️ BYINFORGH implements it</button>
+    </div>
+    <p style="font-size:11.5px;color:var(--ink-dim);margin-top:8px">Either way the audit/consulting fee stands — this only changes what happens next and what the report says.</p>
+  </div>
+  <div class="script-box" id="staffScriptBox">—</div>
+  <label>Anything to add before saving?</label>
+  <textarea id="staffFinalNotes" rows="2" placeholder="Overall impression, red flags, opportunity size..."></textarea>
+  <div class="err" id="staffSaveErr"></div>
+  <button class="btn btn-gold btn-full" onclick="saveSessionToCommandCentre()">💾 Save to Command Centre →</button>
+  <div class="sub-mode-row" style="margin-top:8px">
+    <button class="btn btn-primary" onclick="sendRecommendationWhatsApp()">🟢 Send via WhatsApp</button>
+    <button class="btn btn-primary" onclick="sendRecommendationEmail()">✉️ Send via Email</button>
+  </div>
+  <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="copyStaffReport()">📋 Copy Full Report</button>
+  <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="goStaffScreen('staffhome')">New session</button>
 </div>
 
 <div class="selbar hidden" id="selBar">
@@ -566,7 +770,8 @@ function bookConsultation(){
   });
 }
 function goScreen(id){
-  ['home','stage','intake','diagnostic','results','selection'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+  ['home','stage','intake','diagnostic','results','selection','staffgate','staffhome','staffintake','staffdiag','deepaudit','staffresults']
+    .forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
   document.getElementById('screen-'+id).classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='selection') renderSelectionScreen();
@@ -906,7 +1111,8 @@ function setActiveNav(id){
   const el=document.getElementById(id); if(el) el.classList.add('active');
 }
 function goHome(){
-  ['stage','intake','diagnostic','results','selection'].forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
+  ['stage','intake','diagnostic','results','selection','staffgate','staffhome','staffintake','staffdiag','deepaudit','staffresults']
+    .forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
   document.getElementById('screen-home').classList.remove('hidden');
   setActiveNav('navHome');
   window.scrollTo({top:0,behavior:'smooth'});
@@ -933,7 +1139,8 @@ function renderHomeLadder(){
 function openStage(n){
   currentLevelN=n;
   const s=LEVEL_CONTENT.find(x=>x.n===n);
-  ['home','intake','diagnostic','results','selection'].forEach(sc=>{const el=document.getElementById('screen-'+sc); if(el) el.classList.add('hidden');});
+  ['home','intake','diagnostic','results','selection','staffgate','staffhome','staffintake','staffdiag','deepaudit','staffresults']
+    .forEach(sc=>{const el=document.getElementById('screen-'+sc); if(el) el.classList.add('hidden');});
   document.getElementById('screen-stage').classList.remove('hidden');
   setActiveNav('navStage'+n);
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1188,6 +1395,497 @@ function checkoutSelection(){
     (notes?'\nNotes: '+notes:'')+'\nPlease send a combined quote and next steps.';
   window.open('https://wa.me/233509960980?text='+encodeURIComponent(msg),'_blank');
   showToast('Selection sent — BYINFORGH will follow up on WhatsApp');
+}
+
+// ============================================================
+// BYINFORGH STAFF CONSOLE — Full-Day Audit & Consulting Session
+// Runs entirely client-side, reuses the same LEVEL_CONTENT /
+// CORP_PACKAGES / backendCall() as the public audit above.
+// ============================================================
+
+// ---- Light PIN gate. NOT real security — see the note above the
+// staffgate screen markup. Change this PIN whenever you like.
+const STAFF_PIN = '2580';
+
+function goStaffScreen(id){
+  const ids=['home','stage','intake','diagnostic','results','selection',
+             'staffgate','staffhome','staffintake','staffdiag','deepaudit','staffresults'];
+  ids.forEach(s=>{const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');});
+  document.getElementById('screen-'+id).classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function checkStaffPin(){
+  const val=document.getElementById('staffPinInput').value.trim();
+  if(val===STAFF_PIN){
+    document.getElementById('staffPinErr').textContent='';
+    document.getElementById('staffPinInput').value='';
+    document.getElementById('staffBadge').classList.remove('hidden');
+    sessionStorage.setItem('byinforgh_staff','1');
+    goStaffScreen('staffhome');
+  } else {
+    document.getElementById('staffPinErr').textContent='Incorrect PIN.';
+  }
+}
+function lockStaffConsole(){
+  sessionStorage.removeItem('byinforgh_staff');
+  document.getElementById('staffBadge').classList.add('hidden');
+  goHome();
+}
+// Stay unlocked for the rest of this browser tab/session only
+if(sessionStorage.getItem('byinforgh_staff')==='1'){
+  document.addEventListener('DOMContentLoaded',()=>{ const b=document.getElementById('staffBadge'); if(b) b.classList.remove('hidden'); });
+}
+
+// Pull 2 highest-signal questions per level from QUESTIONS for the
+// shorter Consulting Session flow.
+const CONSULT_QUESTIONS = (function(){
+  const out=[];
+  for(let n=1;n<=7;n++){
+    const qs=QUESTIONS.filter(q=>q.level===n);
+    out.push(qs[0]);
+    if(qs[1]) out.push(qs[1]);
+  }
+  return out;
+})();
+
+// Deep Full-Day Audit — 7 operational departments, mapped to the
+// same 1–7 maturity levels used everywhere else so results plug
+// straight into the existing LEVEL_CONTENT / CORP_PACKAGES engine.
+const DEEP_AUDIT_SECTIONS = [
+  {level:1, name:'Digital Presence', icon:'🌐', items:[
+    {t:'Website — live, mobile-friendly, correct info', prompt:'Open it on your phone right now. Does it load properly? Is the info current?'},
+    {t:'Google Business listing — claimed, accurate hours/location', prompt:'Search the business on Google Maps. Check hours, photos, reviews.'},
+    {t:'Social media — active, consistent branding', prompt:'Check the last 3 posts. Same logo/colours/voice everywhere?'},
+    {t:'Content & photography quality', prompt:'Are product/service photos clear and current, or old phone snaps?'},
+    {t:'Findability / SEO', prompt:'Search the business name plus town. Do they show up on page 1?'}
+  ]},
+  {level:2, name:'Operations', icon:'📦', items:[
+    {t:'Stock / inventory tracking', prompt:'Ask to see how they track stock. Spreadsheet, notebook, or nothing?'},
+    {t:'Payroll process', prompt:'Ask how payroll is calculated and paid each month.'},
+    {t:'Finance tracking (income/expense)', prompt:"Ask to see this week's income record. Does one exist?"},
+    {t:'Procurement / supplier process', prompt:'Ask how they reorder from suppliers — planned or reactive?'}
+  ]},
+  {level:3, name:'Customer Experience', icon:'🧾', items:[
+    {t:'Ordering / booking system (QR, digital menu, booking form)', prompt:'Walk through placing an order or booking exactly as a customer would.'},
+    {t:'Guest/customer journey mapped', prompt:'Ask two staff to describe the journey start to finish — one story or two different ones?'},
+    {t:'Membership / loyalty structure', prompt:'Is there any way repeat customers are recognised or rewarded?'},
+    {t:'Feedback loop', prompt:'Where do complaints actually go? Is anything ever done with them?'}
+  ]},
+  {level:4, name:'Facilities', icon:'🧹', items:[
+    {t:'Maintenance schedule', prompt:'Ask what breaks most often and how it gets fixed — planned or emergency?'},
+    {t:'Staff requests process', prompt:'How does staff report an issue — verbally, a book, an app?'},
+    {t:'Cleaning standards', prompt:'Walk the floor / kitchen / back-of-house. Is there a written cleaning schedule?'},
+    {t:'Asset tracking', prompt:'Ask if they know what equipment they own and its condition.'}
+  ]},
+  {level:5, name:'Management', icon:'📊', items:[
+    {t:'Executive dashboard / daily reporting', prompt:'Ask what single number they personally check every morning.'},
+    {t:'KPIs defined and tracked', prompt:'Ask for their top 3 numbers. Can they say them without checking anything?'},
+    {t:'Analytics used for decisions', prompt:'Ask for one decision made because of data in the last month.'},
+    {t:'Weekly/monthly review rhythm', prompt:'Is there a standing review — even an informal one?'}
+  ]},
+  {level:6, name:'Training', icon:'🎓', items:[
+    {t:'SOPs documented', prompt:'Ask to see a written SOP for one core task, right now.'},
+    {t:'Staff guides / onboarding material', prompt:'How does a new hire learn the job — shadowing only, or a document?'},
+    {t:'Documentation kept current', prompt:'Ask when SOPs/guides were last updated.'}
+  ]},
+  {level:7, name:'Support', icon:'🛟', items:[
+    {t:'Update/maintenance plan for existing systems', prompt:'If a system breaks, who fixes it and how fast?'},
+    {t:'Continuous improvement habit', prompt:'Ask for one thing they changed or improved in the last quarter.'},
+    {t:'External support relationships', prompt:'Do they have any ongoing consultant/vendor relationship, or is everything reactive?'}
+  ]}
+];
+
+// Industry-specific "what to look for" prompts — pulled directly from the
+// BYINFORGH field strategy notes (top target categories, proven visibility
+// gaps per trade). Shown as extra consultant-only checks once the intake
+// industry is known, on top of the core questions — this is what "learns"
+// from the business as you go: the flow adapts to what kind of business
+// it is instead of asking generic questions only.
+const INDUSTRY_FOCUS = {
+  'Salon & Beauty':{icon:'💇‍♀️', label:'Barbershop / Salon & Beauty Focus', items:[
+    'Is the work genuinely good but the online content inconsistent or absent?',
+    'Is there a consistent before/after or transformation content habit?',
+    'Would customers describe the shop as looking "premium," or just "fine"?',
+    'Is there a booking system, or is it all walk-in/WhatsApp chaos?'
+  ]},
+  'Food & Beverage / Restaurant':{icon:'🍽️', label:'Restaurant / Lounge Focus', items:[
+    'Does the online presence match the actual in-person experience?',
+    'Are there visibly slow/empty hours that better visibility could fill?',
+    'Is there any video content showing the food, space, or atmosphere?',
+    'Is the Google Business listing accurate (hours, menu, photos)?'
+  ]},
+  'Hospitality / Guest House / Hotel':{icon:'🏨', label:'Hospitality Focus', items:[
+    'Is there a working booking system, or is everything manual/WhatsApp?',
+    'Does the online presence (photos, listings) match the real property standard?',
+    'Is there a guest journey — arrival to checkout — that is consistent across staff?',
+    'Are reviews being actively managed and responded to?'
+  ]},
+  'Automotive':{icon:'🚗', label:'Auto Care / Detailing Focus', items:[
+    'Is the actual work high quality but not documented (no before/after videos)?',
+    'Is there a booking structure, or is it first-come chaos?',
+    'Is there a loyalty/repeat customer system for a high-margin service?'
+  ]},
+  'Real Estate':{icon:'🏠', label:'Real Estate Focus', items:[
+    'Is content limited to plain listing photos with no storytelling or personal brand?',
+    'Is there a clear trust-building presence (video walkthroughs, testimonials)?',
+    'Given deal sizes, is the visibility investment proportionate to the upside?'
+  ]},
+  'Health & Wellness Clinic':{icon:'🏥', label:'Clinic / Aesthetics Focus', items:[
+    'Is the branding outdated relative to the trust this industry requires?',
+    'Is there a visible human face to the practice, or does it feel anonymous?',
+    'Is there any educational content building authority and trust?'
+  ]},
+  'Education / Training':{icon:'🏫', label:'School / Training Institute Focus', items:[
+    'Is there a digital structure parents can actually trust before enrolling?',
+    'Is enrolment/registration digitised, or fully manual/paper-based?',
+    'Is there any storytelling (results, testimonials) beyond bare facts?'
+  ]},
+  'Events':{icon:'🎉', label:'Events / Decor Focus', items:[
+    'Is the portfolio presented with process/storytelling, or just finished photos?',
+    'Is there a booking/deposit system, or is everything negotiated ad hoc?'
+  ]},
+  'Retail & Fashion':{icon:'👗', label:'Boutique / Retail Focus', items:[
+    'Is the product quality strong but the marketing/content weak?',
+    'Is there a consistent brand identity across the shop and online presence?',
+    'Is stock tracked in any real system, or only in the owner\'s head?'
+  ]}
+};
+function getIndustryFocus(industry){ return INDUSTRY_FOCUS[industry] || null; }
+
+let pendingStaffMode='', pendingStaffDepth='';
+const SESSION_FEES = {consultant_consulting_session:600, consultant_quick_audit:1800, consultant_deep_audit:1800};
+let implementationChoice='done_for_you'; // default; consultant can switch to 'diy'
+function setImplementationChoice(val){
+  implementationChoice=val;
+  const diyBtn=document.getElementById('implDiyBtn'), doneBtn=document.getElementById('implDoneBtn');
+  diyBtn.classList.toggle('btn-primary', val==='diy'); diyBtn.classList.toggle('btn-ghost', val!=='diy');
+  doneBtn.classList.toggle('btn-primary', val==='done_for_you'); doneBtn.classList.toggle('btn-ghost', val!=='done_for_you');
+  renderStaffResults();
+}
+
+let staffIntake={}, staffQIndex=0, staffAnswers=[], staffNotes=[], staffQuestionSet=[], staffResult=null, staffSessionType='';
+let deepSectionIdx=0, deepAnswers={}, deepNotesState={}, sessionDeepSections=DEEP_AUDIT_SECTIONS.slice();
+
+function startStaffSession(){
+  const consultant=document.getElementById('st_consultant').value.trim();
+  const business=document.getElementById('st_business').value.trim();
+  const contact=document.getElementById('st_contact').value.trim();
+  const number=document.getElementById('st_number').value.trim();
+  const region=document.getElementById('st_region').value;
+  const industry=document.getElementById('st_industry').value;
+  const years=document.getElementById('st_years').value;
+  const staff=document.getElementById('st_staff').value;
+  const revenue=document.getElementById('st_revenue').value;
+  const headache=document.getElementById('st_headache').value.trim();
+  const err=document.getElementById('staffIntakeErr');
+  if(!consultant||!business||!contact||!number||!region||!industry||!years||!staff){
+    err.textContent='Please fill in every field marked *.'; return;
+  }
+  err.textContent='';
+  const email=document.getElementById('st_email').value.trim();
+  staffIntake={consultant,business,contact,number,email,region,industry,years,staff,revenue,headache};
+
+  if(pendingStaffMode==='audit' && pendingStaffDepth==='deep'){
+    staffSessionType='consultant_deep_audit';
+    deepSectionIdx=0; deepAnswers={}; deepNotesState={};
+    const focus=getIndustryFocus(industry);
+    sessionDeepSections = focus
+      ? DEEP_AUDIT_SECTIONS.concat([{level:'industry', name:focus.label, icon:focus.icon, items:focus.items.map(t=>({t, prompt:'Assess based on what you have seen and heard today.'}))}])
+      : DEEP_AUDIT_SECTIONS.slice();
+    goStaffScreen('deepaudit'); renderDeepSection();
+  } else {
+    staffSessionType = pendingStaffMode==='consulting' ? 'consultant_consulting_session' : 'consultant_quick_audit';
+    const core = pendingStaffMode==='consulting' ? CONSULT_QUESTIONS : QUESTIONS;
+    const focus=getIndustryFocus(industry);
+    const industryQs = focus ? focus.items.map(t=>({level:'industry', text:t, industryLabel:focus.label})) : [];
+    staffQuestionSet = core.concat(industryQs);
+    staffQIndex=0;
+    staffAnswers=new Array(staffQuestionSet.length).fill(null);
+    staffNotes=new Array(staffQuestionSet.length).fill('');
+    goStaffScreen('staffdiag'); renderStaffQuestion();
+  }
+}
+
+function renderStaffQuestion(){
+  const q=staffQuestionSet[staffQIndex];
+  const isIndustry = q.level==='industry';
+  const lvl = isIndustry ? null : LEVEL_CONTENT.find(s=>s.n===q.level);
+  document.getElementById('staffDiagMeta').innerHTML=
+    `<b>${staffIntake.business}</b> · ${staffSessionType==='consultant_consulting_session'?'Consulting Session':'Full-Day Audit — Quick'} · consultant: ${staffIntake.consultant} · question ${staffQIndex+1} of ${staffQuestionSet.length}`;
+  document.getElementById('staffQStageTag').textContent = isIndustry
+    ? '🎯 '+(q.industryLabel||'INDUSTRY FOCUS').toUpperCase()
+    : 'LEVEL '+q.level+' — '+lvl.name.toUpperCase();
+  document.getElementById('staffQText').textContent=q.text;
+  document.getElementById('staffDiagProgressFill').style.width=Math.round((staffQIndex/staffQuestionSet.length)*100)+'%';
+  document.querySelectorAll('#screen-staffdiag .ans-btn').forEach(b=>b.classList.remove('sel'));
+  if(staffAnswers[staffQIndex]!==null){
+    const val=staffAnswers[staffQIndex]; const cls=val===2?'yes':val===1?'partial':'no';
+    document.querySelector('#screen-staffdiag .ans-btn.'+cls).classList.add('sel');
+  }
+  document.getElementById('staffQNotes').value=staffNotes[staffQIndex]||'';
+}
+function saveStaffNote(val){ staffNotes[staffQIndex]=val; }
+function staffAnswer(points){
+  staffAnswers[staffQIndex]=points;
+  if(staffQIndex<staffQuestionSet.length-1){ staffQIndex++; renderStaffQuestion(); }
+  else{ computeStaffResults(); goStaffScreen('staffresults'); renderStaffResults(); }
+}
+function staffPrevQuestion(){ if(staffQIndex>0){ staffQIndex--; renderStaffQuestion(); } else goStaffScreen('staffintake'); }
+
+function computeStaffResults(){
+  const levelScores={};
+  for(let n=1;n<=7;n++){
+    const qs=staffQuestionSet.map((q,i)=>({q,i})).filter(x=>x.q.level===n);
+    if(!qs.length){ levelScores[n]=null; continue; }
+    const earned=qs.reduce((sum,x)=>sum+(staffAnswers[x.i]||0),0);
+    levelScores[n]=Math.round((earned/(qs.length*2))*100);
+  }
+  const scored=Object.keys(levelScores).filter(n=>levelScores[n]!==null).map(Number).sort((a,b)=>a-b);
+  let overallLevel=scored.length?scored[scored.length-1]:1;
+  for(const n of scored){ if(levelScores[n]<60){ overallLevel=n; break; } }
+  const validScores=scored.map(n=>levelScores[n]);
+  const overallScore=validScores.length?Math.round(validScores.reduce((a,b)=>a+b,0)/validScores.length):0;
+  const gapCandidates=staffQuestionSet.map((q,i)=>({q,i,val:staffAnswers[i],note:staffNotes[i]})).filter(x=>x.q.level!=='industry' && x.val<2);
+  gapCandidates.sort((a,b)=>a.val-b.val || a.q.level-b.q.level);
+  const topGaps=gapCandidates.slice(0,5).map(x=>({text:x.q.text, note:x.note}));
+  // Industry-specific findings, kept separate from the 1–7 ladder score but
+  // surfaced in the report as targeted, business-type-specific insight.
+  const industryGaps=staffQuestionSet.map((q,i)=>({q,i,val:staffAnswers[i],note:staffNotes[i]}))
+    .filter(x=>x.q.level==='industry' && x.val<2)
+    .map(x=>({text:x.q.text, note:x.note}));
+  staffResult={levelScores,overallLevel,overallScore,topGaps,industryGaps,intake:staffIntake};
+}
+
+// ---- Deep Audit section flow ----
+function renderDeepSection(){
+  const sec=sessionDeepSections[deepSectionIdx];
+  document.getElementById('deepAuditMeta').innerHTML=
+    `<b>${staffIntake.business}</b> · Full-Day Audit — Deep · consultant: ${staffIntake.consultant} · section ${deepSectionIdx+1} of ${sessionDeepSections.length}`;
+  document.getElementById('deepStepper').innerHTML=sessionDeepSections.map((s,i)=>
+    `<div class="sstep ${i<deepSectionIdx?'done':''} ${i===deepSectionIdx?'current':''}"></div>`).join('');
+  document.getElementById('deepSectionTag').textContent = sec.level==='industry'
+    ? '🎯 INDUSTRY-SPECIFIC FOCUS'
+    : 'MAPS TO LEVEL '+sec.level+' — '+(LEVEL_CONTENT.find(x=>x.n===sec.level)||{}).name;
+  document.getElementById('deepSectionName').textContent=sec.icon+' '+sec.name;
+  document.getElementById('deepItemsList').innerHTML=sec.items.map((it,i)=>{
+    const key=deepSectionIdx+'-'+i;
+    const val=deepAnswers[key];
+    const note=deepNotesState[key]||'';
+    return `<div class="deep-item">
+      <div class="dq">${it.t}</div>
+      <div class="dprompt">${it.prompt}</div>
+      <div class="status-row">
+        <button class="${val===2?'sel-good':''}" onclick="setDeepAnswer(${deepSectionIdx},${i},2)">✓ Good</button>
+        <button class="${val===1?'sel-partial':''}" onclick="setDeepAnswer(${deepSectionIdx},${i},1)">◐ Partial</button>
+        <button class="${val===0?'sel-missing':''}" onclick="setDeepAnswer(${deepSectionIdx},${i},0)">✕ Missing</button>
+      </div>
+      <textarea rows="2" placeholder="What you observed..." onblur="setDeepNote(${deepSectionIdx},${i},this.value)">${note}</textarea>
+    </div>`;
+  }).join('');
+  document.getElementById('deepNextBtn').textContent = deepSectionIdx===sessionDeepSections.length-1 ? 'Finish audit →' : 'Next section →';
+}
+function setDeepAnswer(secIdx,itemIdx,val){ deepAnswers[secIdx+'-'+itemIdx]=val; renderDeepSection(); }
+function setDeepNote(secIdx,itemIdx,val){ deepNotesState[secIdx+'-'+itemIdx]=val; }
+function deepNextSection(){
+  if(deepSectionIdx<sessionDeepSections.length-1){ deepSectionIdx++; renderDeepSection(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else{ computeDeepResults(); goStaffScreen('staffresults'); renderStaffResults(); }
+}
+function deepPrevSection(){
+  if(deepSectionIdx>0){ deepSectionIdx--; renderDeepSection(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else goStaffScreen('staffintake');
+}
+function computeDeepResults(){
+  const levelScores={};
+  const gapCandidates=[];
+  const industryGaps=[];
+  sessionDeepSections.forEach((sec,si)=>{
+    let earned=0;
+    sec.items.forEach((it,ii)=>{
+      const val=deepAnswers[si+'-'+ii]; const points=(val===undefined||val===null)?0:val;
+      earned+=points;
+      if(points<2){
+        const entry={text:sec.icon+' '+sec.name+' — '+it.t, note:deepNotesState[si+'-'+ii]||''};
+        if(sec.level==='industry') industryGaps.push(entry);
+        else gapCandidates.push({...entry, level:sec.level, val:points});
+      }
+    });
+    if(sec.level!=='industry') levelScores[sec.level]=Math.round((earned/(sec.items.length*2))*100);
+  });
+  const levels=sessionDeepSections.map(s=>s.level).filter(n=>n!=='industry').sort((a,b)=>a-b);
+  let overallLevel=levels[levels.length-1];
+  for(const n of levels){ if(levelScores[n]<60){ overallLevel=n; break; } }
+  const overallScore=Math.round(levels.reduce((sum,n)=>sum+levelScores[n],0)/levels.length);
+  gapCandidates.sort((a,b)=>a.val-b.val || a.level-b.level);
+  const topGaps=gapCandidates.slice(0,6).map(x=>({text:x.text, note:x.note}));
+  staffResult={levelScores,overallLevel,overallScore,topGaps,industryGaps,intake:staffIntake};
+}
+
+// ---- Shared results / report rendering ----
+function renderStaffResults(){
+  const lvl=LEVEL_CONTENT.find(s=>s.n===staffResult.overallLevel);
+  const modeLabel = staffSessionType==='consultant_deep_audit' ? 'Full-Day Audit (Deep)'
+    : staffSessionType==='consultant_consulting_session' ? 'Consulting Session' : 'Full-Day Audit (Quick)';
+  document.getElementById('staffResHeadline').textContent=
+    (staffIntake.business||'This business')+' — '+modeLabel+' (GH₵'+SESSION_FEES[staffSessionType].toLocaleString()+') — Level '+lvl.label+' ('+lvl.name+')';
+
+  document.getElementById('staffResLadder').innerHTML=Object.keys(staffResult.levelScores)
+    .filter(n=>staffResult.levelScores[n]!==null).map(Number).sort((a,b)=>a-b).map(n=>{
+    const s=LEVEL_CONTENT.find(x=>x.n===n);
+    const score=staffResult.levelScores[n];
+    const color=score>=80?'var(--green)':score>=50?'var(--orange)':'var(--red)';
+    const isCurrent=n===staffResult.overallLevel;
+    return `<div class="rung ${isCurrent?'current':''}">
+      <div class="num">${n}</div><div class="name">${s.name}</div>
+      <div class="barwrap"><div class="barfill" style="width:${score}%;background:${color}"></div></div>
+      <div class="pct" style="color:${color}">${score}%</div></div>`;
+  }).join('');
+
+  document.getElementById('staffResGaps').innerHTML=staffResult.topGaps.length
+    ? staffResult.topGaps.map(g=>`<div class="gap-item"><b>${g.text}</b>${g.note?'<br><span style="color:var(--ink-dim)">Note: '+g.note+'</span>':''}</div>`).join('')
+    : '<div class="gap-item" style="border-color:var(--green)">No major gaps found — strong across the board.</div>';
+
+  const industryBlock=document.getElementById('staffResIndustry');
+  if(staffResult.industryGaps && staffResult.industryGaps.length){
+    industryBlock.classList.remove('hidden');
+    const focus=getIndustryFocus(staffIntake.industry);
+    industryBlock.querySelector('.ind-title').textContent=(focus?focus.icon+' '+focus.label:'Industry-Specific Findings');
+    industryBlock.querySelector('.ind-list').innerHTML=staffResult.industryGaps.map(g=>
+      `<div class="gap-item" style="border-color:var(--blue,#4DA3B8)"><b>${g.text}</b>${g.note?'<br><span style="color:var(--ink-dim)">Note: '+g.note+'</span>':''}</div>`).join('');
+  } else { industryBlock.classList.add('hidden'); }
+
+  const pkgs=CORP_PACKAGES[staffResult.overallLevel]||[];
+  const pkgLine=pkgs.length ? pkgs[0].name+' ('+pkgs[0].price+')' : 'a scoped consultation';
+  const diyBtn=document.getElementById('implDiyBtn'), doneBtn=document.getElementById('implDoneBtn');
+  diyBtn.classList.toggle('btn-primary', implementationChoice==='diy'); diyBtn.classList.toggle('btn-ghost', implementationChoice!=='diy');
+  doneBtn.classList.toggle('btn-primary', implementationChoice==='done_for_you'); doneBtn.classList.toggle('btn-ghost', implementationChoice!=='done_for_you');
+  const nextStepLine = implementationChoice==='diy'
+    ? `You now have the full findings to act on yourselves. If you'd like a second pass or get stuck implementing, BYINFORGH can step in for the specific pieces you need.`
+    : `I'd recommend starting with ${pkgLine} — BYINFORGH scopes, builds and trains your team on it. This isn't a final quote — I'll follow up with a full written proposal after today.`;
+  document.getElementById('staffScriptBox').innerHTML=
+    `<b>SAY THIS TO ${(staffIntake.business||'THE OWNER').toUpperCase()}:</b>\n\n`+
+    `"Based on what I've seen today, ${staffIntake.business||'your business'} is currently operating at Level ${lvl.label} — ${lvl.name}. `+
+    `${lvl.tagline}\n\n`+
+    `The clearest gaps right now are:\n`+
+    staffResult.topGaps.slice(0,3).map((g,i)=>`  ${i+1}. ${g.text}`).join('\n')+`\n\n`+
+    nextStepLine+`"`;
+
+  window.__staffPkgLine = pkgLine;
+}
+
+function buildStaffReportText(){
+  const lvl=LEVEL_CONTENT.find(s=>s.n===staffResult.overallLevel);
+  const modeLabel = staffSessionType==='consultant_deep_audit' ? 'Full-Day Audit (Deep)'
+    : staffSessionType==='consultant_consulting_session' ? 'Consulting Session' : 'Full-Day Audit (Quick)';
+  const finalNotes=document.getElementById('staffFinalNotes').value.trim();
+  let lines=[];
+  lines.push('BYINFORGH BUSINESS SOLUTIONS — CONSULTANT REPORT');
+  lines.push(modeLabel);
+  lines.push('Business: '+staffIntake.business);
+  lines.push('Contact: '+staffIntake.contact+' — '+staffIntake.number);
+  lines.push('Region: '+staffIntake.region+' | Industry: '+staffIntake.industry);
+  lines.push('Consultant: '+staffIntake.consultant+' | Date: '+new Date().toLocaleDateString());
+  lines.push('Session Fee: GH₵'+SESSION_FEES[staffSessionType].toLocaleString());
+  lines.push('Implementation preference: '+(implementationChoice==='diy'?'Business will implement themselves':'BYINFORGH to implement'));
+  lines.push('');
+  lines.push('RESULT: Level '+lvl.label+' — '+lvl.name+' (overall score '+staffResult.overallScore+'%)');
+  lines.push('');
+  lines.push('TOP GAPS:');
+  staffResult.topGaps.forEach((g,i)=>{ lines.push((i+1)+'. '+g.text+(g.note?' — Note: '+g.note:'')); });
+  if(staffResult.industryGaps && staffResult.industryGaps.length){
+    const focus=getIndustryFocus(staffIntake.industry);
+    lines.push('');
+    lines.push((focus?focus.label:'INDUSTRY-SPECIFIC FINDINGS').toUpperCase()+':');
+    staffResult.industryGaps.forEach((g,i)=>{ lines.push((i+1)+'. '+g.text+(g.note?' — Note: '+g.note:'')); });
+  }
+  lines.push('');
+  lines.push('RECOMMENDATION: '+(window.__staffPkgLine||''));
+  if(finalNotes){ lines.push(''); lines.push('CONSULTANT SUMMARY:'); lines.push(finalNotes); }
+  return lines.join('\n');
+}
+
+// Shorter, owner-facing version of the report (used for WhatsApp/email —
+// keeps the consultant's raw notes out of what the client actually reads).
+function buildOwnerFacingSummary(){
+  const lvl=LEVEL_CONTENT.find(s=>s.n===staffResult.overallLevel);
+  const focus=getIndustryFocus(staffIntake.industry);
+  let lines=[];
+  lines.push(`Hi ${staffIntake.contact||''}, thank you for today.`);
+  lines.push('');
+  lines.push(`${staffIntake.business||'Your business'} is currently at Level ${lvl.label} — ${lvl.name}. ${lvl.tagline}`);
+  lines.push('');
+  lines.push(`Session: ${staffSessionType==='consultant_consulting_session'?'Consulting Session (GH₵600)':'Full-Day Audit (GH₵1,800)'}`);
+  lines.push('');
+  lines.push('The clearest gaps found today:');
+  staffResult.topGaps.slice(0,3).forEach((g,i)=>lines.push(`${i+1}. ${g.text}`));
+  if(focus && staffResult.industryGaps && staffResult.industryGaps.length){
+    lines.push('');
+    lines.push(`${focus.icon} Specific to ${staffIntake.industry}:`);
+    staffResult.industryGaps.slice(0,2).forEach((g,i)=>lines.push(`${i+1}. ${g.text}`));
+  }
+  lines.push('');
+  lines.push(`Recommended next step: ${window.__staffPkgLine||'a scoped package'}.`);
+  lines.push(implementationChoice==='diy'
+    ? "You'll be implementing this yourselves — reach out any time if you want BYINFORGH to step in on a specific piece."
+    : 'BYINFORGH will scope, build and train your team on this.');
+  lines.push('');
+  lines.push(`I'll follow up with a full written proposal shortly. — ${staffIntake.consultant||'BYINFORGH'}`);
+  return lines.join('\n');
+}
+
+function copyStaffReport(){
+  const text=buildStaffReportText();
+  navigator.clipboard.writeText(text).then(()=>showToast('Report copied to clipboard')).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta); showToast('Report copied to clipboard');
+  });
+}
+function sendRecommendationWhatsApp(){
+  const msg=buildOwnerFacingSummary();
+  const number=(staffIntake.number||'').replace(/[^\d]/g,'');
+  window.open('https://wa.me/'+(number?('233'+number.replace(/^0/,'')):'')+'?text='+encodeURIComponent(msg),'_blank');
+}
+function sendRecommendationEmail(){
+  const to=(staffIntake.email||'').trim();
+  if(!to){ showToast('No email on file for this business — add one on the intake screen, or use WhatsApp/Copy instead.'); return; }
+  const lvl=LEVEL_CONTENT.find(s=>s.n===staffResult.overallLevel);
+  const subject=`${staffIntake.business||'Your business'} — BYINFORGH Business Solutions recommendation`;
+  const body=buildOwnerFacingSummary();
+  window.location.href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+}
+function saveSessionToCommandCentre(){
+  const err=document.getElementById('staffSaveErr'); err.textContent='';
+  const lvl=LEVEL_CONTENT.find(s=>s.n===staffResult.overallLevel);
+  const finalNotes=document.getElementById('staffFinalNotes').value.trim();
+  const gapsPayload=staffResult.topGaps.map(g=>g.text+(g.note?' ['+g.note+']':'')).join(' | ');
+  const industryGapsPayload=(staffResult.industryGaps||[]).map(g=>g.text+(g.note?' ['+g.note+']':'')).join(' | ');
+  const scores={};
+  for(let n=1;n<=7;n++) scores['stage'+n]=staffResult.levelScores[n]!=null?staffResult.levelScores[n]:'';
+  backendCall({
+    action:'submitDiagnostic',
+    source:staffSessionType,                 // consultant_quick_audit | consultant_deep_audit | consultant_consulting_session
+    consultantName:staffIntake.consultant||'',
+    business:staffIntake.business||'', contactName:staffIntake.contact||'', number:staffIntake.number||'', email:staffIntake.email||'',
+    region:staffIntake.region||'', industry:staffIntake.industry||'', years:staffIntake.years||'', staff:staffIntake.staff||'',
+    revenueBand:staffIntake.revenue||'', headache:staffIntake.headache||'',
+    scores:JSON.stringify(scores),
+    overallStage:staffResult.overallLevel, overallScore:staffResult.overallScore,
+    topGaps:gapsPayload,
+    industryGaps:industryGapsPayload,
+    recommendedPackage:(window.__staffPkgLine||''),
+    implementationChoice:implementationChoice,
+    sessionFee:SESSION_FEES[staffSessionType],
+    consultantSummary:finalNotes,
+    ctaChosen:'staff_console'
+  }).then(res=>{
+    if(res===null){
+      err.textContent='Could not reach the backend (offline, or APPS_SCRIPT_URL not set) — nothing is lost, use Copy Report as a backup and save manually later.';
+    } else if(res && res.success===false){
+      err.textContent='Backend responded with an error: '+(res.error||'unknown')+'. Use Copy Report as a backup.';
+    } else {
+      showToast('Saved — will appear in the Command Centre Biz Solutions tab');
+    }
+  });
+  showToast('Saving to Command Centre...');
 }
 
 buildStageNav();
