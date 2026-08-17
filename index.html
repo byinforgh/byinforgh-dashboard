@@ -308,6 +308,12 @@ select:focus{border-color:var(--gold);}
   <div class="two-col">
     <div>
       <div class="section-title">RECENT DIAGNOSTICS</div>
+      <div class="filter-row" id="bizSolSourceFilter" style="margin-bottom:10px">
+        <button class="filter-btn active" onclick="setBizSolSourceFilter('all',event)">ALL</button>
+        <button class="filter-btn" onclick="setBizSolSourceFilter('self',event)">🧑 SELF-SERVE</button>
+        <button class="filter-btn" onclick="setBizSolSourceFilter('consulting',event)">💬 CONSULTING</button>
+        <button class="filter-btn" onclick="setBizSolSourceFilter('audit',event)">🗓️ FULL-DAY AUDIT</button>
+      </div>
       <div id="bizSolDiagList"></div>
     </div>
     <div>
@@ -3449,9 +3455,39 @@ function bizSolBridgeTag(bridged, crmId){
   }
   return '<span style="font-size:9px;color:var(--orange);border:1px solid var(--orange);border-radius:3px;padding:1px 5px" title="Not bridged — check COMMAND_CENTRE_API_URL is configured in the Business Solutions script">⚠ NOT BRIDGED</span>';
 }
+// Session-source tag for rows that came from the BYINFORGH Staff Console
+// (Full-Day Audit / Consulting) vs the public self-serve quiz. Relies on a
+// `source` field being returned by getData() — falls back to "Self-Serve"
+// gracefully if the Apps Script hasn't been updated to pass it through yet.
+// See "BYINFORGH Business Solutions — Backend Setup Notes" for the exact
+// field to add.
+function bizSolSourceTag(source){
+  const map={
+    consultant_deep_audit:{label:'🏗️ AUDIT · DEEP', color:'var(--purple)'},
+    consultant_quick_audit:{label:'🗓️ AUDIT · QUICK', color:'var(--blue)'},
+    consultant_consulting_session:{label:'💬 CONSULTING', color:'var(--orange)'}
+  };
+  const m=map[source];
+  if(!m) return '<span style="font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 5px">🧑 SELF-SERVE</span>';
+  return `<span style="font-size:9px;color:${m.color};border:1px solid ${m.color};border-radius:3px;padding:1px 5px">${m.label}</span>`;
+}
+let bizSolSourceFilterVal='all';
+function setBizSolSourceFilter(val,evt){
+  bizSolSourceFilterVal=val;
+  document.querySelectorAll('#bizSolSourceFilter .filter-btn').forEach(b=>b.classList.remove('active'));
+  if(evt&&evt.target) evt.target.classList.add('active');
+  if(bizSolData) renderBizSolDiagnostics(bizSolData);
+}
+function bizSolMatchesFilter(source){
+  if(bizSolSourceFilterVal==='all') return true;
+  if(bizSolSourceFilterVal==='self') return !source;
+  if(bizSolSourceFilterVal==='consulting') return source==='consultant_consulting_session';
+  if(bizSolSourceFilterVal==='audit') return source==='consultant_deep_audit'||source==='consultant_quick_audit';
+  return true;
+}
 function renderBizSolDiagnostics(data){
-  const rows=data.recentDiagnostics||[];
-  document.getElementById('bizSolDiagList').innerHTML=rows.length?rows.map(r=>`<div class="followup-item"><div class="followup-header"><div style="flex:1"><div class="followup-name">${r.business||'—'} ${bizSolBridgeTag(r.bridged,r.crmId)}</div><div class="followup-meta">${r.number||'—'} · ${r.region||'—'} · ${r.industry||'—'}</div><div class="followup-meta" style="margin-top:4px">Level ${r.overallStage||'—'} (${r.overallScore||'—'}%) · Recommended: ${r.recommendedPackage||'—'}</div></div></div></div>`).join(''):'<div class="empty">No diagnostics submitted yet</div>';
+  const rows=(data.recentDiagnostics||[]).filter(r=>bizSolMatchesFilter(r.source));
+  document.getElementById('bizSolDiagList').innerHTML=rows.length?rows.map(r=>`<div class="followup-item"><div class="followup-header"><div style="flex:1"><div class="followup-name">${r.business||'—'} ${bizSolSourceTag(r.source)} ${bizSolBridgeTag(r.bridged,r.crmId)}</div><div class="followup-meta">${r.number||'—'} · ${r.region||'—'} · ${r.industry||'—'}${r.consultantName?' · Consultant: '+r.consultantName:''}</div><div class="followup-meta" style="margin-top:4px">Level ${r.overallStage||'—'} (${r.overallScore||'—'}%) · Recommended: ${r.recommendedPackage||'—'}</div>${r.consultantSummary?`<div class="followup-meta" style="margin-top:4px;font-style:italic">"${r.consultantSummary}"</div>`:''}</div></div></div>`).join(''):'<div class="empty">No diagnostics match this filter</div>';
 }
 function renderBizSolBookings(data){
   const rows=data.bookings||[];
