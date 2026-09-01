@@ -254,7 +254,7 @@ select:focus{border-color:var(--gold);}
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">OUTCOME</div><select id="convReviewOutcome"><option value="no_reply">No reply yet</option><option value="replied">They replied</option><option value="interested">Showed interest</option><option value="objection">Raised objection</option><option value="closed">Closed / converted</option><option value="rejected">Rejected</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">PACKAGE DISCUSSED</div><select id="convReviewPackage"><option value="">Not discussed</option><option value="Business Presence">Business Presence &mdash; Free</option><option value="Verified Business">Verified Business &mdash; GHS 180</option><option value="Visibility Partner">Visibility Partner &mdash; GHS 250/750/1500</option><option value="Business Authority">Business Authority &mdash; GHS 5000</option><option value="SME Systems">SME Systems &mdash; GHS 50/150/500</option><option value="Command Centre">Command Centre &mdash; GHS 25000/50000/90000</option><option value="BBCS Consulting">BBCS / Consulting</option></select></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">PACKAGE DISCUSSED</div><select id="convReviewPackage"><option value="">Not discussed</option><option value="Free Listing">Free Listing &mdash; Free</option><option value="Verified Business">Verified Business &mdash; GHS 180</option><option value="Visibility Essentials">Visibility Essentials &mdash; GHS 250/mo</option><option value="Visibility Partner">Visibility Partner &mdash; GHS 750/mo</option><option value="Growth Engine">Growth Engine &mdash; GHS 1500/mo</option><option value="Market Authority">Market Authority &mdash; GHS 5000/mo</option><option value="TecXFRA">TecXFRA &mdash; GHS 50/150/1500/4500 per mo</option><option value="Consulting Audit">Consulting Audit &mdash; GHS 600/1800/3200</option><option value="SME Systems">SME Systems &mdash; GHS 50/150/500</option><option value="Command Centre">Command Centre &mdash; GHS 25000/50000/90000</option></select></div>
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">AMOUNT (GHS)</div><input id="convReviewAmount" type="number" class="search-input" style="margin:0" placeholder="e.g. 350"></div>
     </div>
     <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">WHAT HAPPENED</div>
@@ -480,15 +480,39 @@ select:focus{border-color:var(--gold);}
   </div>
   <div class="section-title">&#10133; ADD NEW CLIENT</div>
   <div class="card" style="margin-bottom:20px">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">PICK FROM PIPELINE (optional) — or type a brand-new business name below</div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <div class="contact-search-wrap" style="flex:1">
+        <input class="contact-search-input" id="addClientPickContactInput" placeholder="Type to search an existing contact..." autocomplete="off" oninput="filterContactSearch('addClientPick',this.value)" onfocus="openContactSearch('addClientPick')" onblur="setTimeout(()=>closeContactSearch('addClientPick'),200)">
+        <div class="contact-search-dropdown" id="addClientPickContactDropdown"></div>
+      </div>
+      <div class="contact-selected" id="addClientPickContactSelected"><span id="addClientPickContactLabel">&mdash;</span><span class="contact-selected-clear" onclick="clearAddClientPick()">&#x2715;</span></div>
+      <input type="hidden" id="addClientPickContact" value="">
+    </div>
+    <div id="addClientPickHint" style="display:none;font-size:11px;color:var(--gold);margin-bottom:10px">&#127942; This will convert an existing pipeline contact — their WA_Label, Stage and Offer update automatically.</div>
+    <input type="hidden" id="addClientPickSheetSource" value="">
     <input id="addClientBusiness" class="search-input" placeholder="Business name*" style="margin-bottom:8px">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <select id="addClientPackage" onchange="toggleClientCustomPackage()">
-        <option value="Business Presence">Business Presence — Free</option>
-        <option value="Verified Business" selected>Verified Business</option>
-        <option value="Visibility Partner 250">Visibility Partner 250</option>
-        <option value="Visibility Partner 750">Visibility Partner 750</option>
-        <option value="Visibility Partner 1500">Visibility Partner 1500</option>
-        <option value="Business Authority">Business Authority</option>
+        <optgroup label="BE VISIBLE">
+        <option value="Free Listing">Free Listing — Free</option>
+        <option value="Verified Business" selected>Verified Business — GHS 180 + 80/mo</option>
+        <option value="Visibility Essentials">Visibility Essentials — GHS 250/mo</option>
+        <option value="Visibility Partner">Visibility Partner — GHS 750/mo</option>
+        <option value="Growth Engine">Growth Engine — GHS 1500/mo</option>
+        <option value="Market Authority">Market Authority — GHS 5000/mo</option>
+        </optgroup>
+        <optgroup label="RUN IT — TecXFRA">
+        <option value="TecXFRA Starter">TecXFRA Starter — GHS 50/mo</option>
+        <option value="TecXFRA Growth">TecXFRA Growth — GHS 150/mo</option>
+        <option value="TecXFRA Enterprise">TecXFRA Enterprise — GHS 1500/mo</option>
+        <option value="TecXFRA Prestige">TecXFRA Prestige — GHS 4500/mo</option>
+        </optgroup>
+        <optgroup label="TRANSFORM IT — Consulting">
+        <option value="Business Snapshot">Business Snapshot — GHS 600</option>
+        <option value="Quick Audit">Quick Audit — GHS 1800</option>
+        <option value="Full Audit">Full Audit — GHS 3200</option>
+        </optgroup>
         <option value="Custom Package">Custom Package</option>
       </select>
       <select id="addClientStatus"><option>Active</option><option>Paused</option><option>Churned</option></select>
@@ -691,19 +715,35 @@ select:focus{border-color:var(--gold);}
       <div class="contact-selected" id="conversionContactSelected" style="grid-column:span 2"><span id="conversionContactLabel">&mdash;</span><span class="contact-selected-clear" onclick="clearContactSearch('conversion')">&#x2715;</span></div>
       <input type="hidden" id="conversionContact" value="">
       <select id="conversionOffer" onchange="handleConversionOfferChange()">
-        <option value="Business Presence">Business Presence — Free</option>
+        <optgroup label="BE VISIBLE">
+        <option value="Free Listing">Free Listing — GHS 0</option>
         <option value="Verified Business" selected>Verified Business — GHS 180</option>
-        <option value="Visibility Partner 250">Visibility Partner — GHS 250</option>
-        <option value="Visibility Partner 750">Visibility Partner — GHS 750</option>
-        <option value="Visibility Partner 1500">Visibility Partner — GHS 1500</option>
-        <option value="Business Authority">Business Authority — GHS 5000</option>
+        <option value="Visibility Essentials">Visibility Essentials — GHS 250/mo</option>
+        <option value="Visibility Partner">Visibility Partner — GHS 750/mo</option>
+        <option value="Growth Engine">Growth Engine — GHS 1500/mo</option>
+        <option value="Market Authority">Market Authority — GHS 5000/mo</option>
+        </optgroup>
+        <optgroup label="RUN IT — TecXFRA">
+        <option value="TecXFRA Starter">TecXFRA Starter — GHS 50/mo</option>
+        <option value="TecXFRA Growth">TecXFRA Growth — GHS 150/mo</option>
+        <option value="TecXFRA Enterprise">TecXFRA Enterprise — GHS 1500/mo</option>
+        <option value="TecXFRA Prestige">TecXFRA Prestige — GHS 4500/mo</option>
+        </optgroup>
+        <optgroup label="TRANSFORM IT — Consulting">
+        <option value="Business Snapshot">Business Snapshot — GHS 600</option>
+        <option value="Quick Audit">Quick Audit — GHS 1800</option>
+        <option value="Full Audit">Full Audit — GHS 3200</option>
+        </optgroup>
+        <optgroup label="SME SYSTEMS (BBCS)">
         <option value="SME Systems Starter">SME Systems — Starter GHS 50</option>
         <option value="SME Systems Growth">SME Systems — Growth GHS 150</option>
         <option value="SME Systems Authority">SME Systems — Authority GHS 500</option>
+        </optgroup>
+        <optgroup label="CORPORATE / COMMAND CENTRE">
         <option value="Command Centre Starter">Command Centre — Starter GHS 25000</option>
         <option value="Command Centre Growth">Command Centre — Growth GHS 50000</option>
         <option value="Command Centre Authority">Command Centre — Authority GHS 90000</option>
-        <option value="BBCS Consulting">BBCS Consulting</option>
+        </optgroup>
         <option value="Custom Package">Custom Package</option>
       </select>
       <input id="conversionAmount" type="number" placeholder="Amount GHS (e.g. 180)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-size:12px">
@@ -761,6 +801,7 @@ select:focus{border-color:var(--gold);}
       <button onclick="document.getElementById('notesModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button>
     </div>
     <div id="notesModalBody" style="font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;max-height:60vh;overflow-y:auto"></div>
+    <div id="notesModalActions" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -815,6 +856,58 @@ select:focus{border-color:var(--gold);}
     <textarea id="apptReason" class="conv-review-area" style="min-height:60px" placeholder="e.g. In-person visit to review audit results"></textarea>
     <button class="refresh-btn" onclick="submitBookAppointment()" style="background:var(--teal);color:var(--black);width:100%;margin-top:12px;padding:10px;font-weight:800">&#128197; BOOK APPOINTMENT</button>
     <div id="apptResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
+</div>
+
+<!-- Convert to Client Modal — v27.0. Opened from: WA_Label set to ✅,
+     the 🎯 CLIENT button on Pipeline/Follow-Ups/Koforidua rows, and an
+     "Agreed" call outcome. Calls action=convertToClient, which creates the
+     Clients row AND updates the source pipeline row in one server call. -->
+<div id="convertClientModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div style="background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:24px;width:100%;max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:800;letter-spacing:2px;color:var(--gold)">&#127942; CONVERT TO CLIENT</div>
+      <button onclick="document.getElementById('convertClientModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px" id="convertClientBizLabel">&mdash;</div>
+    <input type="hidden" id="convertClientBusiness" value="">
+    <input type="hidden" id="convertClientSheetSource" value="Master CRM">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">PACKAGE*</div>
+    <select id="convertClientPackage" onchange="toggleConvertClientCustomPackage()" style="margin-bottom:8px">
+      <optgroup label="BE VISIBLE">
+      <option value="Free Listing">Free Listing — Free</option>
+      <option value="Verified Business" selected>Verified Business — GHS 180 + 80/mo</option>
+      <option value="Visibility Essentials">Visibility Essentials — GHS 250/mo</option>
+      <option value="Visibility Partner">Visibility Partner — GHS 750/mo</option>
+      <option value="Growth Engine">Growth Engine — GHS 1500/mo</option>
+      <option value="Market Authority">Market Authority — GHS 5000/mo</option>
+      </optgroup>
+      <optgroup label="RUN IT — TecXFRA">
+      <option value="TecXFRA Starter">TecXFRA Starter — GHS 50/mo</option>
+      <option value="TecXFRA Growth">TecXFRA Growth — GHS 150/mo</option>
+      <option value="TecXFRA Enterprise">TecXFRA Enterprise — GHS 1500/mo</option>
+      <option value="TecXFRA Prestige">TecXFRA Prestige — GHS 4500/mo</option>
+      </optgroup>
+      <optgroup label="TRANSFORM IT — Consulting">
+      <option value="Business Snapshot">Business Snapshot — GHS 600</option>
+      <option value="Quick Audit">Quick Audit — GHS 1800</option>
+      <option value="Full Audit">Full Audit — GHS 3200</option>
+      </optgroup>
+      <option value="Custom Package">Custom Package</option>
+    </select>
+    <input id="convertClientCustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="convertClientMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS">
+      <input id="convertClientOneTime" type="number" class="search-input" style="margin:0" placeholder="One-time amount GHS">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="convertClientJoined" class="search-input" style="margin:0" placeholder="Joined date DD/MM/YYYY (optional)">
+      <input id="convertClientRenewal" class="search-input" style="margin:0" placeholder="Renewal date DD/MM/YYYY (optional)">
+    </div>
+    <select id="convertClientStatus" style="margin-bottom:8px"><option>Active</option><option>Paused</option><option>Churned</option></select>
+    <textarea id="convertClientNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
+    <button class="refresh-btn" onclick="submitConvertToClient()" style="background:var(--gold);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">&#127942; CONFIRM &mdash; MOVE TO CLIENTS</button>
+    <div id="convertClientResult" style="margin-top:8px;font-size:12px"></div>
   </div>
 </div>
 
@@ -929,8 +1022,51 @@ const REVENUE_PACKAGES=[
     {label:'Growth',amount:50000,match:p=>/command/i.test(p||'')&&/growth/i.test(p||'')},
     {label:'Authority',amount:90000,match:p=>/command/i.test(p||'')&&/authority/i.test(p||'')}
   ]},
+  {key:'tecxfra',name:'⚙️ TecXFRA',color:'var(--teal)',tiers:[
+    {label:'Starter',amount:50,match:p=>/tecxfra/i.test(p||'')&&/starter/i.test(p||'')},
+    {label:'Growth',amount:150,match:p=>/tecxfra/i.test(p||'')&&/growth/i.test(p||'')},
+    {label:'Enterprise',amount:1500,match:p=>/tecxfra/i.test(p||'')&&/enterprise/i.test(p||'')},
+    {label:'Prestige',amount:4500,match:p=>/tecxfra/i.test(p||'')&&/prestige/i.test(p||'')}
+  ]},
+  {key:'consulting',name:'🩺 Consulting / Audit',color:'var(--red)',tiers:[
+    {label:'Business Snapshot',amount:600,match:p=>/snapshot/i.test(p||'')},
+    {label:'Quick Audit',amount:1800,match:p=>/quick audit/i.test(p||'')},
+    {label:'Full Audit',amount:3200,match:p=>/full audit/i.test(p||'')}
+  ]},
   {key:'custom',name:'🎨 Custom Package',color:'var(--text-dim)',match:p=>/custom/i.test(p||'')}
 ];
+
+// v27.0: single source of truth for preset monthly/one-time amounts, used
+// by the Add Client form, the Convert-to-Client modal, and the Log
+// Conversion form, so a package name always fills in the same price
+// everywhere instead of three separate hardcoded lists drifting apart.
+// Mirrors PACKAGE_CATALOG in Code.gs — keep both in sync if prices change.
+const PACKAGE_PRICE_PRESETS={
+  'Free Listing':{monthly:0,oneTime:0},
+  'Business Presence':{monthly:0,oneTime:0},
+  'Verified Business':{monthly:80,oneTime:180},
+  'Visibility Essentials':{monthly:250,oneTime:0},
+  'Visibility Partner':{monthly:750,oneTime:0},
+  'Visibility Partner 250':{monthly:250,oneTime:0},
+  'Visibility Partner 750':{monthly:750,oneTime:0},
+  'Visibility Partner 1500':{monthly:1500,oneTime:0},
+  'Growth Engine':{monthly:1500,oneTime:0},
+  'Market Authority':{monthly:5000,oneTime:0},
+  'Business Authority':{monthly:5000,oneTime:0},
+  'TecXFRA Starter':{monthly:50,oneTime:0},
+  'TecXFRA Growth':{monthly:150,oneTime:0},
+  'TecXFRA Enterprise':{monthly:1500,oneTime:0},
+  'TecXFRA Prestige':{monthly:4500,oneTime:0},
+  'Business Snapshot':{monthly:0,oneTime:600},
+  'Quick Audit':{monthly:0,oneTime:1800},
+  'Full Audit':{monthly:0,oneTime:3200},
+  'SME Systems Starter':{monthly:50,oneTime:0},
+  'SME Systems Growth':{monthly:150,oneTime:0},
+  'SME Systems Authority':{monthly:500,oneTime:0},
+  'Command Centre Starter':{monthly:25000,oneTime:0},
+  'Command Centre Growth':{monthly:50000,oneTime:0},
+  'Command Centre Authority':{monthly:90000,oneTime:0}
+};
 
 // v16.0: FIRST-TOUCH OPENERS — used instead of MSG_VERSIONS whenever a
 // contact has never actually been messaged yet (0 logged outreach and still
@@ -1267,7 +1403,25 @@ function isOverdue(dateStr){if(!dateStr)return false;const d=parseFollowUpDate(d
 function checkShabbat(){const day=new Date().getDay();const b=document.getElementById('shabbatBanner');if(day===6)b.classList.add('active');else b.classList.remove('active');}
 function isShabbat(){return new Date().getDay()===6;}
 function toggleCheck(el){el.classList.toggle('done');const txt=el.parentElement.querySelector('.action-text');if(txt)txt.classList.toggle('done-text');}
-function handleConversionOfferChange(){const val=document.getElementById('conversionOffer').value;const cf=document.getElementById('conversionCustomPackageName');const amt=document.getElementById('conversionAmount');const presets={'Business Presence':0,'Verified Business':180,'Visibility Partner 250':250,'Visibility Partner 750':750,'Visibility Partner 1500':1500,'Business Authority':5000,'SME Systems Starter':50,'SME Systems Growth':150,'SME Systems Authority':500,'Command Centre Starter':25000,'Command Centre Growth':50000,'Command Centre Authority':90000};if(val==='Custom Package'){cf.style.display='block';}else{cf.style.display='none';if(presets[val]!==undefined)amt.value=presets[val];}}
+function handleConversionOfferChange(){
+  const val=document.getElementById('conversionOffer').value;
+  const cf=document.getElementById('conversionCustomPackageName');
+  const amt=document.getElementById('conversionAmount');
+  // v27.0: was a separate hardcoded preset list (missing TecXFRA/Consulting
+  // entirely, and out of sync with the Add Client presets) — now reads the
+  // one shared PACKAGE_PRICE_PRESETS table. For a conversion, the "amount"
+  // logged is whichever is non-zero (one-time takes priority, since most
+  // conversions here are the setup/one-time fee; monthly-only packages
+  // fall back to the monthly figure).
+  const presets={'Command Centre Starter':25000,'Command Centre Growth':50000,'Command Centre Authority':90000};
+  if(val==='Custom Package'){cf.style.display='block';}
+  else{
+    cf.style.display='none';
+    const p=PACKAGE_PRICE_PRESETS[val];
+    if(p)amt.value=(p.oneTime||p.monthly||0);
+    else if(presets[val]!==undefined)amt.value=presets[val];
+  }
+}
 function setDeployment(dep,btn){currentDeployment=dep;document.querySelectorAll('[id^="dep"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
 // v23.0: outreach-count fix — logging outreach only updated in-memory
@@ -1445,7 +1599,7 @@ function setFilter(f,btn){currentFilter=f;followupPage=0;followupShowAllMode=(f=
 // value. Setting versionManuallySet=true here is what makes the pick stick.
 function setMsgVersion(ver,btn){currentMsgVersion=ver;versionManuallySet=true;document.querySelectorAll('[id^="ver"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
 
-function confirmWaLabelChange(selectEl, applyFn){
+async function confirmWaLabelChange(selectEl, applyFn){
   const value=selectEl.value;
   if(value && value.indexOf('⬛')!==-1){
     if(!confirm('Set this to Rejected?\n\nThis immediately archives the contact and removes it from the active pipeline. You will need to use the Archive tab to bring it back — you cannot just pick a different label afterwards.\n\nContinue?')){
@@ -1453,17 +1607,27 @@ function confirmWaLabelChange(selectEl, applyFn){
       return;
     }
   }
-  applyFn();
+  // v27.0: applyFn (updateContactField / updateFollowupStage) now returns
+  // the server's parsed response. When the label being set is ✅ Client
+  // Paying, the backend saves the label immediately but also flags
+  // needsClientConversion — that's our signal to open the package picker
+  // right away instead of the change quietly going nowhere (the root cause
+  // of "I mark them Client and nothing happens").
+  const result=await applyFn();
+  if(result&&result.needsClientConversion){
+    setTimeout(()=>openConvertToClient(result.business,result.sheetSource||'Master CRM'),400);
+  }
 }
 
 async function updateFollowupStage(business,field,value,el,sheetSource,itemEl){
-  await updateContactField(business,field,value,el,sheetSource);
+  const result=await updateContactField(business,field,value,el,sheetSource);
   const terminal=(field==='Stage'&&isTerminalStage(value))||(field==='WA_Label'&&isTerminalWaLabel(value));
   if(terminal){
     showToast(business+' — moved out of Follow-Ups');
     sessionResolvedContacts.add(business);
     setTimeout(()=>renderFollowUps(),500);
   }
+  return result; // v27.0: bubble up to confirmWaLabelChange
 }
 
 async function logFollowupCall(business,number,sheetSource,notes,btn){
@@ -1639,6 +1803,7 @@ function renderFollowUps(){
         ${callLinkHtml(c.Number)}
         <button class="copy-btn" style="background:#001a20;color:var(--blue);border:1px solid var(--blue)" onclick="logFollowupCall('${sb}','${c.Number||''}','${src}',this.closest('.followup-item').querySelector('textarea').value,this)">📞 CALLED</button>
         <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
+        <button class="copy-btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold)" onclick="openConvertToClient('${sb}','${src}')">🎯 CLIENT</button>
         <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}','${src}',this)">✕ REJECT</button>
       </div></div>`;
   }).join('');
@@ -1676,10 +1841,17 @@ const OFFER_OPTIONS = [
   '',
   'Free Listing — 0 GHS',
   'Verified Business — 180 GHS setup + 80 GHS/month',
-  'Visibility Essential 250',
-  'Visibility Partner 750',
-  'Visibility Partner 1500',
-  'Authority Market 5000',
+  'Visibility Essentials — 250 GHS/month',
+  'Visibility Partner — 750 GHS/month',
+  'Growth Engine — 1500 GHS/month',
+  'Market Authority — 5000 GHS/month',
+  'TecXFRA Starter — 50 GHS/month',
+  'TecXFRA Growth — 150 GHS/month',
+  'TecXFRA Enterprise — 1500 GHS/month',
+  'TecXFRA Prestige — 4500 GHS/month',
+  'Business Snapshot — 600 GHS',
+  'Quick Audit — 1800 GHS',
+  'Full Audit — 3200 GHS',
   'SME Systems — Starter 50',
   'SME Systems — Growth 150',
   'SME Systems — Authority 500',
@@ -1746,9 +1918,14 @@ async function updateContactField(business, field, value, el, sheetSource) {
       showToast('Error: ' + (data.error || 'could not update'));
       if (el && !isTextInput) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
     }
+    // v27.0: return the parsed response so callers (confirmWaLabelChange in
+    // particular) can react to flags like needsClientConversion instead of
+    // this function being a dead end.
+    return data;
   } catch(err) {
     showToast('Connection error \u2014 change not saved');
     if (el && !isTextInput) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
+    return null;
   }
 }
 
@@ -2017,7 +2194,7 @@ function renderPipeline(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-p'+pIdx;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
 function openPipelineStage(key,name){
@@ -2048,24 +2225,43 @@ const CALL_OUTCOME_OPTIONS=[
 function callOutcomeOptionsHtml(selected){
   return CALL_OUTCOME_OPTIONS.map(o=>`<option value="${o.value}"${o.value===selected?' selected':''}>${o.label}</option>`).join('');
 }
+// v27.0 BUG FIX: this map previously produced strings like
+// '✅ Client — Business Presence' or '🟠 Read No Reply — No Answer, Retry'
+// that do NOT exactly match Code.gs's VALID_WA_LABELS list. writeWaLabelSafe
+// on the backend requires an EXACT match (requireValueInList + allowInvalid
+// false) — so every call logged with an "Agreed" or callback-style outcome
+// was silently throwing "cell violates data validation" server-side and
+// NOT saving, while the dashboard still showed "✓ Call logged" because the
+// old code never checked the response. Fixed by mapping only to the 9
+// exact strings the sheet actually accepts (see WA_LABEL_OPTIONS above).
 function callOutcomeToWaLabel(outcome){
   const map={
-    'Business Presence Listed':'✅ Client — Business Presence',
-    'Verified Business':'✅ Client — Verified Business',
-    'Visibility Partner':'✅ Client — Visibility Partner',
-    'SME Systems':'✅ Client — SME Systems',
-    'Called — Interested':'🟢 Conversation Active',
-    'Conversation Active':'🟢 Conversation Active',
-    'Hot Lead — Close Today':'🔵 Hot Lead — Close Today',
-    'Needs Second Call':'🟠 Read No Reply — Callback Requested',
-    'Called — Callback Requested':'🟠 Read No Reply — Callback Requested',
-    'Called — No Answer':'🟠 Read No Reply — No Answer, Retry',
-    'Called — Wrong Number':'⬛ Rejected — Wrong Number',
-    'Called — Not Interested':'⬛ Rejected — Not Interested',
-    'Not Interested':'⬛ Rejected — Not Interested'
+    'Business Presence Listed':'✅ Client Paying',
+    'Verified Business':'✅ Client Paying',
+    'Visibility Partner':'✅ Client Paying',
+    'SME Systems':'✅ Client Paying',
+    'Called — Interested':'🟢 Conversation Active close this week',
+    'Conversation Active':'🟢 Conversation Active close this week',
+    'Hot Lead — Close Today':'🔵 Hot LeadVerbal yes / proposal sent',
+    'Needs Second Call':'🟠 2 Tick Read Read, no reply re-enter with new value',
+    'Called — Callback Requested':'🟠 2 Tick Read Read, no reply re-enter with new value',
+    'Called — No Answer':'🔴 1 Tick message not delivered call only',
+    'Called — Wrong Number':'⬛ Rejected Closed, no contact',
+    'Called — Not Interested':'⬛ Rejected Closed, no contact',
+    'Not Interested':'⬛ Rejected Closed, no contact'
   };
   return map[outcome]||'';
 }
+// v27.0: which package to pre-select in the Convert-to-Client modal when a
+// call outcome resolves to ✅ Client Paying — keeps the call-outcome
+// language ("Agreed — Verified") linked to a real, priced package instead
+// of leaving the operator to remember and re-pick it from scratch.
+const CALL_OUTCOME_PACKAGE_HINT={
+  'Business Presence Listed':'Free Listing',
+  'Verified Business':'Verified Business',
+  'Visibility Partner':'Visibility Partner',
+  'SME Systems':''
+};
 function getLastCallNote(notes){
   if(!notes)return'';
   const marker='[CALL ';
@@ -2112,13 +2308,22 @@ async function logInlineCall(business,number,waLabel,key){
   const newWaLabel=callOutcomeToWaLabel(outcome);
   const btn=document.getElementById('calllogbtn-'+key);
   if(btn){btn.textContent='Logging...';btn.disabled=true;}
+  const c=state.contacts.find(x=>x.Business===business);
+  const sheetSource=c?(c.Sheet_Source||'Master CRM'):'Master CRM';
+  let ok=true;
   try{
     const url=API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number||'')
       +'&waLabel='+encodeURIComponent(newWaLabel||waLabel||'')+'&stage='+encodeURIComponent(outcome)+'&notes='+encodeURIComponent(notes)
       +'&nextAction='+encodeURIComponent(notes)+'&nextFollowUp='+encodeURIComponent(nextFollowUp)+'&t='+Date.now();
-    await fetch(url);
-  }catch(e){}
-  const c=state.contacts.find(x=>x.Business===business);
+    // v27.0: the old code fired this and forgot it — never read the
+    // response, so a server-side failure (e.g. the validation error above)
+    // still showed "✓ Call logged". Now we actually check success.
+    const res=await fetch(url);
+    const data=await res.json();
+    ok=!!(data&&(data.success||data.logged));
+    if(!ok)showToast('Call NOT saved — '+(data&&data.error?data.error:'server error'));
+  }catch(e){ok=false;showToast('Connection error — call not saved');}
+  if(!ok){if(btn){btn.textContent='LOG CALL';btn.disabled=false;}return;}
   const today=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   if(c){
     c.Stage=outcome;
@@ -2131,6 +2336,13 @@ async function logInlineCall(business,number,waLabel,key){
   if(row){row.style.opacity='0.4';row.style.borderColor='var(--green)';}
   if(btn){btn.textContent='✓ LOGGED';}
   setTimeout(()=>{renderCallTab();},900);
+  // v27.0: an "Agreed" outcome sets WA_Label to ✅ Client Paying, which
+  // (see convertToClientGET / needsClientConversion) still needs a package
+  // + amount picked before the client actually exists in the Clients
+  // sheet — open that picker right away instead of leaving it half-done.
+  if(newWaLabel==='✅ Client Paying'){
+    setTimeout(()=>openConvertToClient(business,sheetSource,CALL_OUTCOME_PACKAGE_HINT[outcome]||''),1000);
+  }
 }
 function renderCallTab(){
   const callC=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔴'));
@@ -2183,8 +2395,18 @@ async function logCallTap(){
   const newWaLabel=callOutcomeToWaLabel(stage);
   const result=document.getElementById('callLogResult');
   result.innerHTML='<div style="color:var(--muted)">Logging...</div>';
-  try{await fetch(API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&waLabel='+encodeURIComponent(newWaLabel||waLabel)+'&stage='+encodeURIComponent(stage)+'&notes='+encodeURIComponent(notes)+'&nextAction='+encodeURIComponent(nextAction)+'&t='+Date.now());}catch(e){}
   const c=state.contacts.find(x=>x.Business===business);
+  const sheetSource=c?(c.Sheet_Source||'Master CRM'):'Master CRM';
+  let ok=true;
+  try{
+    // v27.0: same fix as logInlineCall — actually read the response instead
+    // of firing-and-forgetting, so a server-side save failure is visible.
+    const res=await fetch(API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number)+'&waLabel='+encodeURIComponent(newWaLabel||waLabel)+'&stage='+encodeURIComponent(stage)+'&notes='+encodeURIComponent(notes)+'&nextAction='+encodeURIComponent(nextAction)+'&t='+Date.now());
+    const data=await res.json();
+    ok=!!(data&&(data.success||data.logged));
+    if(!ok)result.innerHTML='<div style="color:var(--red);font-weight:700">✗ NOT saved — '+(data&&data.error?data.error:'server error')+'</div>';
+  }catch(e){ok=false;result.innerHTML='<div style="color:var(--red);font-weight:700">✗ Connection error — not saved</div>';}
+  if(!ok)return;
   const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   if(c){
     if(stage)c.Stage=stage;
@@ -2195,6 +2417,9 @@ async function logCallTap(){
   result.innerHTML=`<div style="color:var(--green);font-weight:700">✓ Call logged — ${business}${newWaLabel?' (moved off call list)':''}</div>`;
   document.getElementById('callNotes').value='';document.getElementById('callNextAction').value='';
   clearContactSearch('call');renderRecentCallLog();renderCallTab();showToast('Call logged — '+business);
+  if(newWaLabel==='✅ Client Paying'){
+    setTimeout(()=>openConvertToClient(business,sheetSource,CALL_OUTCOME_PACKAGE_HINT[stage]||''),1000);
+  }
 }
 
 function renderKoforidua(){
@@ -2260,7 +2485,7 @@ function renderKofList(){
     const bizSafe=(c.Business||'').replace(/[^a-zA-Z0-9]/g,'_')+'-kof'+i;
     return `<div class="followup-item" style="${(c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active')))?'border-left:3px solid var(--green)':c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))?'border-left:3px solid var(--orange)':''}">
     <div class="followup-header"><div style="flex:1">
-      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Koforidua Master','bizname-${bizSafe}')">&#9998;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
+      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Koforidua Master','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','Koforidua Master')">&#127942;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
         <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">NUMBER</span><input type="text" data-orig="${c.Number||''}" value="${c.Number||''}" onchange="updateContactField('${sb}','Number',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Space Mono',monospace;width:120px"></div>
         <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">AREA / VISITING PLACE</span><input type="text" data-orig="${c.Area||''}" value="${c.Area||''}" onchange="updateContactField('${sb}','Town',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
@@ -2333,8 +2558,116 @@ async function updateSMEField(business,field,value,el){
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// v27.0 — CONVERT TO CLIENT
+// Single entry point used by: WA_Label set to ✅ (confirmWaLabelChange),
+// the 🎯 CLIENT button on Follow-Ups / Pipeline / All Contacts / Koforidua
+// rows and the contact detail panel, and an "Agreed" call-log outcome.
+// ─────────────────────────────────────────────────────────────
+function openConvertToClient(business,sheetSource,packageHint){
+  if(!business){showToast('No business specified');return;}
+  document.getElementById('convertClientBusiness').value=business;
+  document.getElementById('convertClientSheetSource').value=sheetSource||'Master CRM';
+  document.getElementById('convertClientBizLabel').textContent=business+' — pick what they are paying for. This creates their Clients row and updates the pipeline record together, in one step.';
+  const pkgSel=document.getElementById('convertClientPackage');
+  if(packageHint)pkgSel.value=packageHint;
+  toggleConvertClientCustomPackage();
+  document.getElementById('convertClientNotes').value='';
+  document.getElementById('convertClientJoined').value='';
+  document.getElementById('convertClientRenewal').value='';
+  document.getElementById('convertClientResult').innerHTML='';
+  document.getElementById('convertClientModal').style.display='flex';
+}
+function toggleConvertClientCustomPackage(){
+  const pkg=document.getElementById('convertClientPackage').value;
+  document.getElementById('convertClientCustomName').style.display=pkg==='Custom Package'?'block':'none';
+  const preset=PACKAGE_PRICE_PRESETS[pkg];
+  document.getElementById('convertClientMonthly').value=preset?(preset.monthly||''):'';
+  document.getElementById('convertClientOneTime').value=preset?(preset.oneTime||''):'';
+}
+async function submitConvertToClient(){
+  const business=document.getElementById('convertClientBusiness').value;
+  const sheetSource=document.getElementById('convertClientSheetSource').value;
+  const pkg=document.getElementById('convertClientPackage').value;
+  const customPackageName=document.getElementById('convertClientCustomName').value.trim();
+  const monthlyAmount=document.getElementById('convertClientMonthly').value||'0';
+  const oneTimeAmount=document.getElementById('convertClientOneTime').value||'0';
+  const status=document.getElementById('convertClientStatus').value;
+  const joined=document.getElementById('convertClientJoined').value.trim();
+  const renewal=document.getElementById('convertClientRenewal').value.trim();
+  const notes=document.getElementById('convertClientNotes').value.trim();
+  const result=document.getElementById('convertClientResult');
+  if(!business){result.innerHTML='<span style="color:var(--red)">No business selected.</span>';return;}
+  if(!pkg){result.innerHTML='<span style="color:var(--red)">Pick a package.</span>';return;}
+  if(pkg==='Custom Package'&&!customPackageName){result.innerHTML='<span style="color:var(--red)">Enter a custom package name.</span>';return;}
+  result.innerHTML='<span style="color:var(--muted)">Converting...</span>';
+  try{
+    const url=API_URL+'?action=convertToClient&business='+encodeURIComponent(business)+'&sheetSource='+encodeURIComponent(sheetSource)
+      +'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
+      +'&monthlyAmount='+encodeURIComponent(monthlyAmount)+'&oneTimeAmount='+encodeURIComponent(oneTimeAmount)
+      +'&status='+encodeURIComponent(status)+'&joined='+encodeURIComponent(joined)+'&renewal='+encodeURIComponent(renewal)
+      +'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.success){
+      result.innerHTML='<span style="color:var(--green);font-weight:700">&#10003; '+business+' is now a client — '+data.package+'</span>';
+      showToast('🏆 '+business+' converted to client');
+      const c=state.contacts.find(x=>x.Business===business);
+      if(c){c.WA_Label='✅ Client Paying';c.Stage='Client';c.Offer=data.package;}
+      state.clients.push({Business:business,Package:data.package,Joined:joined,Renewal:renewal,Amount:parseFloat(monthlyAmount)||0,Status:status,Number:c?c.Number:'',Notes:notes,OneTimeAmount:parseFloat(oneTimeAmount)||0,PaymentType:(parseFloat(monthlyAmount)>0&&parseFloat(oneTimeAmount)>0)?'Both':(parseFloat(monthlyAmount)>0?'Monthly':'One-Time'),Sheet_Source:'Clients'});
+      sessionResolvedContacts.add(business);
+      setTimeout(()=>{
+        document.getElementById('convertClientModal').style.display='none';
+        if(document.getElementById('tab-followup').classList.contains('active'))renderFollowUps();
+        if(document.getElementById('tab-clients').classList.contains('active'))renderClients();
+        if(document.getElementById('tab-contacts').classList.contains('active'))renderAllContacts();
+        if(document.getElementById('tab-koforidua').classList.contains('active'))renderKoforidua();
+      },1200);
+    }else{
+      result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not convert.')+'</span>';
+    }
+  }catch(e){
+    result.innerHTML='<span style="color:var(--red)">Connection error — not saved.</span>';
+  }
+}
+// v27.0: jumps to the Clients tab and pre-fills the picker with a pipeline
+// contact — the "click a business in Pipeline and change them to a
+// package" entry point. Reuses the same modal as everywhere else instead
+// of a second, divergent UI.
+function jumpToConvertClient(business,sheetSource){
+  openConvertToClient(business,sheetSource);
+}
+
 function toggleClientCustomPackage(){
-  document.getElementById('addClientCustomName').style.display=document.getElementById('addClientPackage').value==='Custom Package'?'block':'none';
+  const pkg=document.getElementById('addClientPackage').value;
+  document.getElementById('addClientCustomName').style.display=pkg==='Custom Package'?'block':'none';
+  // v27.0: auto-fill the monthly/one-time amount fields from the shared
+  // price list when a known package is picked, but leave both fields
+  // alone (and focus-able) for Custom Package so the amount can always be
+  // typed in by hand — this is what "custom package needs an amount
+  // field" was missing before: the fields existed but never had numbers
+  // in them for anything except Verified Business.
+  const preset=PACKAGE_PRICE_PRESETS[pkg];
+  if(preset){
+    document.getElementById('addClientMonthly').value=preset.monthly||'';
+    document.getElementById('addClientOneTime').value=preset.oneTime||'';
+  }
+}
+function onAddClientContactPicked(business){
+  document.getElementById('addClientBusiness').value=business;
+  document.getElementById('addClientBusiness').disabled=true;
+  const c=state.contacts.find(x=>x.Business===business);
+  const sheetSource=c?(c.Sheet_Source||'Master CRM'):'Master CRM';
+  document.getElementById('addClientPickSheetSource').value=sheetSource;
+  document.getElementById('addClientPickHint').style.display='block';
+  if(c&&c.Number)document.getElementById('addClientNumber').value=c.Number;
+}
+function clearAddClientPick(){
+  clearContactSearch('addClientPick');
+  document.getElementById('addClientPickSheetSource').value='';
+  document.getElementById('addClientPickHint').style.display='none';
+  document.getElementById('addClientBusiness').disabled=false;
+  document.getElementById('addClientBusiness').value='';
 }
 async function submitAddClient(){
   const business=document.getElementById('addClientBusiness').value.trim();
@@ -2348,17 +2681,30 @@ async function submitAddClient(){
   const number=normalizePhoneClient(document.getElementById('addClientNumber').value);
   const notes=document.getElementById('addClientNotes').value.trim();
   const result=document.getElementById('addClientResult');
+  const pickSheetSource=document.getElementById('addClientPickSheetSource').value;
   if(!business){result.innerHTML='<span style="color:var(--red)">Business name is required.</span>';return;}
   const dupClient=findPossibleDuplicateByName(business,state.clients);
   if(dupClient&&!confirm('"'+dupClient.Business+'" already exists in Clients. Add "'+business+'" anyway as a separate entry?')){result.innerHTML='<span style="color:var(--muted)">Cancelled — possible duplicate.</span>';return;}
   result.innerHTML='<span style="color:var(--muted)">Adding...</span>';
+  // v27.0: if this business was picked from the pipeline picker above, use
+  // convertToClient so the source Master CRM / Koforidua row (WA_Label,
+  // Stage, Offer) gets updated in the same call instead of the Clients
+  // sheet and pipeline sheet drifting apart.
+  const action=pickSheetSource?'convertToClient':'addClient';
   try{
-    const url=API_URL+'?action=addClient&business='+encodeURIComponent(business)+'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
+    let url=API_URL+'?action='+action+'&business='+encodeURIComponent(business)+'&package='+encodeURIComponent(pkg)+'&customPackageName='+encodeURIComponent(customPackageName)
       +'&monthlyAmount='+encodeURIComponent(monthlyAmount)+'&oneTimeAmount='+encodeURIComponent(oneTimeAmount)+'&status='+encodeURIComponent(status)
-      +'&joined='+encodeURIComponent(joined)+'&renewal='+encodeURIComponent(renewal)+'&number='+encodeURIComponent(number)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+      +'&joined='+encodeURIComponent(joined)+'&renewal='+encodeURIComponent(renewal)+'&notes='+encodeURIComponent(notes)+'&t='+Date.now();
+    if(action==='convertToClient')url+='&sheetSource='+encodeURIComponent(pickSheetSource);
+    else url+='&number='+encodeURIComponent(number);
     const res=await fetch(url);const data=await res.json();
     if(data.success){
       state.clients.push({Business:business,Package:data.package,Joined:joined,Renewal:renewal,Amount:parseFloat(monthlyAmount)||0,Status:status,Number:number,Notes:notes,OneTimeAmount:parseFloat(oneTimeAmount)||0,PaymentType:(parseFloat(monthlyAmount)>0&&parseFloat(oneTimeAmount)>0)?'Both':(parseFloat(monthlyAmount)>0?'Monthly':'One-Time'),Sheet_Source:'Clients'});
+      if(action==='convertToClient'){
+        const c=state.contacts.find(x=>x.Business===business);
+        if(c){c.WA_Label='✅ Client Paying';c.Stage='Client';c.Offer=data.package;}
+        sessionResolvedContacts.add(business);
+      }
       const totalAmt=(parseFloat(monthlyAmount)||0)+(parseFloat(oneTimeAmount)||0);
       if(totalAmt>0){
         const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
@@ -2368,8 +2714,10 @@ async function submitAddClient(){
       }
       result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added as '+data.package+'</span>';
       showToast('Client added — '+business);
-      ['addClientBusiness','addClientCustomName','addClientMonthly','addClientOneTime','addClientJoined','addClientRenewal','addClientNumber','addClientNotes'].forEach(id=>document.getElementById(id).value='');
+      clearAddClientPick();
+      ['addClientCustomName','addClientMonthly','addClientOneTime','addClientJoined','addClientRenewal','addClientNumber','addClientNotes'].forEach(id=>document.getElementById(id).value='');
       renderClients();renderToday();
+      if(document.getElementById('tab-followup')&&document.getElementById('tab-followup').classList.contains('active'))renderFollowUps();
     }else{
       result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not add')+'</span>';
     }
@@ -2895,7 +3243,7 @@ function filterContacts(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
+    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
       <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
       <div style="display:flex;gap:4px;align-items:center">
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
@@ -3186,6 +3534,17 @@ function showFullNotes(business,notes,stage,number,category){
   document.getElementById('notesModalTitle').textContent=business;
   document.getElementById('notesModalMeta').textContent=number+(category?' · '+category:'')+(stage?' · '+stage:'');
   document.getElementById('notesModalBody').textContent=notes||'No notes recorded yet.';
+  // v27.0: a "convert to client" shortcut right on the contact detail
+  // panel — satisfies "in pipeline I should be able to click a business
+  // and change them to a package" without a second, divergent picker.
+  const actions=document.getElementById('notesModalActions');
+  const c=state.contacts.find(x=>x.Business===business);
+  const isClient=c&&c.WA_Label&&c.WA_Label.includes('✅');
+  if(actions){
+    actions.innerHTML=isClient
+      ? '<span style="font-size:11px;color:var(--muted)">Already a client — edit their package in the Clients tab.</span>'
+      : `<button class="copy-btn" style="background:var(--gold);color:var(--black);font-weight:800;width:100%;padding:8px" onclick="document.getElementById('notesModal').style.display='none';openConvertToClient('${escJs(business)}','${escJs(c?(c.Sheet_Source||'Master CRM'):'Master CRM')}')">🎯 SET PACKAGE / CONVERT TO CLIENT</button>`;
+  }
   document.getElementById('notesModal').style.display='flex';
 }
 function openTargetSettings(){const m=document.getElementById('settingsModal');if(state.settings){document.getElementById('settingMonthly').value=state.settings.monthly_target||'5400';document.getElementById('settingWorkDays').value=state.settings.working_days||'26';}m.style.display='flex';}
@@ -3227,6 +3586,7 @@ function selectContact(field,business,number,waLabel){
   const d=document.getElementById(field+'ContactDropdown');if(d)d.classList.remove('open');
   contactSearchState[field]={business,number,waLabel};
   if(field==='convReview')prefillConvReview(business);
+  if(field==='addClientPick')onAddClientContactPicked(business);
 }
 
 // v23.0: pull the contact's real notes + recent call/activity history into
