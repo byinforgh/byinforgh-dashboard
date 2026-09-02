@@ -395,7 +395,7 @@ select:focus{border-color:var(--gold);}
       <div class="section-title" id="pipelineContactTitle" style="margin-bottom:0">—</div>
       <button onclick="closePipelinePanel()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 12px;border-radius:3px;cursor:pointer;font-size:11px">CLOSE &#x2715;</button>
     </div>
-    <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>CATEGORY</th><th>WA</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="pipelineContactBody"></tbody></table></div>
+    <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="pipelineContactBody"></tbody></table></div>
   </div>
   <div class="section-title">ALL CONTACTS — PIPELINE VIEW</div>
   <div class="scroll-table"><table class="contact-table"><thead><tr><th>ID</th><th>BUSINESS</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="pipelineBody"></tbody></table></div>
@@ -655,6 +655,7 @@ select:focus{border-color:var(--gold);}
     <input class="search-input" type="text" id="contactSearch" placeholder="Search by name, business, number, stage..." oninput="filterContacts()" style="margin-bottom:0;flex:1">
     <button class="refresh-btn" onclick="exportAllContacts()" style="margin-bottom:14px">&#8681; EXPORT CSV</button>
   </div>
+  <div id="allContactsCount" style="font-size:11px;color:var(--text-dim);margin:-8px 0 12px;letter-spacing:0.5px">&mdash;</div>
   <div id="bulkActionBar" style="display:none;background:var(--surface);border:1px solid var(--gold);border-radius:6px;padding:10px 14px;margin-bottom:14px;align-items:center;gap:10px;flex-wrap:wrap">
     <span id="bulkSelectedCount" style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px">0 SELECTED</span>
     <select id="bulkField" onchange="renderBulkValueField()">
@@ -2203,10 +2204,21 @@ function openPipelineStage(key,name){
   document.getElementById('pipelineContactBody').innerHTML=matches.length?matches.map(c=>{
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
-    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
-  }).join(''):'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
+    // v27.1: STAGE column was missing here entirely — only the WA_Label
+    // dropdown showed, so there was no way to see or change what stage a
+    // contact was actually at from this filtered view. Changing it now
+    // also re-filters this panel immediately (the row drops out once it
+    // no longer matches "${name}"), which is the "click it and it filters"
+    // behavior that was asked for.
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+  }).join(''):'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
   document.getElementById('pipelineContactPanel').style.display='block';
   document.getElementById('pipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function changePipelineStageAndRefilter(business,newValue,el,sheetSource,key,name){
+  await updateFollowupStage(business,'Stage',newValue,el,sheetSource,null);
+  openPipelineStage(key,name);
+  renderPipeline();
 }
 function closePipelinePanel(){document.getElementById('pipelineContactPanel').style.display='none';}
 
@@ -3234,6 +3246,14 @@ function filterContacts(){
   const q=(document.getElementById('contactSearch').value||'').toLowerCase();
   const filtered=allContactsData.filter(c=>!q||(c.Business||'').toLowerCase().includes(q)||(c.Number||'').includes(q)||(c.Stage||'').toLowerCase().includes(q)||(c.Town||'').toLowerCase().includes(q)||(c.Category||'').toLowerCase().includes(q)||(c.Notes||'').toLowerCase().includes(q));
   lastFilteredContacts=filtered;
+  // v27.1: total-count line — was missing entirely, so there was no way to
+  // see how many contacts actually exist without scrolling and counting.
+  const countEl=document.getElementById('allContactsCount');
+  if(countEl){
+    countEl.textContent=q
+      ? ('Showing '+filtered.length+' of '+allContactsData.length+' total contacts')
+      : (allContactsData.length+' total contact'+(allContactsData.length===1?'':'s')+' (Master CRM + Koforidua)');
+  }
   document.getElementById('allContactsBody').innerHTML=filtered.map((c,fi)=>{
     let daysInDB='—';if(c.Created_Date){const cr=new Date(c.Created_Date);if(!isNaN(cr.getTime()))daysInDB=Math.floor((new Date()-cr)/(1000*60*60*24))+'d';}
     const ov=isOverdue(c.Next_Follow_Up);const msgCount=state.messageCounts[c.Business]||0;
