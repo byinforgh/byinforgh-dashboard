@@ -1508,7 +1508,12 @@ async function loadData(){
     state.kofCount=raw.kofCount||(state.koforidua||[]).length;
     state.totalCount=raw.totalContacts||state.contacts.length;
     state.todayOutreach=raw.todayOutreachCount||0;
-    document.getElementById('lastRefresh').textContent='Updated: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    // v28.0: append the live Apps Script deployment version (from
+    // getData()'s new result.scriptVersion field) next to the refresh
+    // time, so you can always confirm which deployment is actually
+    // serving requests without guessing from behaviour.
+    var verSuffix = raw.scriptVersion ? (' · Script: '+raw.scriptVersion) : '';
+    document.getElementById('lastRefresh').textContent='Updated: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+verSuffix;
     // v21.0: only auto-set the daily rotating A/B/C/D version if the person
     // has not manually picked one this session. Previously this ran on
     // EVERY loadData() call — including the 60s auto-refresh and the
