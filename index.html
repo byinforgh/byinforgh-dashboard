@@ -28,6 +28,20 @@
 .tabs::-webkit-scrollbar{display:none;}
 .tab{padding:8px 16px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1px;white-space:nowrap;color:var(--text-dim);transition:all .2s;border:none;background:none;font-family:'Syne',sans-serif;}
 .tab.active{background:var(--gold);color:var(--black);}.tab:hover:not(.active){color:var(--text);background:var(--border);}
+/* v29.1 — master now requires its own login too (closes the hole where
+   dropping "/bto" from the URL reached this page with no auth at all). */
+body.authed #masterLoginOverlay{display:none!important;}
+body:not(.authed) #masterBanner,body:not(.authed) .main,body:not(.authed) .shabbat-banner{display:none!important;}
+#masterLoginOverlay{position:fixed;inset:0;background:var(--gold);display:flex;align-items:center;justify-content:center;z-index:1000;}
+#masterLoginBox{background:#fff;border-radius:10px;padding:32px 28px;width:320px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+#masterLoginBox h2{color:var(--gold);font-size:16px;letter-spacing:1px;margin-bottom:4px;}
+#masterLoginBox p{color:var(--muted);font-size:11px;margin-bottom:18px;}
+#masterLoginBox input{width:100%;padding:10px 12px;margin-bottom:10px;border:1px solid var(--border);border-radius:6px;font-family:'Space Mono',monospace;font-size:13px;}
+#masterLoginBox button{width:100%;padding:10px;background:var(--gold);color:#fff;border:none;border-radius:6px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'Syne',sans-serif;}
+#masterLoginBox button:hover{background:var(--gold-dim);}
+#masterLoginError{color:var(--red);font-size:11px;margin-top:8px;min-height:14px;}
+#masterBanner{background:var(--sand);color:var(--gold-dim);font-size:11px;font-weight:700;text-align:center;padding:6px;letter-spacing:.5px;}
+#masterBanner button{margin-left:10px;background:none;border:1px solid var(--gold-dim);color:var(--gold-dim);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:10px;}
 .tab-content{display:none;}.tab-content.active{display:block;}
 .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
 .metric-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;position:relative;overflow:hidden;}
@@ -54,12 +68,12 @@
 .contact-table{width:100%;border-collapse:collapse;font-size:12px;}
 .contact-table th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:700;letter-spacing:1px;border-bottom:1px solid var(--border);font-size:10px;}
 .contact-table td{padding:6px 10px;border-bottom:1px solid #1a1a1a;vertical-align:middle;line-height:1.3;}
-.contact-table tr:hover td{background:#1c1c1c;}
+.contact-table tr:hover td{background:#F1EFE2;}
 .stage-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px;}
-.stage-hot{background:#2a1500;color:#f97316;border:1px solid #f97316;}.stage-warm{background:#1a2000;color:#84cc16;border:1px solid #84cc16;}
-.stage-conv{background:#001a20;color:#22d3ee;border:1px solid #22d3ee;}.stage-cold{background:#1a1a1a;color:#666;border:1px solid #333;}
-.stage-reject{background:#1a0000;color:#666;border:1px solid #333;}.stage-client{background:#001a00;color:#22c55e;border:1px solid #22c55e;}
-.stage-monthly{background:#1a0a1a;color:#a855f7;border:1px solid #a855f7;}.stage-quarterly{background:#0a0a1a;color:#6366f1;border:1px solid #6366f1;}
+.stage-hot{background:#FBEEDD;color:#C97A2B;border:1px solid #f97316;}.stage-warm{background:#FBEEDD;color:#A5761F;border:1px solid #84cc16;}
+.stage-conv{background:#E9F5F7;color:#2E7A8C;border:1px solid #22d3ee;}.stage-cold{background:#F1EFE2;color:#8A8878;border:1px solid #333;}
+.stage-reject{background:#FBEAE8;color:#8A8878;border:1px solid #333;}.stage-client{background:#EAF7EF;color:#1E8E5A;border:1px solid #22c55e;}
+.stage-monthly{background:#F2EDF7;color:#7C5EA3;border:1px solid #a855f7;}.stage-quarterly{background:#F2EDF7;color:#5B4B9E;border:1px solid #6366f1;}
 .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
 .filter-btn{padding:7px 14px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Syne',sans-serif;transition:all .2s;}
 .filter-btn.active{background:var(--gold);color:var(--black);border-color:var(--gold);}.filter-btn:hover:not(.active){border-color:var(--gold);color:var(--text);}
@@ -87,13 +101,13 @@
 .kof-tag{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:6px 12px;font-size:11px;color:var(--text-dim);cursor:pointer;font-weight:700;transition:all .2s;}
 .kof-tag.active{background:var(--teal);color:var(--black);border-color:var(--teal);}
 .pipeline-stage{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;text-align:center;cursor:pointer;transition:all .2s;}
-.pipeline-stage:hover{border-color:var(--gold);background:#1a1a1a;}
+.pipeline-stage:hover{border-color:var(--gold);background:#F1EFE2;}
 .pipeline-count{font-size:28px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold);}.pipeline-name{font-size:11px;color:var(--text-dim);margin-top:4px;font-weight:700;letter-spacing:1px;}
 .action-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a1a;}.action-item:last-child{border:none;}
 .action-check{width:18px;height:18px;border:2px solid var(--border);border-radius:3px;flex-shrink:0;cursor:pointer;margin-top:1px;transition:all .2s;}.action-check.done{background:var(--gold);border-color:var(--gold);}
 .action-text{font-size:13px;flex:1;}.action-text.done-text{text-decoration:line-through;color:var(--muted);}
 .action-tag{font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:3px;flex-shrink:0;}
-.tag-outreach{background:#1a2500;color:var(--green);}.tag-followup{background:#1a1500;color:var(--gold);}.tag-content{background:#1a0020;color:var(--purple);}.tag-client{background:#001a10;color:var(--teal);}.tag-visit{background:#1a0a00;color:var(--orange);}
+.tag-outreach{background:#EAF7EF;color:var(--green);}.tag-followup{background:#F2E8CF;color:var(--gold);}.tag-content{background:#F2EDF7;color:var(--purple);}.tag-client{background:#E9F5F7;color:var(--teal);}.tag-visit{background:#FBEEDD;color:var(--orange);}
 .proj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}@media(max-width:600px){.proj-grid{grid-template-columns:1fr 1fr;}}
 .proj-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;text-align:center;}
 .proj-period{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:2px;margin-bottom:8px;}.proj-amount{font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold);}.proj-clients{font-size:11px;color:var(--text-dim);margin-top:4px;}
@@ -112,7 +126,7 @@
 .search-input{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-size:13px;font-family:'Syne',sans-serif;width:100%;margin-bottom:14px;outline:none;}.search-input:focus{border-color:var(--gold);}
 .loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;font-family:'Space Mono',monospace;}.loading::after{content:'...';animation:dots 1.5s infinite;}
 @keyframes dots{0%{content:'.'} 33%{content:'..'}  66%{content:'...'}}
-.error-msg{background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:14px;font-size:12px;color:var(--red);margin-bottom:16px;}
+.error-msg{background:#FBEAE8;border:1px solid var(--red);border-radius:6px;padding:14px;font-size:12px;color:var(--red);margin-bottom:16px;}
 .empty{text-align:center;padding:30px;color:var(--muted);font-size:12px;}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--black);padding:10px 18px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:1px;opacity:0;transform:translateY(20px);transition:all .3s;z-index:999;pointer-events:none;}
 .toast.show{opacity:1;transform:translateY(0);}
@@ -124,8 +138,8 @@
 .debug-bar{background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:8px 12px;font-size:10px;font-family:'Space Mono',monospace;color:#4a8a4a;margin-bottom:12px;line-height:1.6;}
 .sme-item{background:var(--surface);border:1px solid var(--teal);border-radius:6px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
 .freq-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;margin-left:6px;}
-.freq-monthly{background:#1a0a1a;color:#a855f7;border:1px solid #a855f7;}
-.freq-quarterly{background:#0a0a1a;color:#6366f1;border:1px solid #6366f1;}
+.freq-monthly{background:#F2EDF7;color:#7C5EA3;border:1px solid #a855f7;}
+.freq-quarterly{background:#F2EDF7;color:#5B4B9E;border:1px solid #6366f1;}
 select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:5px;font-family:'Syne',sans-serif;font-size:12px;width:100%;outline:none;margin-bottom:0;}
 select:focus{border-color:var(--gold);}
 .cal-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
@@ -144,7 +158,7 @@ select:focus{border-color:var(--gold);}
 .cal-daynum{font-size:11px;font-weight:700;color:var(--text-dim);font-family:'Space Mono',monospace}
 .cal-cell.today .cal-daynum{color:var(--gold)}
 .cal-pill{font-size:9px;padding:3px 6px;border-radius:4px;background:var(--border);color:var(--text);border:1px solid #3a3a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.6;font-weight:600}
-.cal-pill:hover{border-color:var(--gold);background:#2f2f2f}
+.cal-pill:hover{border-color:var(--gold);background:#F1EFE2}
 .cal-more{font-size:9px;color:var(--gold);cursor:pointer;font-weight:700;padding:2px 6px;background:var(--border);border-radius:4px;display:inline-block;margin-top:2px}
 .cal-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:10px;color:var(--text-dim)}
 .pkg-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px}
@@ -155,13 +169,26 @@ select:focus{border-color:var(--gold);}
 .pkg-tier-row:first-of-type{border-top:none}
 .edit-name-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;vertical-align:middle}
 .edit-name-btn:hover{color:var(--gold)}
-.edit-name-input{background:#1c1c1c;border:1px solid var(--gold);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:3px 6px;border-radius:4px;outline:none;width:180px}
+.edit-name-input{background:#FFFFFF;border:1px solid var(--gold);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:3px 6px;border-radius:4px;outline:none;width:180px}
 @media(max-width:768px){.cal-wrap{padding:10px;border-radius:8px}.cal-grid{grid-template-columns:repeat(7,1fr);gap:4px}.cal-cell{min-height:74px;padding:4px;border-radius:5px}.cal-pill{font-size:9px;padding:2px 4px}.cal-dow{font-size:9px}.cal-daynum{font-size:10px}.cal-month-label{font-size:14px;min-width:120px}.call-mid{border-left:none;border-right:none;padding:0}.call-item-row{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 <body>
+<div id="masterLoginOverlay">
+  <div id="masterLoginBox">
+    <h2>BYINFORGH &mdash; COMMAND CENTRE</h2>
+    <p>Sign in to access the master dashboard.</p>
+    <form onsubmit="masterLogin(event)">
+      <input type="text" id="masterUser" placeholder="Username" autocomplete="username" autocapitalize="off">
+      <input type="password" id="masterPass" placeholder="Password" autocomplete="current-password">
+      <button type="submit" id="masterLoginBtn">SIGN IN</button>
+    </form>
+    <div id="masterLoginError"></div>
+  </div>
+</div>
+<div id="masterBanner">MASTER VIEW &mdash; signed in as <span id="masterBannerName"></span><button onclick="masterLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v29.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v29.1</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -276,13 +303,13 @@ select:focus{border-color:var(--gold);}
   <div class="card" style="margin-bottom:16px;border-color:#2a2000">
     <div class="card-title" style="color:var(--gold-dim)">&#128450; NOTES MANAGEMENT</div>
     <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">Archive M column notes to Notes History then clear. Run monthly.</div>
-    <button class="refresh-btn" onclick="archiveNotes()" id="archiveNotesBtn" style="background:#2a2000;color:var(--gold);border:1px solid var(--gold-dim);padding:10px 24px">&#128450; ARCHIVE + CLEAR NOTES</button>
+    <button class="refresh-btn" onclick="archiveNotes()" id="archiveNotesBtn" style="background:#F2E8CF;color:var(--gold);border:1px solid var(--gold-dim);padding:10px 24px">&#128450; ARCHIVE + CLEAR NOTES</button>
     <div id="archiveNotesResult" style="margin-top:10px;font-size:12px"></div>
   </div>
   <div class="card" style="margin-bottom:16px;border-color:var(--red)">
     <div class="card-title" style="color:var(--red)">&#128465; SWEEP ARCHIVE REJECTED CONTACTS</div>
     <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">Finds every contact currently marked Rejected / Not Interested in Master CRM and Koforidua Master — including ones rejected before today — and archives them in one pass. Safe to run anytime, never creates duplicates. Nothing is deleted; full record stays in the Archived sheet and can be restored later.</div>
-    <button class="refresh-btn" onclick="sweepArchive()" id="sweepArchiveBtn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);padding:10px 24px">&#128465; SWEEP &amp; ARCHIVE ALL REJECTED</button>
+    <button class="refresh-btn" onclick="sweepArchive()" id="sweepArchiveBtn" style="background:#FBEAE8;color:var(--red);border:1px solid var(--red);padding:10px 24px">&#128465; SWEEP &amp; ARCHIVE ALL REJECTED</button>
     <div id="sweepArchiveResult" style="margin-top:10px;font-size:12px"></div>
   </div>
   <div class="card"><div class="card-title">&#128161; DAILY IMPROVEMENT SUGGESTIONS</div><div id="aiSuggestions"></div></div>
@@ -290,7 +317,7 @@ select:focus{border-color:var(--gold);}
 
 <!-- ARCHIVE -->
 <div class="tab-content" id="tab-archive">
-  <div style="background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
+  <div style="background:#FBEAE8;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
     <strong style="color:var(--red)">ARCHIVED CONTACTS</strong> · Rejected, expired proposals, 3x-no-reply, and dead leads live here. Nothing is ever deleted. Search and tap RESTORE to bring a business back into the active pipeline as a fresh contact.
   </div>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
@@ -303,7 +330,7 @@ select:focus{border-color:var(--gold);}
 
 <!-- BUSINESS SOLUTIONS (read-only) -->
 <div class="tab-content" id="tab-bizsolutions">
-  <div style="background:#001a1a;border:1px solid var(--teal);border-radius:6px;padding:14px 18px;margin-bottom:20px">
+  <div style="background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:14px 18px;margin-bottom:20px">
     <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:6px">🏢 BUSINESS SOLUTIONS — CORPORATE DIAGNOSTIC PIPELINE</div>
     <div style="font-size:12px;color:var(--text-dim);line-height:1.7">Read-only view of the corporate Business Maturity Levels dashboard: diagnostics, consultation bookings and orders submitted there, and whether each one bridged successfully into this CRM. This data comes live from the Business Solutions Apps Script, not from this sheet.</div>
   </div>
@@ -411,7 +438,7 @@ select:focus{border-color:var(--gold);}
 
 <!-- CALLS -->
 <div class="tab-content" id="tab-calls">
-  <div style="background:#1a0000;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
+  <div style="background:#FBEAE8;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
     <strong style="color:var(--red)">&#128222; CALL LIST — 🔴 1 TICK CONTACTS</strong> · WhatsApp message delivered but not reaching them. Must call directly. Set the outcome, add notes/follow-up, then tap LOG. Logging an outcome moves the contact off this list — it will not reappear or get double-logged.
   </div>
   <div class="section-title">DAILY CALL TARGETS</div>
@@ -472,7 +499,7 @@ select:focus{border-color:var(--gold);}
     </div>
     <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>AREA</th><th>WA</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="kofPipelineContactBody"></tbody></table></div>
   </div>
-  <div style="background:#001a1a;border:1px solid var(--teal);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
+  <div style="background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
     <strong style="color:var(--teal)">VISIT PRIORITY:</strong> B1 Active first. B2 Warm next. Filter by area to plan your route for the day.
   </div>
   <div class="section-title">AREA FILTER</div>
@@ -483,7 +510,7 @@ select:focus{border-color:var(--gold);}
 
 <!-- CLIENTS -->
 <div class="tab-content" id="tab-clients">
-  <div style="background:#001020;border:1px solid var(--blue);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.7">
+  <div style="background:#E9F5F7;border:1px solid var(--blue);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-dim);line-height:1.7">
     <strong style="color:var(--blue)">COLUMNS:</strong> A=Business · B=Package · C=Joined · D=Renewal · <strong style="color:var(--purple)">E=One-Time</strong> · F=Payment Date · <strong style="color:var(--green)">G=Status</strong> · <strong style="color:var(--gold)">H=Monthly Amount</strong> · I=Number · J=Notes
   </div>
   <div class="section-title">&#10133; ADD NEW CLIENT</div>
@@ -550,7 +577,7 @@ select:focus{border-color:var(--gold);}
 
 <!-- SME SYSTEMS -->
 <div class="tab-content" id="tab-sme">
-  <div style="background:#001a1a;border:1px solid var(--teal);border-radius:6px;padding:14px 18px;margin-bottom:20px">
+  <div style="background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:14px 18px;margin-bottom:20px">
     <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:6px">&#128295; BYINFORGH SME SYSTEMS MEMBERS</div>
     <div style="font-size:12px;color:var(--text-dim);line-height:1.7">Businesses on active BBCS deployments. Sheet tab needed: <strong style="color:var(--teal)">SME Systems Members</strong><br>Columns: A=Business · B=Owner · C=Package · D=Joined · E=Monthly Amount · F=Status · G=Number · H=Notes</div>
   </div>
@@ -593,7 +620,7 @@ select:focus{border-color:var(--gold);}
 <!-- MESSAGES -->
 <div class="tab-content" id="tab-messages">
   <div class="section-title">MESSAGE LIBRARY — BYINFORGH ECOSYSTEM FRAMEWORK</div>
-  <div style="background:#1a1500;border:1px solid var(--gold-dim);border-radius:6px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--gold-dim)">
+  <div style="background:#F2E8CF;border:1px solid var(--gold-dim);border-radius:6px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--gold-dim)">
     <strong style="color:var(--gold)">ECOSYSTEM:</strong> Stage 1 Get Found (Business Presence) → Stage 2 Get More Customers (Verified) → Stage 3 Build Better Systems (SME Systems). Lead with their challenge, not the product.
   </div>
   <div class="filter-row">
@@ -1515,6 +1542,13 @@ async function loadData(){
     if(!res.ok)throw new Error('HTTP '+res.status);
     const raw=await res.json();
     if(raw.fatalError)throw new Error(raw.fatalError);
+    if(raw.authError){
+      document.body.classList.remove('authed');
+      sessionStorage.removeItem('master_token');
+      const errEl=document.getElementById('masterLoginError');
+      if(errEl)errEl.textContent=raw.error||'Session expired — please sign in again.';
+      return;
+    }
     state.raw=raw;
     const dbg=document.getElementById('dataDebug');
     const clRaw=raw.clients||[];const acRaw=clRaw.filter(c=>(c.Status||'').trim().toLowerCase()==='active');
@@ -1804,7 +1838,7 @@ function renderFollowUps(){
     if(c.Stage&&c.Stage.toLowerCase().includes('quarterly'))freqBadge='<span class="freq-badge freq-quarterly">QUARTERLY</span>';
     else if(c.Stage&&c.Stage.toLowerCase().includes('monthly'))freqBadge='<span class="freq-badge freq-monthly">MONTHLY</span>';
     else if(msgCount>=3)freqBadge=`<span class="freq-badge freq-monthly">${msgCount} msgs</span>`;
-    else if(isFirstTouch)freqBadge='<span class="freq-badge" style="background:#001a00;color:var(--green);border:1px solid var(--green)">FIRST TOUCH</span>';
+    else if(isFirstTouch)freqBadge='<span class="freq-badge" style="background:#EAF7EF;color:var(--green);border:1px solid var(--green)">FIRST TOUCH</span>';
     const depInfo=currentDeployment?`<span style="font-size:10px;color:var(--gold);margin-left:8px;font-weight:700">↗ ${currentDeployment}</span>`:'';
     const idx=start+pi;
     // v21.0: use escJs (handles real newlines, quotes, and backslashes)
@@ -1828,7 +1862,7 @@ function renderFollowUps(){
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
           oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')"
           placeholder="No notes — tap to add"
-          style="width:100%;min-height:44px;max-height:140px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-family:Syne,sans-serif;font-size:12px;line-height:1.5;margin-top:6px;padding:8px;border-radius:5px;resize:vertical;outline:none"
+          style="width:100%;min-height:44px;max-height:140px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-family:Syne,sans-serif;font-size:12px;line-height:1.5;margin-top:6px;padding:8px;border-radius:5px;resize:vertical;outline:none"
           onfocus="this.style.borderColor='var(--gold)'"
           onblur="this.style.borderColor='var(--border)'"
         >${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
@@ -1862,10 +1896,10 @@ function renderFollowUps(){
         <button class="copy-btn" style="background:#25D366;color:#fff" onclick="openWhatsApp('${c.Number||''}',${idx})">&#128172; WHATSAPP</button>
         <button class="copy-btn" style="background:var(--surface)" onclick="generatePersonalMsg('${sb}','${sn}','${c.Category||''}','${emoji}','${ss}',this,${idx},'${escJs(c.Town||c.Area||'')}')">✨ PERSONALISE</button>
         ${callLinkHtml(c.Number)}
-        <button class="copy-btn" style="background:#001a20;color:var(--blue);border:1px solid var(--blue)" onclick="logFollowupCall('${sb}','${c.Number||''}','${src}',this.closest('.followup-item').querySelector('textarea').value,this)">📞 CALLED</button>
-        <button class="copy-btn" style="background:#001a00;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
-        <button class="copy-btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold)" onclick="openConvertToClient('${sb}','${src}')">🎯 CLIENT</button>
-        <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}','${src}',this)">✕ REJECT</button>
+        <button class="copy-btn" style="background:#E9F5F7;color:var(--blue);border:1px solid var(--blue)" onclick="logFollowupCall('${sb}','${c.Number||''}','${src}',this.closest('.followup-item').querySelector('textarea').value,this)">📞 CALLED</button>
+        <button class="copy-btn" style="background:#EAF7EF;color:var(--green);border:1px solid var(--green)" onclick="markFollowUpDone('${c.ID||''}','${sb}','${ss}','${src}','${sm}',this)">✓ DONE</button>
+        <button class="copy-btn" style="background:#F2E8CF;color:var(--gold);border:1px solid var(--gold)" onclick="openConvertToClient('${sb}','${src}')">🎯 CLIENT</button>
+        <button class="copy-btn" style="background:#FBEAE8;color:var(--red);border:1px solid var(--red)" onclick="rejectContact('${sb}','${src}',this)">✕ REJECT</button>
       </div></div>`;
   }).join('');
   let pagHtml='';
@@ -2255,7 +2289,7 @@ function renderPipeline(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-p'+pIdx;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
 function openPipelineStage(key,name){
@@ -2270,7 +2304,7 @@ function openPipelineStage(key,name){
     // also re-filters this panel immediately (the row drops out once it
     // no longer matches "${name}"), which is the "click it and it filters"
     // behavior that was asked for.
-    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join(''):'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
   document.getElementById('pipelineContactPanel').style.display='block';
   document.getElementById('pipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2536,7 +2570,7 @@ function openKofPipelineStage(key,name){
   document.getElementById('kofPipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
   document.getElementById('kofPipelineContactBody').innerHTML=matches.length?matches.map(c=>{
     const sb=escJs(c.Business||'');
-    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Koforidua Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Koforidua Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
   document.getElementById('kofPipelineContactPanel').style.display='block';
   document.getElementById('kofPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2564,7 +2598,7 @@ function renderKofList(){
         <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">SELLS / CATEGORY</span><input type="text" data-orig="${c.Sells||c.Category||''}" value="${c.Sells||c.Category||''}" onchange="updateContactField('${sb}','Category',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
         <div style="align-self:flex-end">${callLinkHtml(c.Number)}</div>
       </div>
-      <textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" placeholder="No notes — tap to add" style="width:100%;min-height:40px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-family:Syne,sans-serif;font-size:11px;margin-top:8px;padding:7px;border-radius:5px;resize:vertical;outline:none" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
+      <textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" placeholder="No notes — tap to add" style="width:100%;min-height:40px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-family:Syne,sans-serif;font-size:11px;margin-top:8px;padding:7px;border-radius:5px;resize:vertical;outline:none" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
       <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">
         <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;max-width:160px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:'Space Mono',monospace;width:120px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
@@ -2995,7 +3029,7 @@ function renderClients(){
         <input type="date" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${sheetDateToInputFormat(c.Renewal)}" onchange="updateClientField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)">
         <button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 8px;font-size:9px" onclick="markClientRenewed('${sb}',this)">↻ RENEW</button>
       </div>
-      <button class="copy-btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);padding:4px 8px;font-size:9px" onclick="archiveClientTap('${sb}',this)">&#128465; ARCHIVE — NO LONGER A CLIENT</button>
+      <button class="copy-btn" style="background:#FBEAE8;color:var(--red);border:1px solid var(--red);padding:4px 8px;font-size:9px" onclick="archiveClientTap('${sb}',this)">&#128465; ARCHIVE — NO LONGER A CLIENT</button>
     </div></div>`;
   }).join('')||'<div class="empty">No clients loaded</div>';
   document.getElementById('renewalsList').innerHTML=state.renewals.filter(r=>r.Status!=='UPCOMING').map(r=>`<div class="client-item overdue"><div style="flex:1"><div class="client-name">${r.Business}</div><div class="client-pkg">${r.Package}</div></div><div style="text-align:right"><div class="overdue-tag">${r.Status}</div><div style="font-size:11px;color:var(--text-dim)">${Math.abs(r.Days||0)}d ${(r.Days||0)<0?'overdue':'until renewal'}</div></div></div>`).join('')||'<div class="empty">No overdue renewals</div>';
@@ -3330,7 +3364,7 @@ function filterContacts(){
         <button class="copy-btn" style="padding:3px 6px;font-size:9px" onclick="logAllContactsAction('${sb}','${src}','${bizSafe}')">LOG</button>
       </div>
       <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Last: ${cleanDate(c.Last_Contact)}</div>
-    </td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${ov?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:140px;min-height:30px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:10px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    </td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${ov?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:140px;min-height:30px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:10px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
 
@@ -3970,7 +4004,6 @@ window.addEventListener('resize',syncHeaderHeight);
 
 document.addEventListener('DOMContentLoaded',()=>{
   syncHeaderHeight();
-  checkShabbat();
   document.getElementById('addContactStage').innerHTML =
     STAGE_OPTIONS.map(s=>`<option${s==='First message sent'?' selected':''}>${s}</option>`).join('');
   document.getElementById('addContactOffer').innerHTML =
@@ -3978,9 +4011,77 @@ document.addEventListener('DOMContentLoaded',()=>{
   // v21.0: populate the new WA Label field on the Add Contact form.
   document.getElementById('addContactWaLabel').innerHTML =
     '<option value="">— default for sheet —</option>' + buildWaLabelOptionsHtml('');
-  loadSettings().then(()=>loadData());
+  masterInit();
+});
+
+// =====================
+// v29.1 — Master login gate. Closes the hole where this page previously
+// made no API calls with any token at all, so the backend's old
+// "no token = master" fallback would grant full access to anyone who
+// simply loaded this URL directly. Nothing under .main renders, and no
+// API call fires, until a real login succeeds. Token lives only in
+// sessionStorage (cleared when the tab closes).
+// =====================
+let MASTER_TOKEN='', MASTER_DISPLAY_NAME='';
+const _origFetchMaster=window.fetch.bind(window);
+window.fetch=function(input,init){
+  try{
+    if(typeof input==='string'&&input.indexOf(API_URL)===0&&MASTER_TOKEN){
+      input+=(input.indexOf('?')>-1?'&':'?')+'token='+encodeURIComponent(MASTER_TOKEN);
+    }
+  }catch(err){}
+  return _origFetchMaster(input,init);
+};
+
+function masterInit(){
+  const saved=sessionStorage.getItem('master_token');
+  const savedName=sessionStorage.getItem('master_display_name');
+  if(saved){ MASTER_TOKEN=saved; MASTER_DISPLAY_NAME=savedName||'Master'; masterStartApp(); }
+}
+
+async function masterLogin(ev){
+  if(ev)ev.preventDefault();
+  const u=document.getElementById('masterUser').value.trim();
+  const p=document.getElementById('masterPass').value;
+  const errEl=document.getElementById('masterLoginError');
+  const btn=document.getElementById('masterLoginBtn');
+  errEl.textContent='';
+  if(!u||!p){errEl.textContent='Enter both username and password.';return;}
+  btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const res=await _origFetchMaster(API_URL+'?action=login&username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&t='+Date.now());
+    const data=await res.json();
+    if(!data.success){errEl.textContent=data.error||'Login failed.';btn.disabled=false;btn.textContent='SIGN IN';return;}
+    MASTER_TOKEN=data.token; MASTER_DISPLAY_NAME=data.displayName||u;
+    sessionStorage.setItem('master_token',MASTER_TOKEN);
+    sessionStorage.setItem('master_display_name',MASTER_DISPLAY_NAME);
+    masterStartApp();
+  }catch(err){
+    errEl.textContent='Connection error — check your internet and try again.';
+    btn.disabled=false;btn.textContent='SIGN IN';
+  }
+}
+
+async function masterLogout(){
+  try{ if(MASTER_TOKEN) await _origFetchMaster(API_URL+'?action=logout&token='+encodeURIComponent(MASTER_TOKEN)); }catch(err){}
+  sessionStorage.removeItem('master_token');
+  sessionStorage.removeItem('master_display_name');
+  location.reload();
+}
+
+function masterStartApp(){
+  document.body.classList.add('authed');
+  const nameEl=document.getElementById('masterBannerName');
+  if(nameEl)nameEl.textContent=MASTER_DISPLAY_NAME;
+  checkShabbat();
+  loadSettings().then(()=>loadData()).catch(()=>{
+    document.body.classList.remove('authed');
+    sessionStorage.removeItem('master_token');
+    document.getElementById('masterLoginError').textContent='Session expired — please sign in again.';
+  });
   loadTrackerData();
-setInterval(()=>{loadData();},60000);});
+  setInterval(()=>{loadData();},60000);
+}
 </script>
 </body>
 </html>
