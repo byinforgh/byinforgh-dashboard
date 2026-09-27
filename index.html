@@ -6,20 +6,25 @@
 <title>BYINFORGH — Command Centre</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--black:#0a0a0a;--surface:#111111;--card:#181818;--border:#2a2a2a;--gold:#f5c842;--gold-dim:#c8a22a;--green:#22c55e;--red:#ef4444;--orange:#f97316;--blue:#3b82f6;--purple:#a855f7;--teal:#14b8a6;--muted:#888;--text:#f2f2f2;--text-dim:#b5b5b5;}
+/* v29.0: BYINFORGH corporate brand palette (replaces the dark theme).
+   Deep Teal = primary (nav/logo/primary actions), Soft Blue = secondary
+   (links/secondary actions), Warm Sand = accent (highlights/cards),
+   Charcoal = text, White = background. Semantic colors (green/red/orange
+   for status) are kept but retuned to sit correctly on a light page. */
+:root{--black:#F7F7F2;--surface:#FFFFFF;--card:#FFFFFF;--border:#E1DEC9;--gold:#0F4C5C;--gold-dim:#0B3A46;--green:#1E8E5A;--red:#C0392B;--orange:#C97A2B;--blue:#4DA3B8;--purple:#7C5EA3;--teal:#4DA3B8;--muted:#6B6A63;--text:#1C1C1C;--text-dim:#4A4A44;--sand:#F2E8CF;}
 *{margin:0;padding:0;box-sizing:border-box;}body{background:var(--black);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.logo{font-size:20px;font-weight:800;letter-spacing:2px;color:var(--gold);}.logo span{color:var(--text-dim);font-weight:400;font-size:12px;display:block;letter-spacing:3px;}
+.header{background:var(--gold);border-bottom:1px solid var(--gold-dim);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:20px;font-weight:800;letter-spacing:2px;color:#FFFFFF;}.logo span{color:var(--sand);font-weight:400;font-size:12px;display:block;letter-spacing:3px;}
 .header-right{display:flex;align-items:center;gap:16px;}
 .live-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
-.last-refresh{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;}
-.refresh-btn{background:var(--border);border:none;color:var(--text);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;letter-spacing:1px;transition:background .2s;}
-.refresh-btn:hover{background:var(--gold);color:var(--black);}
-.shabbat-banner{background:linear-gradient(135deg,#1a1a00,#2a2000);border:1px solid var(--gold-dim);margin:16px 24px;padding:16px 20px;border-radius:8px;display:none;align-items:center;gap:12px;}
+.last-refresh{font-size:11px;color:var(--sand);font-family:'Space Mono',monospace;}
+.refresh-btn{background:#FFFFFF;border:none;color:var(--gold);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;letter-spacing:1px;transition:background .2s;}
+.refresh-btn:hover{background:var(--sand);color:var(--gold-dim);}
+.shabbat-banner{background:linear-gradient(135deg,var(--sand),#EADFC0);border:1px solid var(--gold-dim);margin:16px 24px;padding:16px 20px;border-radius:8px;display:none;align-items:center;gap:12px;}
 .shabbat-banner.active{display:flex;}
 .main{padding:20px 24px;max-width:1400px;margin:0 auto;}
-.tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);padding:6px;border-radius:8px;border:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);padding:6px;border-radius:8px;border:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:var(--header-h,64px);z-index:90;box-shadow:0 2px 6px rgba(0,0,0,.06);}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{padding:8px 16px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1px;white-space:nowrap;color:var(--text-dim);transition:all .2s;border:none;background:none;font-family:'Syne',sans-serif;}
 .tab.active{background:var(--gold);color:var(--black);}.tab:hover:not(.active){color:var(--text);background:var(--border);}
@@ -156,7 +161,7 @@ select:focus{border-color:var(--gold);}
 </head>
 <body>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v25.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v29.0</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -335,12 +340,15 @@ select:focus{border-color:var(--gold);}
     <button class="refresh-btn" onclick="exportFollowups()" style="margin-bottom:14px">&#8681; EXPORT CSV</button>
   </div>
   <div class="filter-row" id="labelFilters">
+    <button class="filter-btn" id="newAuditFilterBtn" onclick="setFilter('__NEW__',this)" style="border-color:var(--red);color:var(--red);display:none">🆕 NEW TODAY</button>
     <button class="filter-btn active" onclick="setFilter('all',this)">ALL DUE TODAY</button>
+    <button class="filter-btn" onclick="setFilter('🔴',this)">🔴 1-TICK CALL ONLY</button>
     <button class="filter-btn" onclick="setFilter('🟡',this)">🟡 2-TICK UNREAD</button>
     <button class="filter-btn" onclick="setFilter('🟠',this)">🟠 READ NO REPLY</button>
     <button class="filter-btn" onclick="setFilter('🟢',this)">🟢 CONVERSATION</button>
     <button class="filter-btn" onclick="setFilter('🔄',this)">🔄 RE-ENGAGE</button>
     <button class="filter-btn" onclick="setFilter('🔵',this)">🔵 HOT LEAD</button>
+    <button class="filter-btn" onclick="setFilter('📍',this)">📍 KOFORIDUA PHYSICAL</button>
     <button class="filter-btn" onclick="setFilter('monthly',this)">&#128310; MONTHLY</button>
     <button class="filter-btn" onclick="setFilter('quarterly',this)">&#128311; QUARTERLY</button>
   </div>
@@ -398,7 +406,7 @@ select:focus{border-color:var(--gold);}
     <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="pipelineContactBody"></tbody></table></div>
   </div>
   <div class="section-title">ALL CONTACTS — PIPELINE VIEW</div>
-  <div class="scroll-table"><table class="contact-table"><thead><tr><th>ID</th><th>BUSINESS</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="pipelineBody"></tbody></table></div>
+  <div class="scroll-table"><table class="contact-table"><thead><tr><th>ID</th><th>BUSINESS</th><th>STAGE</th><th>WA</th><th>CLIENT PKG</th><th>MSGS</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="pipelineBody"></tbody></table></div>
 </div>
 
 <!-- CALLS -->
@@ -668,7 +676,7 @@ select:focus{border-color:var(--gold);}
     <button class="refresh-btn" onclick="exportSelectedContacts()">&#8681; EXPORT SELECTED</button>
     <button class="refresh-btn" onclick="clearContactSelection()">CLEAR SELECTION</button>
   </div>
-  <div class="scroll-table"><table class="contact-table"><thead><tr><th><input type="checkbox" id="selectAllContacts" onchange="toggleSelectAllContacts(this)"></th><th>#</th><th>BUSINESS</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>MSGS</th><th>ACTION / LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="allContactsBody"></tbody></table></div>
+  <div class="scroll-table"><table class="contact-table"><thead><tr><th><input type="checkbox" id="selectAllContacts" onchange="toggleSelectAllContacts(this)"></th><th>#</th><th>BUSINESS</th><th>TOWN</th><th>CATEGORY</th><th>STAGE</th><th>WA</th><th>CLIENT PKG</th><th>MSGS</th><th>ACTION / LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="allContactsBody"></tbody></table></div>
 </div>
 
 <!-- TRACKER -->
@@ -1117,8 +1125,13 @@ function buildContextualFollowup(c,msgCount,version){
   if(!notes)return null;
 
   // Pattern 1: named guides/resources already sent — check on progress.
+  // v29.0: removed a false-positive match on the substring "signal" — it
+  // fired on ANY note containing that word at all (e.g. "no signal from
+  // them", "weak signal on interest"), not just on an actual resource
+  // called a "Signal guide", which doesn't correspond to anything
+  // BYINFORGH actually sends. That's the "it keeps mentioning the signal"
+  // bug — a generated message pretending a document was sent when it wasn't.
   const guideNames=[];
-  if(notes.includes('signal'))guideNames.push('Signal guide');
   if(notes.includes('ecosystem'))guideNames.push('EcoSystem guide');
   if(notes.includes('playbook'))guideNames.push('playbook');
   if(guideNames.length>0){
@@ -1381,6 +1394,19 @@ function findPossibleDuplicateByName(business,list){
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function copyMsg(text,btn){navigator.clipboard.writeText(text).then(()=>{btn.textContent='COPIED';btn.classList.add('copied');setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);showToast('Message copied');});}
 function scrollToTabTop(tabId){const el=document.getElementById(tabId);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+// v29.0: "when a business is showing as a client, show exactly what they
+// are as a client" — a small badge with their real package name (or SME
+// package), sitting between the WA label and message-count columns, so a
+// ✅ Client row never just reads "Client" with nothing to show for it.
+function getClientPackageBadge(c){
+  if(!c.WA_Label||!c.WA_Label.includes('✅'))return'<span style="color:var(--muted);font-size:10px">—</span>';
+  const biz=(c.Business||'').trim().toLowerCase();
+  const asClient=(state.clients||[]).find(cl=>(cl.Business||'').trim().toLowerCase()===biz);
+  if(asClient)return `<span style="font-size:9px;font-weight:700;color:var(--gold);border:1px solid var(--gold);border-radius:3px;padding:1px 5px;white-space:nowrap">${asClient.Package||'Custom Package'}</span>`;
+  const asSme=(state.smeMembers||[]).find(m=>(m.Business||'').trim().toLowerCase()===biz);
+  if(asSme)return `<span style="font-size:9px;font-weight:700;color:var(--teal);border:1px solid var(--teal);border-radius:3px;padding:1px 5px;white-space:nowrap">SME: ${asSme.Package||'Custom'}</span>`;
+  return '<span style="color:var(--orange);font-size:9px;font-weight:700">⚠ not in Clients yet</span>';
+}
 function getWAEmoji(label){if(!label)return'';if(label.includes('🔴'))return'🔴';if(label.includes('🟡'))return'🟡';if(label.includes('🟠'))return'🟠';if(label.includes('🟢'))return'🟢';if(label.includes('🔵'))return'🔵';if(label.includes('✅'))return'✅';if(label.includes('⬛'))return'⬛';if(label.includes('⬜'))return'⬜';if(label.includes('🔄'))return'🔄';if(label.includes('📍'))return'📍';return label.charAt(0);}
 function countByLabel(emoji){return state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes(emoji)).length;}
 // v21.0: fix for "categories don't sum to 30" — any contact with a blank or
@@ -1514,6 +1540,24 @@ async function loadData(){
     // serving requests without guessing from behaviour.
     var verSuffix = raw.scriptVersion ? (' · Script: '+raw.scriptVersion) : '';
     document.getElementById('lastRefresh').textContent='Updated: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+verSuffix;
+    // v29.0: same-day audits/new contacts no longer sit silently in the
+    // pipeline unseen — a dedicated filter button lights up on the
+    // Follow-Ups tab, and the first time a NEW audit count is seen this
+    // session (or the count goes up since the last check), a toast fires
+    // so it isn't missed even if you're on a different tab entirely.
+    const newAuditN=raw.newAuditCount||0;
+    const newContactN=(raw.newContactsToday||[]).length;
+    const newBtn=document.getElementById('newAuditFilterBtn');
+    if(newBtn){
+      if(newAuditN+newContactN>0){
+        newBtn.style.display='inline-block';
+        newBtn.textContent='🆕 NEW TODAY ('+(newAuditN+newContactN)+')';
+      } else { newBtn.style.display='none'; }
+    }
+    if(newAuditN>(window._lastSeenNewAuditCount||0)){
+      showToast('🆕 '+newAuditN+' new audit'+(newAuditN>1?'s':'')+' in today — check Follow-Ups → NEW TODAY');
+    }
+    window._lastSeenNewAuditCount=newAuditN;
     // v21.0: only auto-set the daily rotating A/B/C/D version if the person
     // has not manually picked one this session. Previously this ran on
     // EVERY loadData() call — including the 60s auto-refresh and the
@@ -1597,7 +1641,13 @@ function renderToday(){
   document.getElementById('kofVisitList').innerHTML=kofPri.length?kofPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal);cursor:pointer" onclick="activateTab('koforidua')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Koforidua'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
 }
 
-function setFilter(f,btn){currentFilter=f;followupPage=0;followupShowAllMode=(f==='monthly'||f==='quarterly');document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
+// v29.0: picking any specific WA-label filter (not just Monthly/Quarterly)
+// now shows every contact carrying that label, regardless of whether their
+// Next_Follow_Up date happens to be today — this was the bug behind
+// "I click a label filter and businesses that should be there aren't":
+// they were there, just filtered out by the due-today-only date check
+// below. Only the 'all' button keeps the tight daily work-queue behaviour.
+function setFilter(f,btn){currentFilter=f;followupPage=0;followupShowAllMode=(f!=='all');document.querySelectorAll('#tab-followup .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFollowUps();}
 // v21.0 fix: this is the second root cause of "version switch doesn't
 // work" — the button previously only updated currentMsgVersion, so the
 // very next loadData() (60s auto-refresh, or pressing REFRESH right after
@@ -1702,7 +1752,8 @@ function renderFollowUps(){
   }
   let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business));
   const today=new Date();today.setHours(0,0,0,0);
-  if(currentFilter==='monthly')contacts=contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes('monthly'));
+  if(currentFilter==='__NEW__')contacts=contacts.filter(c=>c.IsNewAudit||c.IsNewContact);
+  else if(currentFilter==='monthly')contacts=contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes('monthly'));
   else if(currentFilter==='quarterly')contacts=contacts.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('quarterly')||c.Stage.toLowerCase().includes('3 month')));
   else if(currentFilter!=='all')contacts=contacts.filter(c=>c.WA_Label&&c.WA_Label.includes(currentFilter));
   else contacts=contacts.filter(c=>!c.WA_Label.includes('🔴'));
@@ -1764,10 +1815,14 @@ function renderFollowUps(){
     const sn=escJs((c.Notes||'').substring(0,200));const src=escJs(c.Sheet_Source||'Master CRM');
     const sm=escJs(msg);
     const sourceTag=c.Source&&c.Source.toLowerCase().includes('landing')?'<span style="font-size:9px;color:var(--blue);border:1px solid var(--blue);border-radius:3px;padding:1px 5px;margin-left:6px">🌐 WEB LEAD</span>':(c.Source&&c.Source.toLowerCase().includes('manual')?'<span style="font-size:9px;color:var(--gold);border:1px solid var(--gold);border-radius:3px;padding:1px 5px;margin-left:6px">📝 MANUAL</span>':'');
+    // v29.0: same-day audits and brand-new contacts get a visible tag right
+    // on the card, not just in the filter — so they stand out even when
+    // browsing "ALL DUE TODAY" rather than the dedicated NEW filter.
+    const newTag=c.IsNewAudit?'<span style="font-size:9px;color:#fff;background:var(--red);border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:800">🆕 NEW AUDIT</span>':(c.IsNewContact?'<span style="font-size:9px;color:#fff;background:var(--orange);border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:800">🆕 NEW CONTACT</span>':'');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_');
     return `<div class="followup-item" style="${daysOv>0?'border-color:#2a1500;border-left:3px solid var(--red)':''}">
       <div class="followup-header"><div style="flex:1">
-        <div class="followup-name"><span id="bizname-${bizSafe}"><span style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}</span> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button>${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag}</span></div>
+        <div class="followup-name"><span id="bizname-${bizSafe}"><span style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}</span> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button>${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag}${newTag}</span></div>
         <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgCount}</div>
         <textarea
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
@@ -2200,7 +2255,7 @@ function renderPipeline(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-p'+pIdx;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#1c1c1c;border:1px solid var(--border);color:#f0f0f0;font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
 function openPipelineStage(key,name){
@@ -3268,7 +3323,7 @@ function filterContacts(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
+    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
       <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
       <div style="display:flex;gap:4px;align-items:center">
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
@@ -3475,12 +3530,24 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx,t
     ...acts.map(a=>`${a.action}: ${a.oldValue||''}→${a.newValue||''} ${a.notes||''}`),
     ...calls.map(cl=>`CALL ${cl.date||''}: ${cl.notes||''}`)
   ].join('\n')||'No logged history';
-  const context=`Business: ${business}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nFull notes: ${(c.Notes||notes||'No notes').substring(0,800)}\nRecent history:\n${history}`;
+  const fullNotes=(c.Notes||notes||'');
+  // v29.0: pull the audit result out of the notes explicitly, instead of
+  // hoping it survives inside an 800-char substring — this is the "look
+  // deeper into the audit, don't just offer the listing every time" fix.
+  // A business that came in through an audit gets its real score, tier and
+  // named gaps handed to the model as its own labelled field, so the
+  // message can reference the actual leak that was found (e.g. no Google
+  // Maps listing, no follow-up system) instead of a generic pitch.
+  const auditMatch=fullNotes.match(/\[AUDIT SCAN[^\]]*\][^\n]*/i);
+  const auditLine=auditMatch?auditMatch[0]:'No audit on file for this business — do not reference audit results.';
+  const context=`Business: ${business}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nAUDIT RESULT (use this if present — this is the real, specific leak to reference instead of a generic pitch):\n${auditLine}\nFull notes: ${fullNotes.substring(0,1500)||'No notes'}\nRecent history:\n${history}`;
   const sp=`You are writing the exact next WhatsApp message for a BYINFORGH sales contact in Ghana, based ONLY on the real facts given below.
 CRITICAL RULES — violating any of these makes the message unusable:
 - Never invent, assume, or fabricate any event or claim (no "someone searched for you", no "a business near you just went live", no made-up numbers or dates).
 - Never name a location other than the one explicitly given above. If no location is given, do not mention any place at all.
-- Base the message only on the actual notes/history given. If there is no notes/history, ask a plain honest discovery question instead of pretending to reference a conversation.
+- If an AUDIT RESULT is given, the message MUST reference the specific gap(s) named there (e.g. no Maps listing, no WhatsApp catalogue, no follow-up system) rather than a generic "get listed" pitch — the audit already told this business exactly what's wrong, so the message should sound like it remembers that, not like a first-touch cold message.
+- Do NOT default to pitching the free listing if the notes/audit show the conversation has already moved past that (e.g. price already discussed, a stage of Interested/Proposal/Hot Lead, or a package already named) — match the actual stage of the relationship.
+- Base the message only on the actual notes/history given. If there is no notes/history and no audit, ask a plain honest discovery question instead of pretending to reference a conversation.
 Keep it 2-4 sentences, warm, specific to the real notes, end with one clear next step or question. Output ONLY the message text, nothing else.`;
   try{
     const res=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(context)+'&context='+encodeURIComponent(sp)+'&t='+Date.now());
@@ -3489,11 +3556,20 @@ Keep it 2-4 sentences, warm, specific to the real notes, end with one clear next
     const mb=document.getElementById('msgbox-'+idx);if(mb)mb.textContent=data.reply.trim();
     btn.textContent='✓ Personalised';
   }catch(e){
+    // v29.0: surface the REAL reason instead of a bare "(offline)" label —
+    // this was the "personalise message is now saying it's offline" bug.
+    // Almost always this means ANTHROPIC_API_KEY isn't set in the Apps
+    // Script project's Script Properties; say so plainly so it's fixable
+    // in one look instead of guessing.
     generatePersonalMsgLocal(business,notes,category,emoji,stage,idx,realTown);
-    btn.textContent='✓ Personalised (offline)';
+    const reason=(e&&e.message)?e.message:'connection issue';
+    const isKeyIssue=/ANTHROPIC_API_KEY/i.test(reason);
+    btn.textContent=isKeyIssue?'⚠ No AI key set — using backup':'⚠ AI unavailable — using backup';
+    btn.title=reason;
+    console.warn('generatePersonalMsg AI call failed:',reason);
   }
   btn.style.background='var(--green)';btn.style.color='var(--black)';
-  setTimeout(()=>{btn.textContent='✨ PERSONALISE';btn.style.background='';btn.style.color='';btn.disabled=false;},3000);
+  setTimeout(()=>{btn.textContent='✨ PERSONALISE';btn.style.background='';btn.style.color='';btn.disabled=false;btn.title='';},4000);
 }
 // v21.0: offline fallback — the old local heuristic, kept exactly as it
 // was but without the button-state lines (those now live in the wrapper
@@ -3883,7 +3959,17 @@ function renderBizSolOrders(data){
   document.getElementById('bizSolOrdersList').innerHTML=rows.length?`<div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>PACKAGES</th><th>ONE-TIME</th><th>MONTHLY</th><th>PAYMENT</th><th>STATUS</th><th>CRM</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r.business||'—'}</strong></td><td style="font-size:11px;max-width:220px">${r.packages||'—'}</td><td style="font-family:'Space Mono',monospace">&#8373;${r.oneTime||0}</td><td style="font-family:'Space Mono',monospace">&#8373;${r.monthly||0}</td><td style="font-size:11px">${r.paymentMethod||'—'}</td><td>${r.paymentStatus||'—'}</td><td>${bizSolBridgeTag(r.bridged,r.crmId)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">No orders submitted yet</div>';
 }
 
+// v29.0: keeps the tab bar stuck directly under the header (whatever its
+// real height is) instead of a guessed fixed pixel value, so it never
+// overlaps or leaves a gap as content wraps on smaller screens.
+function syncHeaderHeight(){
+  const h=document.querySelector('.header');
+  if(h)document.documentElement.style.setProperty('--header-h',h.offsetHeight+'px');
+}
+window.addEventListener('resize',syncHeaderHeight);
+
 document.addEventListener('DOMContentLoaded',()=>{
+  syncHeaderHeight();
   checkShabbat();
   document.getElementById('addContactStage').innerHTML =
     STAGE_OPTIONS.map(s=>`<option${s==='First message sent'?' selected':''}>${s}</option>`).join('');
