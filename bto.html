@@ -31,7 +31,13 @@
 /* v29.0 — Business Trust Officer redactions: applied only once role-bto
    is set on <body> after a successful login. Hidden, not just zeroed, so
    it never looks like a broken/empty revenue page. */
-body:not(.role-bto) #btoLoginOverlay,body:not(.role-bto) #btoBanner{display:none!important;}
+/* v29.0.1 — FIX: the previous rule hid the login overlay whenever
+   role-bto was ABSENT, i.e. permanently, since that class is only added
+   AFTER a successful login — nothing was ever clickable and the page sat
+   on "Loading..." forever. Corrected: the overlay shows by default and
+   hides once authed; the banner is the reverse. */
+body.authed #btoLoginOverlay{display:none!important;}
+body:not(.authed) #btoBanner{display:none!important;}
 body.role-bto [data-financial],body.role-bto #tabBtnRevenue,body.role-bto #tab-revenue{display:none!important;}
 body:not(.authed) .main,body:not(.authed) .shabbat-banner{display:none!important;}
 #btoLoginOverlay{position:fixed;inset:0;background:var(--gold);display:flex;align-items:center;justify-content:center;z-index:1000;}
