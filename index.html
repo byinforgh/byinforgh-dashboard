@@ -233,7 +233,7 @@ html,body{max-width:100%;overflow-x:clip;}
 <div id="masterBanner">MASTER VIEW &mdash; signed in as <span id="masterBannerName"></span><button onclick="masterLogout()">SIGN OUT</button></div>
 <div class="header">
   <div class="logo">BYINFORGH <span>COMMAND CENTRE v29.1</span></div>
-<div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
+<div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
   <div><div style="font-size:14px;font-weight:600;color:var(--gold)">Shabbat &mdash; Rest Day</div><div style="font-size:12px;color:var(--gold-dim)">No outreach today. Yahuah holds it. Resume Sunday.</div></div>
@@ -991,6 +991,51 @@ html,body{max-width:100%;overflow-x:clip;}
   </div>
 </div>
 
+<!-- Renew Client Modal -->
+<div id="renewModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div style="background:var(--card);border:1px solid var(--green);border-radius:8px;padding:24px;width:100%;max-width:440px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:800;letter-spacing:2px;color:var(--green)">&#8635; RENEW CLIENT</div>
+      <button onclick="document.getElementById('renewModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button>
+    </div>
+    <input type="hidden" id="renewBusiness" value="">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px" id="renewBizLabel">&mdash;</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px" id="renewCurrent"></div>
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">DATE THE CLIENT PAID / RENEWED</div>
+    <input type="date" id="renewDate" class="search-input" style="margin-bottom:8px" onchange="updateRenewPreview()">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">RENEWS FOR</div>
+        <select id="renewCycle" onchange="updateRenewPreview()"><option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></select></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">AMOUNT PAID (GHS)</div>
+        <input id="renewAmount" type="number" class="search-input" style="margin:0"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:9px 12px" id="renewPreview"></div>
+    <button class="refresh-btn" onclick="submitRenew()" style="background:var(--green);color:var(--black);width:100%;margin-top:12px;padding:10px;font-weight:800">&#8635; CONFIRM RENEWAL</button>
+    <div id="renewResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
+</div>
+
+<!-- Account Settings Modal -->
+<div id="acctModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div style="background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:24px;width:100%;max-width:420px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:800;letter-spacing:2px;color:var(--gold)">&#9881; ACCOUNT</div>
+      <button onclick="document.getElementById('acctModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button>
+    </div>
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">DISPLAY NAME (shown at the top)</div>
+    <input id="acctNewName" class="search-input" style="margin-bottom:8px" placeholder="Display name" autocomplete="off">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">NEW USERNAME (optional)</div>
+    <input id="acctNewUser" class="search-input" style="margin-bottom:8px" placeholder="Leave blank to keep current" autocomplete="off" autocapitalize="off">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">NEW PASSWORD (optional, min 8 characters)</div>
+    <input id="acctNewPass" type="password" class="search-input" style="margin-bottom:8px" placeholder="New password" autocomplete="new-password">
+    <input id="acctNewPass2" type="password" class="search-input" style="margin-bottom:8px" placeholder="Repeat new password" autocomplete="new-password">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:6px 0 4px">CURRENT PASSWORD (required to save)</div>
+    <input id="acctCurPass" type="password" class="search-input" style="margin-bottom:8px" placeholder="Current password" autocomplete="current-password">
+    <button class="refresh-btn" onclick="submitAccountChange()" style="background:var(--gold);color:#fff;width:100%;margin-top:6px;padding:10px;font-weight:800">SAVE CHANGES</button>
+    <div id="acctResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycby9X4OTmZERFAsLlHXf80G3C59rlHeyshTD6eKF-l0azZjWp_SHagxi8L7E4yUenEH1/exec';
@@ -1164,8 +1209,8 @@ const OPENER_VERSIONS={
 const MSG_VERSIONS={
 '🟡':{A:'Hey [NAME], hope all is well.\n\nQuick question — if someone searches for [CATEGORY] near you right now, would they find your business?\n\nIf not, I can fix that today — free to start. Want me to?',B:'Hey [NAME], quick one.\n\nHow are customers currently finding your business?',C:'Hey [NAME].\n\nWe are onboarding [CATEGORY] businesses in your area onto BYINFORGH this month so customers can find them easily.\n\nWant me to set yours up? Free to start.',D:'Hey [NAME].\n\nNot here to pitch anything. One question — what is the biggest challenge in getting customers to find you?'},
 '🟠':{A:"Hey [NAME], I know my last message came through.\n\nNo pressure. One question — if someone searched for [CATEGORY] near you right now, would they find you or your competitor?",B:"Hey [NAME].\n\nSearch your business on Google right now and tell me what comes up.\n\nI already know the answer. I can fix it today. Free.",C:"Hey [NAME], not coming back to push anything.\n\nJust one question — what is the biggest challenge in your business right now?",D:"Hey [NAME].\n\nYou saw my message. Something stopped you from replying.\n\nWas it price? Timing? Just not sure yet? I can work with any of those."},
-'🟢':{A:"Hey [NAME], following up on our conversation.\n\nBased on what you told me — the Business Presence listing is the right first step. Free, takes 60 seconds from you.\n\nShall I set it up today?",B:"Hey [NAME].\n\nReady to get your business live on BYINFORGH?\n\nBusiness name, what you sell, your WhatsApp number. That is all I need. I do the rest.",C:"Hey [NAME], Q3 is here. Businesses getting set up now are the ones customers find this quarter.\n\nWant to be one of them?",D:"Hey [NAME], just circling back.\n\nWhere are you at with this? I can move fast once you say yes."},
-'🔄':{A:"Hey [NAME], hope all is well. It has been a while.\n\nNot reaching out about the old offer. Just checking in — how is business going these days?",B:"Hey [NAME].\n\nWe updated how we help businesses. The free listing is still free — but the reach is better now.\n\nWorth a quick chat?",C:"Hey [NAME], halfway through the year. A lot of businesses are making moves for Q3.\n\nWant me to run a free visibility check on your business?",D:"Hey [NAME].\n\nChecking in — is your [CATEGORY] business set up online yet?\n\nIf not, I can get you listed on BYINFORGH so customers can find you. Free to start."},
+'🟢':{A:"Hey [NAME], following up on our conversation.\n\nWhere do you want to take this from here? Tell me what matters most for your [CATEGORY] business and I will lay out the next step.",B:"Hey [NAME].\n\nReady to get your business live on BYINFORGH?\n\nBusiness name, what you sell, your WhatsApp number. That is all I need. I do the rest.",C:"Hey [NAME], picking this back up. Where are you at with it?\n\nI can move quickly once you give the go-ahead.",D:"Hey [NAME], just circling back.\n\nWhere are you at with this? I can move fast once you say yes."},
+'🔄':{A:"Hey [NAME], hope all is well. It has been a while.\n\nNot reaching out about the old offer. Just checking in — how is business going these days?",B:"Hey [NAME].\n\nWe updated how we help businesses. The free listing is still free — but the reach is better now.\n\nWorth a quick chat?",C:"Hey [NAME], it has been a while. A lot has changed in how customers find businesses like yours.\n\nWant me to run a quick visibility check on your business?",D:"Hey [NAME].\n\nChecking in — is your [CATEGORY] business set up online yet?\n\nIf not, I can get you listed on BYINFORGH so customers can find you. Free to start."},
 '🔵':{A:"Hey [NAME], following up.\n\nI have everything ready to get you listed as Verified. GHS 180 setup — done in 24 hours.\n\nShall we lock it in today?",B:"Hey [NAME], just checking in.\n\nOne question, one answer — shall I lock you in today? Yes or not yet?",C:"Hey [NAME], I started preparing your profile already.\n\nLet us confirm the details today so you go live this week.",D:"Hey [NAME].\n\nEvery day without a Verified listing is customers finding your competitor first.\n\nGHS 180. Done in 24 hours. Today?"}
 };
 
@@ -1194,6 +1239,56 @@ function buildContextualFollowup(c,msgCount,version){
   const notes=(c.Notes||'').toLowerCase();
   const name=(c.Business||'').split(' ')[0];
   if(!notes)return null;
+  // v30: read the business's own audit result + notes instead of a generic pitch.
+  const rawNotes=c.Notes||'';
+  const auditM=rawNotes.match(/\[AUDIT SCAN[^\]]*\][^\n]*/i);
+  if(auditM){
+    const at=auditM[0].toLowerCase();
+    const GAPS=[[/google (maps|business)|maps listing|\bmaps\b/,'a Google Maps listing'],[/catalog/,'a WhatsApp catalogue'],[/follow.?up|crm|\blead/,'a follow-up system for enquiries'],[/website|web site/,'a website'],[/review|testimonial/,'customer reviews'],[/social|facebook|instagram|tiktok/,'a consistent social media presence'],[/payment|momo|invoice/,'a simple way to take payments and track invoices'],[/stock|inventory/,'stock tracking'],[/record|bookkeep|profit/,'proper sales and profit records'],[/listing|directory|presence/,'an online presence']];
+    const gaps=[];
+    GAPS.forEach(g=>{if(g[0].test(at)&&gaps.length<2&&gaps.indexOf(g[1])===-1)gaps.push(g[1]);});
+    const gapText=gaps.length?gaps.join(' and '):'a few gaps in how customers find you and how you follow up with them';
+    const biz=c.Category||'your business';
+    const av={
+      A:`Hey ${name}, going back over the audit we ran on your business. One of the gaps it flagged was ${gapText}.\n\nI can show you what fixing that looks like for ${biz}. Want me to send it over?`,
+      B:`Hey ${name}, one thing from your audit stands out: ${gapText}. That is where customers are most likely slipping away.\n\nWould it help if I walked you through the fix?`,
+      C:`Hey ${name}, following up on your business audit. It pointed to ${gapText}.\n\nWhat is the situation on your side with that right now?`,
+      D:`Hey ${name}, your audit gave a clear picture and ${gapText} came up. Tell me when you have 10 minutes and I will go through it with you.`
+    };
+    return av[version]||av.A;
+  }
+  // Intent from what was actually said in the notes (price, timing, thinking it over...)
+  const noteLines=rawNotes.split('\n').map(l=>l.trim()).filter(l=>l&&!/^\[(DONE|AUDIT)/i.test(l));
+  const nl=noteLines.join(' ').toLowerCase();
+  const INTENTS=[
+    [/call (me )?back|callback|call later/,{
+      A:`Hey ${name}, you asked me to get back to you. Is now a good moment, or should I pick a time that suits you better?`,
+      B:`Hey ${name}, circling back as you asked. When is the best time for a quick call?`,
+      C:`Hey ${name}, following up on the call-back. Are you free now, or later today?`,
+      D:`Hey ${name}, you wanted me to come back to you. Tell me a time that works and I will call then.`}],
+    [/price|cost|expensive|budget|afford|too much/,{
+      A:`Hey ${name}, you raised the price earlier and that is fair. I can break down exactly what you would get so you can judge the value, and we can find a starting point that fits.\n\nWant me to send the breakdown?`,
+      B:`Hey ${name}, about the price you mentioned. Let me show you what it covers so it is easy to compare against what you spend now. Shall I send it?`,
+      C:`Hey ${name}, following up on the cost question. What budget would feel comfortable for you? I will work from that.`,
+      D:`Hey ${name}, the price concern is understandable. If we start smaller, would that make it easier to decide?`}],
+    [/busy|not now|later|next week|next month|no time/,{
+      A:`Hey ${name}, you mentioned the timing was not right. Checking in now in case things have settled. Is this a better time to pick it up?`,
+      B:`Hey ${name}, hope the busy period has eased. Can we pick up where we left off?`,
+      C:`Hey ${name}, you said to come back later. Is now better?`,
+      D:`Hey ${name}, no pressure. Just checking whether you have room to look at this now.`}],
+    [/think|consider|discuss|partner|boss|decid|get back to me/,{
+      A:`Hey ${name}, you wanted time to think it over. Have you landed anywhere? Happy to answer anything still open.`,
+      B:`Hey ${name}, checking in on your decision. Is there anything holding you back that I can clear up?`,
+      C:`Hey ${name}, after you have had time to think, what questions do you still have?`,
+      D:`Hey ${name}, where did you land? I can move quickly once you say yes.`}],
+    [/\binterested\b|\byes\b|\bready\b|\bagreed\b|\bwants?\b/,{
+      A:`Hey ${name}, you said you were keen and I would like to keep that moving. What do you need from me to get started?`,
+      B:`Hey ${name}, picking this back up. What is the next step you want from me?`,
+      C:`Hey ${name}, following up on your interest. Shall we set a date to get this going?`,
+      D:`Hey ${name}, ready when you are. Just tell me how you would like to start.`}]
+  ];
+  for(const it of INTENTS){ if(it[0].test(nl)) return it[1][version]||it[1].A; }
+
 
   // Pattern 1: named guides/resources already sent — check on progress.
   // v29.0: removed a false-positive match on the substring "signal" — it
@@ -1665,7 +1760,7 @@ function renderToday(){
   const smeActive=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length;
   const mrr=getMRR(),visMRR=getVisMRR(),smeMRR=getSmeMRR(),oneTime=getOneTimeRevenue();
   const hot=countByLabel('🔵'),conv=countByLabel('🟢');
-  const overdue=state.renewals.filter(r=>r.Status==='OVERDUE').length;
+  const overdue=getOverdueClientRenewals().length;
   const todayOut=state.todayOutreach||0;
   document.getElementById('topMetrics').innerHTML=`
     <div class="metric-card gold clickable" onclick="activateTab('revenue')"><div class="metric-label">TOTAL MRR</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
@@ -3011,23 +3106,71 @@ async function updateClientField(business,field,value,el){
     if(el){el.value=orig;el.disabled=false;el.style.opacity='1';}
   }
 }
-async function markClientRenewed(business,el){
-  const today=new Date();
-  const newRenewalDate=prompt('New renewal date for '+business+' (DD/MM/YYYY):', '');
-  if(newRenewalDate===null)return;
-  const dateVal=newRenewalDate.trim()||new Date(today.getFullYear()+1,today.getMonth(),today.getDate()).toLocaleDateString('en-GB');
-  showToast('Saving renewal...');
+// ---- RENEW: pick the date on a calendar, next due date + revenue follow automatically
+function openRenewModal(business){
+  const c=(state.clients||[]).find(x=>x.Business===business);
+  if(!c){showToast('Client not found');return;}
+  const info=getRenewalInfo(c);
+  document.getElementById('renewBusiness').value=business;
+  document.getElementById('renewBizLabel').textContent=business+' — '+(c.Package||'');
+  const t=new Date();
+  document.getElementById('renewDate').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  document.getElementById('renewCycle').value='1';
+  document.getElementById('renewAmount').value=parseFloat(c.Amount)||0;
+  document.getElementById('renewCurrent').innerHTML=info.due?('Currently due: <strong>'+fmtDMY(info.due)+'</strong> · '+renewalBadgeHtml(info)):'No renewal date yet.';
+  document.getElementById('renewResult').innerHTML='';
+  updateRenewPreview();
+  document.getElementById('renewModal').style.display='flex';
+}
+function updateRenewPreview(){
+  const v=document.getElementById('renewDate').value;
+  const n=parseInt(document.getElementById('renewCycle').value)||1;
+  const el=document.getElementById('renewPreview');
+  if(!v){el.textContent='';return;}
+  const p=v.split('-');
+  const next=addMonthsDate(new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])),n);
+  el.innerHTML='Paid on <strong>'+p[2]+'/'+p[1]+'/'+p[0]+'</strong> &rarr; next renewal <strong>'+fmtDMY(next)+'</strong>';
+}
+async function submitRenew(){
+  const business=document.getElementById('renewBusiness').value;
+  const v=document.getElementById('renewDate').value;
+  const cycle=parseInt(document.getElementById('renewCycle').value)||1;
+  const amount=parseFloat(document.getElementById('renewAmount').value)||0;
+  const result=document.getElementById('renewResult');
+  const c=(state.clients||[]).find(x=>x.Business===business);
+  if(!c){result.innerHTML='<span style="color:var(--red)">Client not found.</span>';return;}
+  if(!v){result.innerHTML='<span style="color:var(--red)">Pick the renewal date.</span>';return;}
+  const p=v.split('-');
+  const paid=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+  const next=addMonthsDate(paid,cycle);
+  const nextStr=fmtDMY(next),paidStr=fmtDMY(paid);
+  result.innerHTML='<span style="color:var(--muted)">Saving...</span>';
   try{
-    const res=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field=Renewal&value='+encodeURIComponent(dateVal)+'&sheetSource=Clients&t='+Date.now());
-    const data=await res.json();
-    if(data.success){
-      const c=state.clients.find(x=>x.Business===business);
-      if(c){c.Renewal=dateVal;c.Status='Active';}
+    const r1=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field=Renewal&value='+encodeURIComponent(nextStr)+'&sheetSource=Clients&t='+Date.now());
+    const d1=await r1.json();
+    if(!d1.success){result.innerHTML='<span style="color:var(--red)">Not saved — '+(d1.error||'server error')+'</span>';return;}
+    if((c.Status||'').trim().toLowerCase()!=='active'){
       await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field=Status&value=Active&sheetSource=Clients&t='+Date.now());
-      showToast('✓ '+business+' renewed — next renewal '+dateVal);
+    }
+    let logged=true;
+    try{
+      const r2=await fetch(API_URL+'?action=logConversion&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(c.Number||'')+'&offer='+encodeURIComponent(c.Package||'')+'&amount='+encodeURIComponent(amount)+'&notes='+encodeURIComponent('Renewal — '+(c.Package||'')+' — paid '+paidStr)+'&date='+encodeURIComponent(paidStr)+'&t='+Date.now());
+      const d2=await r2.json();
+      logged=!!(d2&&!d2.error);
+    }catch(e){logged=false;}
+    c.Renewal=nextStr;c.Status='Active';
+    trackerData.conversions=[{timestamp:paid.toString(),date:paidStr,business,number:c.Number||'',offer:c.Package||'',amount,notes:'Renewal — '+(c.Package||'')+' — paid '+paidStr},...(trackerData.conversions||[])];
+    trackerData.totalConversionRevenue=(trackerData.totalConversionRevenue||0)+amount;
+    result.innerHTML='<span style="color:var(--green);font-weight:700">&#10003; Renewed — next due '+nextStr+(logged?'':' (revenue log failed — check connection)')+'</span>';
+    showToast('Renewed — '+business+' · next '+nextStr);
+    setTimeout(()=>{
+      document.getElementById('renewModal').style.display='none';
       renderClients();
-    }else{showToast('Error: '+(data.error||'could not save'));}
-  }catch(e){showToast('Connection error — not saved');}
+      if(document.getElementById('tab-today').classList.contains('active'))renderToday();
+      if(document.getElementById('tab-revenue').classList.contains('active'))renderRevenue();
+      if(document.getElementById('tab-analytics').classList.contains('active'))renderAnalytics();
+    },900);
+  }catch(e){result.innerHTML='<span style="color:var(--red)">Connection error — not saved.</span>';}
 }
 
 // v23.0: ARCHIVE OUTDATED CLIENT — removes a client who is no longer with
@@ -3054,12 +3197,43 @@ async function archiveClientTap(business,btn){
     if(btn){btn.textContent='🗑 ARCHIVE — NO LONGER A CLIENT';btn.disabled=false;}
   }
 }
+function addMonthsDate(d,n){const r=new Date(d.getFullYear(),d.getMonth(),d.getDate());const day=r.getDate();r.setMonth(r.getMonth()+n);if(r.getDate()!==day)r.setDate(0);return r;}
+function fmtDMY(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+function dateToInputValue(str){const d=parseFollowUpDate(str);if(!d)return '';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+// Renewal countdown. Next due = the Renewal date if set (it moves forward each
+// time RENEW is clicked); if never set, falls back to start date + 1 month so
+// a client who has not renewed yet shows as overdue instead of blank.
+function getRenewalInfo(c){
+  const today=new Date();today.setHours(0,0,0,0);
+  const monthly=parseFloat(c.Amount)||0;
+  const start=parseFollowUpDate(c.Joined);
+  let due=parseFollowUpDate(c.Renewal);
+  if(!due&&start&&monthly>0)due=addMonthsDate(start,1);
+  if(!due)return {oneTime:monthly<=0,due:null,start,monthly,days:null};
+  due.setHours(0,0,0,0);
+  return {oneTime:false,due,start,monthly,days:Math.round((due-today)/86400000)};
+}
+function renewalBadgeHtml(info){
+  if(!info||(!info.due&&!info.oneTime))return '<span style="font-size:11px;color:var(--muted)">Set a start date to begin the countdown</span>';
+  if(info.oneTime)return '<span style="font-size:11px;color:var(--purple);font-weight:700">One-time payment — no renewals</span>';
+  const d=info.days,n=Math.abs(d),pl=n===1?'day':'days';
+  if(d<0)return `<span style="font-size:12px;color:var(--red);font-weight:800">OVERDUE by ${n} ${pl}</span>`;
+  if(d===0)return '<span style="font-size:12px;color:var(--orange);font-weight:800">DUE TODAY</span>';
+  return `<span style="font-size:12px;color:${d<=7?'var(--orange)':'var(--green)'};font-weight:800">Renews in ${d} ${pl}</span>`;
+}
+function getOverdueClientRenewals(){
+  return (state.clients||[]).filter(c=>(c.Status||'').trim().toLowerCase()==='active').map(c=>({c,info:getRenewalInfo(c)})).filter(x=>x.info.due&&x.info.days<0);
+}
 function renderClients(){
-  document.getElementById('clientsList').innerHTML=state.clients.map(c=>{
+  const list=(state.clients||[]).map(c=>({c,info:getRenewalInfo(c)}));
+  list.sort((a,b)=>{const ad=a.info.due?a.info.days:99999;const bd=b.info.due?b.info.days:99999;return ad-bd;});
+  document.getElementById('clientsList').innerHTML=list.map(({c,info})=>{
     const stat=(c.Status||'').toLowerCase();
     const sb=escJs(c.Business||'');
     const statusOpts=CLIENT_STATUS_OPTIONS.map(o=>`<option value="${o}"${o.toLowerCase()===stat?' selected':''}>${o}</option>`).join('');
-    return`<div class="client-item ${stat==='churned'?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Joined ${c.Joined||'—'}</div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+    const overdueCard=info.due&&info.days<0&&stat==='active';
+    const dueTxt=info.due?('Next renewal: '+fmtDMY(info.due)):'';
+    return`<div class="client-item ${stat==='churned'||overdueCard?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Started ${c.Joined||'—'}</div><div style="margin-top:6px">${renewalBadgeHtml(info)} <span style="font-size:10px;color:var(--text-dim);margin-left:6px">${dueTxt}</span></div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
       <div style="display:flex;gap:6px;align-items:center">
         <span style="font-size:9px;color:var(--gold);font-weight:700">MONTHLY GHS</span>
         <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${c.Amount||0}" value="${c.Amount||0}" onchange="updateClientField('${sb}','Amount',this.value,this)">
@@ -3069,14 +3243,18 @@ function renderClients(){
         <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--purple);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${c.OneTimeAmount||0}" value="${c.OneTimeAmount||0}" onchange="updateClientField('${sb}','OneTime',this.value,this)">
       </div>
       <select data-orig="${c.Status||''}" onchange="updateClientField('${sb}','Status',this.value,this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;width:auto">${statusOpts}</select>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input type="date" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${sheetDateToInputFormat(c.Renewal)}" onchange="updateClientField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)">
-        <button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 8px;font-size:9px" onclick="markClientRenewed('${sb}',this)">↻ RENEW</button>
+      <div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;color:var(--muted);font-weight:700;width:52px;text-align:right">START</span>
+        <input type="date" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${dateToInputValue(c.Joined)}" onchange="updateClientField('${sb}','Joined',dateInputToSheetFormat(this.value),this)">
+      </div>
+      <div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;color:var(--muted);font-weight:700;width:52px;text-align:right">NEXT DUE</span>
+        <input type="date" style="background:var(--surface);border:1px solid ${overdueCard?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${info.due?dateToInputValue(fmtDMY(info.due)):''}" onchange="updateClientField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)">
+        <button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 10px;font-size:10px;font-weight:800" onclick="openRenewModal('${sb}')">&#8635; RENEW</button>
       </div>
       <button class="copy-btn" style="background:#FBEAE8;color:var(--red);border:1px solid var(--red);padding:4px 8px;font-size:9px" onclick="archiveClientTap('${sb}',this)">&#128465; ARCHIVE — NO LONGER A CLIENT</button>
     </div></div>`;
   }).join('')||'<div class="empty">No clients loaded</div>';
-  document.getElementById('renewalsList').innerHTML=state.renewals.filter(r=>r.Status!=='UPCOMING').map(r=>`<div class="client-item overdue"><div style="flex:1"><div class="client-name">${r.Business}</div><div class="client-pkg">${r.Package}</div></div><div style="text-align:right"><div class="overdue-tag">${r.Status}</div><div style="font-size:11px;color:var(--text-dim)">${Math.abs(r.Days||0)}d ${(r.Days||0)<0?'overdue':'until renewal'}</div></div></div>`).join('')||'<div class="empty">No overdue renewals</div>';
+  const alerts=list.filter(x=>x.info.due&&x.info.days<=14&&(x.c.Status||'').trim().toLowerCase()==='active');
+  document.getElementById('renewalsList').innerHTML=alerts.map(({c,info})=>`<div class="client-item ${info.days<0?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · due ${fmtDMY(info.due)}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">${renewalBadgeHtml(info)}<button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 10px;font-size:10px;font-weight:800" onclick="openRenewModal('${escJs(c.Business)}')">&#8635; RENEW</button></div></div>`).join('')||'<div class="empty">No renewals due in the next 14 days</div>';
 }
 
 function setMsgCategory(cat,btn){currentMsgCategory=cat;document.querySelectorAll('#tab-messages .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderMsgLibrary();}
@@ -3105,7 +3283,7 @@ function renderRevenueQuickWins(mrr){
   const verifiedClients=(state.clients||[]).filter(c=>(c.Status||'').trim().toLowerCase()==='active'&&/verified/i.test(c.Package||''));
   const smeNames=new Set((state.smeMembers||[]).map(m=>(m.Business||'').toLowerCase()));
   const smeUpsellCandidates=verifiedClients.filter(c=>!smeNames.has((c.Business||'').toLowerCase()));
-  const overdueRenewals=(state.renewals||[]).filter(r=>r.Status==='OVERDUE');
+  const overdueRenewals=getOverdueClientRenewals();
   const hotPotential=hot.length*180;
   const convPotential=conv.length*180;
   const items=[];
@@ -3135,7 +3313,7 @@ function renderRevenue(){
     <div class="metric-card blue"><div class="metric-label">VIS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${visMRR}</div><div class="metric-sub">${active} visibility clients</div></div>
     <div class="metric-card teal"><div class="metric-label">SME SYSTEMS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${smeMRR}</div><div class="metric-sub">${smeActive} system members</div></div>
     <div class="metric-card purple"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">&#8373;${oneTime}</div><div class="metric-sub">playbooks / custom</div></div>
-    <div class="metric-card orange"><div class="metric-label">TOTAL MRR</div><div class="metric-value" style="font-size:24px">&#8373;${mrr}</div><div class="metric-sub">vis + sme combined</div></div>`;
+    <div class="metric-card orange"><div class="metric-label">TOTAL MRR</div><div class="metric-value" style="font-size:24px">&#8373;${mrr}</div><div class="metric-sub">vis + sme combined</div></div>${revenueCollectedCardsHtml()}`;
   document.getElementById('projCards').innerHTML=[{p:'THIS MONTH',a:mrr,s:active+' active'},{p:'MONTH 2',a:mrr*2,s:'Target: '+(active*2)},{p:'MONTH 3',a:mrr*4,s:'Target: '+(active*4)},{p:'MONTH 6',a:mrr*8,s:'Target: '+(active*8)}].map(x=>`<div class="proj-card"><div class="proj-period">${x.p}</div><div class="proj-amount">&#8373;${x.a.toLocaleString()}</div><div class="proj-clients">${x.s}</div></div>`).join('');
   renderRevenueQuickWins(mrr);
   renderRevenueProjections(mrr);
@@ -3223,36 +3401,80 @@ function daysBetween(a,b){ return Math.max(1,Math.round((b-a)/(1000*60*60*24)));
 // date as the event date — every figure still traces back to an actual
 // row in the sheet, nothing is invented.
 function getAllRevenueEvents(){
+  // Every payment is dated by the day it actually happened:
+  //  1) logged conversions / renewals (each RENEW click logs one on the date picked)
+  //  2) older history rebuilt from a client's start date, one payment per month
+  //     up to the last renewal that was actually paid. Unpaid/overdue months
+  //     are NOT counted. Rebuilt history stops before the first logged payment
+  //     so nothing is counted twice.
   const events=[];
-  const loggedBiz=new Set();
+  const today=new Date();today.setHours(23,59,59,999);
+  const withStart=new Set();
+  (state.clients||[]).forEach(c=>{if(c.Business&&parseAnyDate(c.Joined))withStart.add(c.Business.toLowerCase());});
+  (state.smeMembers||[]).forEach(m=>{if(m.Business&&parseAnyDate(m.Joined))withStart.add(m.Business.toLowerCase());});
+  const firstLogged={};
   (trackerData.conversions||[]).forEach(c=>{
-    const d=c.date||c.timestamp;
+    const d=parseAnyDate(c.date||c.timestamp);
     if(!d)return;
-    events.push({date:d,business:c.business||'',amount:parseFloat(c.amount)||0,source:'logged'});
-    if(c.business)loggedBiz.add(c.business.toLowerCase());
+    const key=(c.Business||c.business||'').toLowerCase();
+    const auto=/auto-logged/i.test(c.notes||'');
+    if(auto&&withStart.has(key))return;
+    events.push({date:fmtDMY(d),business:c.business||'',amount:parseFloat(c.amount)||0,renewal:/renewal/i.test(c.notes||''),source:'logged'});
+    const k=(c.business||'').toLowerCase();
+    if(k&&(!firstLogged[k]||d<firstLogged[k]))firstLogged[k]=d;
   });
+  function synth(name,joinedStr,monthly,oneTime,lastPaid,source){
+    const key=(name||'').toLowerCase();
+    const first=(monthly||0)+(oneTime||0);
+    if(!key||first<=0)return;
+    let start=parseAnyDate(joinedStr);
+    if(!start)return;
+    start.setHours(0,0,0,0);
+    const stop=firstLogged[key];
+    const ok=d=>d<=today&&d<=lastPaid&&(!stop||d<stop);
+    if(start<=today&&(!stop||start<stop))events.push({date:fmtDMY(start),business:name,amount:first,renewal:false,source});
+    if(monthly>0){
+      for(let k=1;k<=120;k++){
+        const d=addMonthsDate(start,k);
+        if(!ok(d))break;
+        events.push({date:fmtDMY(d),business:name,amount:monthly,renewal:true,source});
+      }
+    }
+  }
   (state.clients||[]).forEach(c=>{
-    const key=(c.Business||'').toLowerCase();
-    if(!key||loggedBiz.has(key)||!c.Joined)return;
-    const amt=(parseFloat(c.Amount)||0)+(parseFloat(c.OneTimeAmount)||0);
-    if(amt<=0)return;
-    events.push({date:c.Joined,business:c.Business,amount:amt,source:'client_joined'});
+    const monthly=parseFloat(c.Amount)||0;
+    let lastPaid=today;
+    const due=parseAnyDate(c.Renewal);
+    if(due&&monthly>0){const lp=addMonthsDate(due,-1);if(lp<lastPaid)lastPaid=lp;}
+    let joined=c.Joined;
+    if(!parseAnyDate(joined)&&due&&monthly>0)joined=fmtDMY(addMonthsDate(due,-1));
+    synth(c.Business,joined,monthly,parseFloat(c.OneTimeAmount)||0,lastPaid,'client');
   });
   (state.smeMembers||[]).forEach(m=>{
-    const key=(m.Business||'').toLowerCase();
-    if(!key||loggedBiz.has(key)||!m.Joined)return;
-    const amt=parseFloat(m.Amount)||0;
-    if(amt<=0)return;
-    events.push({date:m.Joined,business:m.Business,amount:amt,source:'sme_joined'});
+    const active=(m.Status||'').toLowerCase()==='active';
+    const j=parseAnyDate(m.Joined);
+    synth(m.Business,m.Joined,parseFloat(m.Amount)||0,0,active?today:(j||today),'sme');
   });
   return events.filter(e=>parseAnyDate(e.date));
+}
+function revenueCollectedCardsHtml(){
+  const now=new Date();
+  const ev=getAllRevenueEvents();
+  const thisR=getPeriodRange('month');
+  const lastR={start:new Date(now.getFullYear(),now.getMonth()-1,1),end:new Date(now.getFullYear(),now.getMonth(),0,23,59,59,999)};
+  const sum=r=>ev.filter(e=>inRange(e.date,r)).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const cnt=r=>ev.filter(e=>inRange(e.date,r)).length;
+  return `<div class="metric-card green"><div class="metric-label">COLLECTED THIS MONTH</div><div class="metric-value" style="font-size:24px">&#8373;${sum(thisR).toLocaleString()}</div><div class="metric-sub">${cnt(thisR)} payment${cnt(thisR)!==1?'s':''} by date paid</div></div>
+    <div class="metric-card blue"><div class="metric-label">COLLECTED LAST MONTH</div><div class="metric-value" style="font-size:24px">&#8373;${sum(lastR).toLocaleString()}</div><div class="metric-sub">${cnt(lastR)} payment${cnt(lastR)!==1?'s':''}</div></div>`;
 }
 function computeAnalytics(period){
   const range=getPeriodRange(period);
   const outreach=(trackerData.outreachLog||[]).filter(o=>inRange(o.date||o.timestamp,range));
-  const conversions=getAllRevenueEvents().filter(c=>inRange(c.date,range));
+  const revEvents=getAllRevenueEvents().filter(c=>inRange(c.date,range));
+  const conversions=revEvents.filter(e=>!e.renewal);
+  const renewals=revEvents.filter(e=>e.renewal);
   const calls=(trackerData.callLogs||[]).filter(c=>inRange(c.date||c.timestamp,range));
-  const revenue=conversions.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+  const revenue=revEvents.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
   const newContacts=state.contacts.filter(c=>c.Created_Date&&inRange(c.Created_Date,range)).length;
 
   let counts=[];
@@ -3268,7 +3490,7 @@ function computeAnalytics(period){
   const conversionRate=totalContacts>0?((trackerData.totalConversions||0)/totalContacts*100):0;
   const periodConvRate=outreach.length>0?(conversions.length/outreach.length*100):0;
 
-  return {range,outreach,conversions,calls,revenue,newContacts,avgOutreachBeforeConv,totalContacts,conversionRate,periodConvRate};
+  return {range,outreach,conversions,renewals,calls,revenue,newContacts,avgOutreachBeforeConv,totalContacts,conversionRate,periodConvRate};
 }
 
 // v21.0: MESSAGING FEEDBACK — the actual "advanced messaging %s + feedback"
@@ -3315,7 +3537,7 @@ function renderAnalytics(){
   const statusText=pct>=100?'ON / ABOVE TARGET':pct>=70?'CLOSE TO TARGET':'BELOW TARGET';
 
   document.getElementById('analyticsMetrics').innerHTML=`
-    <div class="metric-card gold"><div class="metric-label">REVENUE — PERIOD</div><div class="metric-value">&#8373;${A.revenue.toLocaleString()}</div><div class="metric-sub">of &#8373;${periodTarget.toLocaleString()} target</div></div>
+    <div class="metric-card gold"><div class="metric-label">REVENUE — PERIOD</div><div class="metric-value">&#8373;${A.revenue.toLocaleString()}</div><div class="metric-sub">of &#8373;${periodTarget.toLocaleString()} target · ${A.renewals.length} renewal${A.renewals.length!==1?'s':''}</div></div>
     <div class="metric-card green"><div class="metric-label">CONVERSIONS</div><div class="metric-value">${A.conversions.length}</div><div class="metric-sub">${A.periodConvRate.toFixed(1)}% of period outreach</div></div>
     <div class="metric-card blue"><div class="metric-label">OUTREACH SENT</div><div class="metric-value">${A.outreach.length}</div><div class="metric-sub">calls logged: ${A.calls.length}</div></div>
     <div class="metric-card teal"><div class="metric-label">NEW CONTACTS</div><div class="metric-value">${A.newContacts}</div><div class="metric-sub">added this period</div></div>
@@ -3541,7 +3763,7 @@ function getSmartLocalReply(question){
   if(q.includes('contact first')||q.includes('who should i')||q.includes('start with')){if(blue.length>0)return`Contact ${blue[0].Business} first.\n\nNumber: ${blue[0].Number||'—'}\nNotes: ${blue[0].Notes?blue[0].Notes.substring(0,120):'Verbal yes'}\n\nMessage: "Hey, I have everything ready to get you listed today. GHS 180, done in 24 hours. Shall we?"`;if(green.length>0)return`Hottest conversation: ${green[0].Business}\n\nNumber: ${green[0].Number||'—'}\n\nAsk: "How are customers finding your business?" Then bridge to Business Presence.`;return`No hot leads right now. Follow-Ups tab → 🟢 Conversation filter.`;}
   if(q.includes('not converting')||q.includes('conversion rate')||q.includes('why am i')){const rate=total>0?((active/total)*100).toFixed(1):0;return`Conversion rate: ${rate}% (${active} clients of ${total})\n\n1. ${red.length} 1-tick — call these (Calls tab)\n2. ${orange.length} read-no-reply — Google Maps drop, not same message\n3. Leading with visibility not their problem — start: "How are customers finding you?"`;}
   if(q.match(/how (do|can) i convert|how to convert|how do i close|how to close|how do i get (more )?(clients|customers|sales)|make more sales|get more (clients|customers) to say yes|convert (more|better)/)){
-    return`HOW TO CONVERT:\n\n1. Discovery first — always ask "How are customers finding your business?" before pitching anything.\n2. Bridge to the free Business Presence listing — zero cost removes the biggest objection.\n3. Once they see value, offer Verified Business (GHS 180) — position it as solving exactly the problem they described.\n4. For hesitation, use urgency: "I can set this up in 24 hours — shall we start today?"\n5. Never repeat the same message twice — add something new each time (a Google Maps screenshot, a direct question, or a nearby business example).\n6. Prioritise 🔵 hot leads and 🟢 active conversations — they convert fastest, cold outreach converts slowest.\n\nRight now you have ${blue.length} hot lead${blue.length!==1?'s':''} and ${green.length} active conversation${green.length!==1?'s':''} ready to close.`;
+    return`HOW TO CONVERT:\n\n1. Discovery first — always ask "How are customers finding your business?" before pitching anything.\n2. Use what is in their notes and audit to name one specific gap before offering anything.\n3. Once they see value, offer Verified Business (GHS 180) — position it as solving exactly the problem they described.\n4. For hesitation, use urgency: "I can set this up in 24 hours — shall we start today?"\n5. Never repeat the same message twice — add something new each time (a Google Maps screenshot, a direct question, or a nearby business example).\n6. Prioritise 🔵 hot leads and 🟢 active conversations — they convert fastest, cold outreach converts slowest.\n\nRight now you have ${blue.length} hot lead${blue.length!==1?'s':''} and ${green.length} active conversation${green.length!==1?'s':''} ready to close.`;
   }
   if(q.includes('read')&&q.includes('no reply')){return`For ${orange.length} read-no-reply:\n\n1. Do NOT send the same message\n2. Google Maps drop — screenshot their business, send it\n3. Or: "What is the biggest challenge in your business right now?"`;}
   if(q.includes('close')||q.includes('verified')){return`Close Verified today:\n\n1. Follow-Ups → 🟢 Conversation\n2. Discovery: "How are customers finding you?"\n3. "Verified listing solves exactly that. GHS 180, 24 hours. Shall we today?"\n4. Hesitation: "Start free first. Upgrade any time."\n\nYou have ${green.length} active conversations.`;}
@@ -3672,7 +3894,7 @@ function generatePersonalMsgLocal(business,notes,category,emoji,stage,idx,town){
   else if(isConv)msg=`Hey ${name}.\n\nFollowing up on our conversation.\n\nHow are customers currently finding your ${cat} business?`;
   else if(hasBusy)msg=`Hey ${name}, hope things have settled.\n\nJust a quick check in — how has business been this week?`;
   else if(isReEngage)msg=`Hey ${name}, it has been a while.\n\nNot coming back with the same pitch. One question — what is the biggest challenge in your business right now?`;
-  else if(hasPrize)msg=`Hey ${name}.\n\nThe free Business Presence listing costs nothing at all.\n\nWant me to start you there? No commitment.`;
+  else if(hasPrize)msg=`Hey ${name}.\n\nFollowing up on what we spoke about.\n\nWant me to send the next step? No commitment.`;
   else if(n.trim())msg=`Hey ${name}, following up on where we left off.\n\n${notes.trim().substring(0,220)}\n\nWhat's the best next step from your side?`;
   else{const opts=[`Hey ${name}.\n\nIf someone searched for ${cat}${loc} right now, would your business come up?`,`Hey ${name}, hope business is good.\n\nOne question — how are new customers finding you currently?`,`Hey ${name}.\n\nWe are onboarding ${cat} businesses${loc} onto BYINFORGH.\n\nWant me to set yours up? Free to start.`];msg=opts[business.length%3];}
   const mb=document.getElementById('msgbox-'+idx);if(mb)mb.textContent=msg;
@@ -4125,6 +4347,46 @@ function masterStartApp(){
   });
   loadTrackerData();
   setInterval(()=>{loadData();},60000);
+}
+
+// ---- ACCOUNT: change display name / username / password (needs the changeCredentials backend action)
+function openAccountModal(){
+  ['acctNewUser','acctNewPass','acctNewPass2','acctCurPass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('acctNewName').value=MASTER_DISPLAY_NAME||'';
+  document.getElementById('acctResult').innerHTML='';
+  document.getElementById('acctModal').style.display='flex';
+}
+async function submitAccountChange(){
+  const name=document.getElementById('acctNewName').value.trim();
+  const user=document.getElementById('acctNewUser').value.trim();
+  const np=document.getElementById('acctNewPass').value;
+  const np2=document.getElementById('acctNewPass2').value;
+  const cur=document.getElementById('acctCurPass').value;
+  const out=document.getElementById('acctResult');
+  const err=m=>{out.innerHTML='<span style="color:var(--red)">'+m+'</span>';};
+  if(!cur){err('Enter your current password to confirm.');return;}
+  if(np&&np.length<8){err('New password must be at least 8 characters.');return;}
+  if(np!==np2){err('The two new passwords do not match.');return;}
+  const nameChanged=name&&name!==MASTER_DISPLAY_NAME;
+  if(!nameChanged&&!user&&!np){err('Nothing to change.');return;}
+  out.innerHTML='<span style="color:var(--muted)">Saving...</span>';
+  try{
+    const res=await fetch(API_URL+'?action=changeCredentials&currentPassword='+encodeURIComponent(cur)+'&newDisplayName='+encodeURIComponent(nameChanged?name:'')+'&newUsername='+encodeURIComponent(user)+'&newPassword='+encodeURIComponent(np)+'&t='+Date.now());
+    const data=await res.json();
+    if(!data.success){
+      const m=data.error||'Could not save.';
+      err(/unknown|invalid action|not found/i.test(m)?'The backend does not have the changeCredentials action yet. Add the Code.gs snippet and redeploy.':m);
+      return;
+    }
+    if(nameChanged){
+      MASTER_DISPLAY_NAME=name;
+      sessionStorage.setItem('master_display_name',name);
+      const b=document.getElementById('masterBannerName');if(b)b.textContent=name;
+    }
+    out.innerHTML='<span style="color:var(--green);font-weight:700">&#10003; Saved.'+((np||user)?' Signing you out so you can sign in again...':'')+'</span>';
+    if(np||user)setTimeout(()=>masterLogout(),1600);
+    else setTimeout(()=>{document.getElementById('acctModal').style.display='none';},900);
+  }catch(e){err('Connection error — not saved.');}
 }
 </script>
 </body>
