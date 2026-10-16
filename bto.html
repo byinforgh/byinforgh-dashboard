@@ -223,6 +223,12 @@ html,body{max-width:100%;overflow-x:clip;}
   .contact-table.stk3 th:nth-child(1),.contact-table.stk3 td:nth-child(1){position:sticky;left:0;z-index:3;background:#fff;width:34px;min-width:34px;padding:6px 4px;}
   .contact-table.stk3 th:nth-child(3),.contact-table.stk3 td:nth-child(3){position:sticky;left:34px;z-index:2;background:#fff;min-width:128px;max-width:150px;box-shadow:2px 0 0 var(--border);}
 }
+
+/* v29.3: tighter All Contacts / pipeline tables so Stage + WA stay readable */
+.clip{max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;color:var(--text-dim)}
+.contact-table select{min-width:118px!important;max-width:150px!important;font-size:11px!important}
+.contact-table select[onchange*="WA_Label"]{min-width:112px!important;max-width:125px!important}
+.contact-table.stk3 th,.contact-table.stk3 td{padding-left:6px;padding-right:6px}
 </style>
 </head>
 <body>
@@ -240,7 +246,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="btoBanner">BUSINESS TRUST OFFICER VIEW &mdash; signed in as <span id="btoBannerName"></span><button onclick="btoLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v29.1</span></div>
+  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v29.3</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -606,12 +612,12 @@ html,body{max-width:100%;overflow-x:clip;}
     </div>
     <input id="addClientCustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <input id="addClientMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS (e.g. 80)">
+      <input id="addClientMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS (e.g. 80)" oninput="autoRenewalDate('addClient')">
       <input id="addClientOneTime" type="number" class="search-input" style="margin:0" placeholder="One-time amount GHS (e.g. 180)">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <input id="addClientJoined" class="search-input" style="margin:0" placeholder="Joined date DD/MM/YYYY (optional)">
-      <input id="addClientRenewal" class="search-input" style="margin:0" placeholder="Renewal date DD/MM/YYYY (optional)">
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">START DATE</div><input type="date" id="addClientJoined" class="search-input" style="margin:0" onchange="autoRenewalDate('addClient')"></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">NEXT RENEWAL (auto +1 month if monthly)</div><input type="date" id="addClientRenewal" class="search-input" style="margin:0"></div>
     </div>
     <input id="addClientNumber" class="search-input" placeholder="WhatsApp number (0XXXXXXXXX)" style="margin-bottom:8px">
     <textarea id="addClientNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
@@ -985,12 +991,12 @@ html,body{max-width:100%;overflow-x:clip;}
     </select>
     <input id="convertClientCustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <input id="convertClientMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS">
+      <input id="convertClientMonthly" type="number" class="search-input" style="margin:0" placeholder="Monthly amount GHS" oninput="autoRenewalDate('convertClient')">
       <input id="convertClientOneTime" type="number" class="search-input" style="margin:0" placeholder="One-time amount GHS">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <input id="convertClientJoined" class="search-input" style="margin:0" placeholder="Joined date DD/MM/YYYY (optional)">
-      <input id="convertClientRenewal" class="search-input" style="margin:0" placeholder="Renewal date DD/MM/YYYY (optional)">
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">START DATE</div><input type="date" id="convertClientJoined" class="search-input" style="margin:0" onchange="autoRenewalDate('convertClient')"></div>
+      <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">NEXT RENEWAL (auto +1 month if monthly)</div><input type="date" id="convertClientRenewal" class="search-input" style="margin:0"></div>
     </div>
     <select id="convertClientStatus" style="margin-bottom:8px"><option>Active</option><option>Paused</option><option>Churned</option></select>
     <textarea id="convertClientNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
@@ -1123,10 +1129,12 @@ const WA_LABEL_OPTIONS=[
   '🔄 OutdatedOld client, re-engage warm',
   '📍 Koforidua PhysicalFace-to-face only, no WhatsApp reach'
 ];
-function buildWaLabelOptionsHtml(current){
+const WA_SHORT={'🔴':'🔴 1 Tick','🟡':'🟡 Unread','🟠':'🟠 Read, no reply','🟢':'🟢 Conversation','🔵':'🔵 Hot lead','✅':'✅ Client','⬛':'⬛ Rejected','🔄':'🔄 Re-engage','📍':'📍 Koforidua'};
+function waShortText(o){for(const k in WA_SHORT){if(o.indexOf(k)!==-1)return WA_SHORT[k];}return o;}
+function buildWaLabelOptionsHtml(current,short){
   const opts=[...WA_LABEL_OPTIONS];
   if(current&&opts.indexOf(current)===-1)opts.unshift(current);
-  return opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}"${o===current?' selected':''}>${o}</option>`).join('');
+  return opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}"${o===current?' selected':''}>${short?waShortText(o):o}</option>`).join('');
 }
 // v15.0: stages/labels that mean the contact is resolved and should leave the
 // Follow-Ups list once set, instead of sitting there unchanged forever.
@@ -1415,6 +1423,172 @@ function exportSME(){
   ],'byinforgh-sme-members-'+todayFileStamp()+'.csv');
 }
 function todayFileStamp(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function todayISO(){return todayFileStamp();}
+// ---- v29.3: calendar date helpers for client start / renewal
+function autoRenewalDate(prefix){
+  const j=document.getElementById(prefix+'Joined'),r=document.getElementById(prefix+'Renewal'),m=document.getElementById(prefix+'Monthly');
+  if(!j||!r)return;
+  if(!j.value)j.value=todayISO();
+  const monthly=parseFloat(m&&m.value)||0;
+  if(monthly>0){
+    const p=j.value.split('-');
+    const nx=addMonthsDate(new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])),1);
+    r.value=nx.getFullYear()+'-'+String(nx.getMonth()+1).padStart(2,'0')+'-'+String(nx.getDate()).padStart(2,'0');
+  } else { r.value=''; }
+}
+// ---- v29.3: NEW TODAY only counts contacts you have not acted on yet
+let newActioned=new Set();
+try{newActioned=new Set(JSON.parse(sessionStorage.getItem('newActioned_'+todayFileStamp())||'[]'));}catch(e){}
+function isPendingNew(c){
+  const w=(c.WA_Label||'');
+  return !!(c.IsNewAudit||c.IsNewContact)&&!newActioned.has(c.Business)&&!sessionResolvedContacts.has(c.Business)&&w.indexOf('⬛')===-1&&w.indexOf('✅')===-1;
+}
+function countPendingNew(kind){
+  return (state.contacts||[]).filter(c=>isPendingNew(c)&&(kind==='audit'?c.IsNewAudit:(c.IsNewContact&&!c.IsNewAudit))).length;
+}
+function refreshNewTodayBadge(){
+  const n=countPendingNew('audit')+countPendingNew('contact');
+  const b=document.getElementById('newAuditFilterBtn');
+  if(!b)return;
+  if(n>0){b.style.display='inline-block';b.textContent='🆕 NEW TODAY ('+n+')';}
+  else{
+    b.style.display='none';
+    if(currentFilter==='__NEW__'){
+      currentFilter='all';followupShowAllMode=false;
+      document.querySelectorAll('#labelFilters .filter-btn').forEach(x=>x.classList.remove('active'));
+      const first=document.querySelector('#labelFilters .filter-btn:nth-child(2)');if(first)first.classList.add('active');
+    }
+  }
+}
+function markNewActioned(business){
+  if(!business||newActioned.has(business))return;
+  newActioned.add(business);
+  try{sessionStorage.setItem('newActioned_'+todayFileStamp(),JSON.stringify([...newActioned]));}catch(e){}
+  refreshNewTodayBadge();
+  const t=document.getElementById('tab-followup');
+  if(currentFilter==='__NEW__'&&t&&t.classList.contains('active'))renderFollowUps();
+}
+// ---- v29.3: click-through detail for Summary / Revenue cards
+function escHtml(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtMoney(n){return '₵'+(parseFloat(n)||0).toLocaleString();}
+function openDrill(title,meta,rows){
+  const noMoney=document.body.classList.contains('role-bto');
+  document.getElementById('notesModalTitle').textContent=title;
+  document.getElementById('notesModalMeta').textContent=meta||'';
+  const body=document.getElementById('notesModalBody');
+  body.style.whiteSpace='normal';
+  body.innerHTML=rows.length?rows.map(r=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="min-width:0"><strong>'+escHtml(r.a)+'</strong><div style="font-size:10px;color:var(--text-dim)">'+escHtml(r.b||'')+'</div></div><div style="font-family:Space Mono,monospace;font-weight:700;color:var(--gold);white-space:nowrap">'+((noMoney&&r.m)?'':escHtml(r.c||''))+'</div></div>').join(''):'<div class="empty">Nothing here for this period</div>';
+  document.getElementById('notesModalActions').innerHTML='';
+  document.getElementById('notesModal').style.display='flex';
+}
+function jumpAnalyticsPeriod(p){
+  analyticsPeriod=p;
+  document.querySelectorAll('#analyticsPeriodFilters .filter-btn').forEach(b=>b.classList.toggle('active',(b.getAttribute('onclick')||'').indexOf("'"+p+"'")!==-1));
+  renderAnalytics();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function drillAnalytics(kind){
+  const A=computeAnalytics(analyticsPeriod);
+  const lbl=analyticsPeriod.toUpperCase();
+  const when=x=>(parseAnyDate(x.date)||new Date(0)).getTime();
+  const ev=e=>({a:e.business||'—',b:(e.renewal?'Renewal':'New client')+' · '+e.date,c:fmtMoney(e.amount),m:true});
+  const plural=(n,w)=>n+' '+w+(n===1?'':'s');
+  if(kind==='revenue')return openDrill('Revenue — '+lbl,plural(A.revEvents.length,'payment')+' in this period',[...A.revEvents].sort((x,y)=>when(y)-when(x)).map(ev));
+  if(kind==='conversions')return openDrill('New clients — '+lbl,plural(A.conversions.length,'client')+' started in this period',[...A.conversions].sort((x,y)=>when(y)-when(x)).map(ev));
+  if(kind==='outreach')return openDrill('Outreach sent — '+lbl,plural(A.outreach.length,'message')+' logged',A.outreach.map(o=>({a:o.business||'—',b:(o.type||'WhatsApp')+' · '+(o.date||'')})));
+  if(kind==='contacts'){
+    const rows=state.contacts.filter(c=>c.Created_Date&&inRange(c.Created_Date,A.range)).map(c=>({a:c.Business,b:(c.Created_Date||'')+' · '+(c.Stage||'no stage'),c:getWAEmoji(c.WA_Label)}));
+    return openDrill('New contacts — '+lbl,plural(rows.length,'contact')+' added in this period',rows);
+  }
+  if(kind==='avg')return openDrill('Messages before each client converted','All-time · clients with logged outreach',[...A.convRows].sort((x,y)=>y.n-x.n).map(r=>({a:r.business,b:'Started '+r.date,c:r.n+' msgs'})));
+  if(kind==='rate'){
+    const f=n=>n.toFixed(1)+'%';
+    return openDrill('Conversion rate',lbl,[
+      {a:'This period',b:A.conversions.length+' new clients ÷ '+A.outreach.length+' messages sent',c:f(A.periodConvRate)},
+      {a:'Overall (all time)',b:A.overallClients+' clients ÷ '+A.overallBase+' contacts reached',c:f(A.overallRate)},
+      {a:'Avg messages before a client converts',b:A.convRows.length+' clients with logged outreach',c:A.avgOutreachBeforeConv!==null?String(A.avgOutreachBeforeConv):'—'}
+    ]);
+  }
+}
+function drillRevenue(kind){
+  const act=(state.clients||[]).filter(c=>(c.Status||'').trim().toLowerCase()==='active');
+  const sme=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active');
+  const cl=c=>({a:c.Business,b:(c.Package||'—')+' · '+(c.Renewal?'renews '+c.Renewal:'no renewal date'),c:fmtMoney(c.Amount)+'/mo',m:true});
+  const sm=m=>({a:m.Business,b:(m.Package||'SME Systems'),c:fmtMoney(m.Amount)+'/mo',m:true});
+  const total=arr=>arr.reduce((s,x)=>s+(parseFloat(x.Amount)||0),0);
+  if(kind==='mrr'){const rec=act.filter(c=>(c.PaymentType||'Monthly')!=='One-Time');return openDrill('Monthly recurring — who pays what',fmtMoney(total(rec)+total(sme))+' per month from '+(rec.length+sme.length)+' businesses',[...rec.map(cl),...sme.map(sm)]);}
+  if(kind==='vis'){const rec=act.filter(c=>(c.PaymentType||'Monthly')!=='One-Time');return openDrill('Visibility clients',fmtMoney(total(rec))+' per month',rec.map(cl));}
+  if(kind==='sme')return openDrill('SME Systems members',fmtMoney(total(sme))+' per month',sme.map(sm));
+  if(kind==='onetime'){const rows=act.filter(c=>(parseFloat(c.OneTimeAmount)||0)>0).map(c=>({a:c.Business,b:c.Package||'—',c:fmtMoney(c.OneTimeAmount),m:true}));return openDrill('One-time payments','Active clients with a one-time fee',rows);}
+  if(kind==='thisMonth'||kind==='lastMonth'){
+    const now=new Date();
+    const r=kind==='thisMonth'?getPeriodRange('month'):{start:new Date(now.getFullYear(),now.getMonth()-1,1),end:new Date(now.getFullYear(),now.getMonth(),0,23,59,59,999)};
+    const evs=getAllRevenueEvents().filter(e=>inRange(e.date,r)).sort((x,y)=>(parseAnyDate(y.date)||0)-(parseAnyDate(x.date)||0));
+    return openDrill(kind==='thisMonth'?'Collected this month':'Collected last month',evs.length+' payment(s) by date paid',evs.map(e=>({a:e.business||'—',b:(e.renewal?'Renewal':'New client')+' · '+e.date,c:fmtMoney(e.amount),m:true})));
+  }
+}
+function drillPackage(key){
+  const pkg=REVENUE_PACKAGES.find(p=>p.key===key);if(!pkg)return;
+  const fns=pkg.tiers?pkg.tiers.map(t=>t.match):(pkg.match?[pkg.match]:[]);
+  const rows=[];
+  (state.clients||[]).forEach(c=>{if(fns.some(f=>f(c.Package)))rows.push({a:c.Business,b:(c.Package||'')+' · '+(c.Status||''),c:fmtMoney(c.Amount||c.OneTimeAmount),m:true});});
+  (state.smeMembers||[]).forEach(m=>{if(fns.some(f=>f(m.Package)))rows.push({a:m.Business,b:(m.Package||'')+' · '+(m.Status||''),c:fmtMoney(m.Amount),m:true});});
+  openDrill(pkg.name,rows.length+' business(es) on this package',rows);
+}
+// ---- v29.3: conversions = clients won (by start date), whatever they pay — free listings count
+function getConversionEvents(){
+  const out=[],seen=new Set(),logged={};
+  (trackerData.conversions||[]).forEach(c=>{
+    if(/renewal/i.test(c.notes||''))return;
+    const d=parseAnyDate(c.date||c.timestamp);if(!d)return;
+    const k=(c.business||'').toLowerCase();if(!k)return;
+    if(!logged[k]||d<logged[k].d)logged[k]={d,amount:parseFloat(c.amount)||0,business:c.business};
+  });
+  const add=(name,joined,amount)=>{
+    const k=(name||'').toLowerCase();if(!k||seen.has(k))return;
+    let d=parseAnyDate(joined);
+    if(!d&&logged[k])d=logged[k].d;
+    if(!d)return;
+    seen.add(k);out.push({date:fmtDMY(d),business:name,amount:amount,renewal:false});
+  };
+  (state.clients||[]).forEach(c=>add(c.Business,c.Joined,(parseFloat(c.Amount)||0)+(parseFloat(c.OneTimeAmount)||0)));
+  (state.smeMembers||[]).forEach(m=>add(m.Business,m.Joined,parseFloat(m.Amount)||0));
+  Object.keys(logged).forEach(k=>{if(!seen.has(k)){seen.add(k);out.push({date:fmtDMY(logged[k].d),business:logged[k].business,amount:logged[k].amount,renewal:false});}});
+  return out;
+}
+function getOverallConversion(){
+  const allConv=getConversionEvents();
+  const cn=new Set((state.contacts||[]).map(c=>(c.Business||'').toLowerCase()));
+  const extra=allConv.filter(e=>!cn.has((e.business||'').toLowerCase())).length;
+  const base=(state.contacts||[]).length+extra;
+  return {clients:allConv.length,base:base,rate:base>0?allConv.length/base*100:0};
+}
+function convRateCardHtml(){
+  const o=getOverallConversion();
+  return '<div class="metric-card orange clickable" onclick="activateTab(\'analytics\')"><div class="metric-label">CONVERSION RATE</div><div class="metric-value" style="font-size:24px">'+o.rate.toFixed(1)+'%</div><div class="metric-sub">'+o.clients+' clients of '+o.base+' contacts</div></div>';
+}
+// ---- v29.3: stage allocation — exact match against the real stage list, with an Other bucket
+const STAGE_ALIASES={'verified business':'verified','business presence listed':'listed business','conversation active':'conversation','needs second call':'phone call need','phone call needed':'phone call need','called — no answer':'phone call need','called — callback requested':'phone call need','called — interested':'interested','hot lead — close today':'interested','called — not interested':'not interested','called — wrong number':'not interested','visibility partner':'client','sme systems':'client','first message':'first message sent','proposal':'proposal sent'};
+const STAGE_COLORS={'first message sent':'var(--muted)','conversation':'var(--teal)','interested':'var(--orange)','proposal sent':'var(--gold)','follow up':'var(--text-dim)','client':'var(--green)','retainer':'var(--purple)','inactive':'#888','lost':'var(--red)','not interested':'var(--red)','listed business':'var(--green)','verified':'var(--blue)','phone call need':'var(--red)','monthly':'var(--purple)','quarterly':'#6366f1','other':'var(--text-dim)'};
+let pipelineOpenKey=null,pipelineOpenName='';
+function normStageKey(stage){
+  const s=(stage||'').toString().trim().toLowerCase();
+  if(!s)return 'other';
+  if(STAGE_OPTIONS.some(o=>o.toLowerCase()===s))return s;
+  if(STAGE_ALIASES[s])return STAGE_ALIASES[s];
+  return 'other';
+}
+function renderPipelineGrid(){
+  const counts={};
+  (state.contacts||[]).forEach(c=>{const k=normStageKey(c.Stage);counts[k]=(counts[k]||0)+1;});
+  const defs=STAGE_OPTIONS.map(o=>({key:o.toLowerCase(),n:o}));
+  if(counts.other>0)defs.push({key:'other',n:'Other / no stage'});
+  const allocated=Object.keys(counts).reduce((a,k)=>a+counts[k],0);
+  document.getElementById('pipelineGrid').innerHTML=defs.map(d=>'<div class="pipeline-stage" onclick="openPipelineStage(\''+d.key+'\',\''+d.n+'\')"><div class="pipeline-count" style="color:'+(STAGE_COLORS[d.key]||'var(--gold)')+'">'+(counts[d.key]||0)+'</div><div class="pipeline-name">'+d.n+'</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>').join('')+'<div style="grid-column:1/-1;font-size:11px;color:var(--text-dim)">'+allocated+' of '+(state.contacts||[]).length+' contacts allocated to a stage</div>';
+  const panel=document.getElementById('pipelineContactPanel');
+  if(pipelineOpenKey&&panel&&panel.style.display==='block')openPipelineStage(pipelineOpenKey,pipelineOpenName,true);
+}
+
 let lastFilteredContacts=[];
 
 // =====================================================
@@ -1442,7 +1616,7 @@ function openWhatsApp(number,idx){
   window.open(toWaHref(number,text),'_blank','noopener');
   const contact=followupAllContacts[idx];
   if(contact){
-    waSentThisSession.add(contact.Business);
+    waSentThisSession.add(contact.Business);markNewActioned(contact.Business);
     fetch(API_URL+'?action=logOutreach&business='+encodeURIComponent(contact.Business)+'&number='+encodeURIComponent(number)+'&messageType='+encodeURIComponent('WhatsApp Message')+'&waLabel='+encodeURIComponent(contact.WA_Label||'')+'&notes='+encodeURIComponent('Sent via WhatsApp button')+'&t='+Date.now()).catch(()=>{});
     trackerData.todayOutreachCount=(trackerData.todayOutreachCount||0)+1;
     trackerData.totalOutreachCount=(trackerData.totalOutreachCount||0)+1;
@@ -1591,7 +1765,7 @@ const KNOWN_WA_EMOJIS=['🔴','🟡','🟠','🟢','🔵','✅','⬛','🔄','�
 function countUnlabeled(){
   return state.contacts.filter(c=>c.Business&&(!c.WA_Label||!KNOWN_WA_EMOJIS.some(e=>c.WA_Label.includes(e)))).length;
 }
-function countByStage(stage){return state.contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes(stage.toLowerCase())).length;}
+function countByStage(stage){return state.contacts.filter(c=>normStageKey(c.Stage)===stage.toLowerCase()).length;}
 function getVisMRR(){return state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active'&&(c.PaymentType||'Monthly')!=='One-Time').reduce((s,c)=>s+(parseFloat(c.Amount)||0),0);}
 function getSmeMRR(){return (state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').reduce((s,m)=>s+(parseFloat(m.Amount)||0),0);}
 function getMRR(){return getVisMRR()+getSmeMRR();}
@@ -1726,8 +1900,8 @@ async function loadData(){
     // Follow-Ups tab, and the first time a NEW audit count is seen this
     // session (or the count goes up since the last check), a toast fires
     // so it isn't missed even if you're on a different tab entirely.
-    const newAuditN=raw.newAuditCount||0;
-    const newContactN=(raw.newContactsToday||[]).length;
+    const newAuditN=countPendingNew('audit');
+    const newContactN=countPendingNew('contact');
     const newBtn=document.getElementById('newAuditFilterBtn');
     if(newBtn){
       if(newAuditN+newContactN>0){
@@ -1777,7 +1951,7 @@ function renderToday(){
     <div class="metric-card blue clickable" onclick="goFollowupFilter('🟢',true)"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
     <div class="metric-card teal clickable" onclick="activateTab('sme')"><div class="metric-label">SME MEMBERS</div><div class="metric-value">${smeActive}</div><div class="metric-sub">${(state.smeMembers||[]).length} total · GHS ${smeMRR}/mo</div></div>
     <div class="metric-card red clickable" onclick="activateTab('clients')"><div class="metric-label">RENEWALS OVERDUE</div><div class="metric-value">${overdue}</div><div class="metric-sub">urgent attention</div></div>
-    <div class="metric-card purple clickable" onclick="activateTab('tracker')"><div class="metric-label">TODAY OUTREACH</div><div class="metric-value">${todayOut}</div><div class="metric-sub">logged today</div></div>`;
+    <div class="metric-card purple clickable" onclick="activateTab('tracker')"><div class="metric-label">TODAY OUTREACH</div><div class="metric-value">${todayOut}</div><div class="metric-sub">logged today</div></div>${convRateCardHtml()}`;
   const mt=state.settings?(parseInt(state.settings.monthly_target)||5400):5400;
   const wd=state.settings?(parseInt(state.settings.working_days)||26):26;
   const dt=Math.round(mt/wd),pct=Math.min(100,Math.round((mrr/mt)*100));
@@ -1867,7 +2041,7 @@ async function updateFollowupStage(business,field,value,el,sheetSource,itemEl){
   return result; // v27.0: bubble up to confirmWaLabelChange
 }
 
-async function logFollowupCall(business,number,sheetSource,notes,btn){
+async function logFollowupCall(business,number,sheetSource,notes,btn){markNewActioned(business);
   if(btn){btn.textContent='Logging...';btn.disabled=true;}
   try{
     await fetch(API_URL+'?action=logCallNote&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(number||'')
@@ -1931,9 +2105,9 @@ function renderFollowUps(){
     followupAllContacts=[];
     return;
   }
-  let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business));
+  refreshNewTodayBadge();let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business));
   const today=new Date();today.setHours(0,0,0,0);
-  if(currentFilter==='__NEW__')contacts=contacts.filter(c=>c.IsNewAudit||c.IsNewContact);
+  if(currentFilter==='__NEW__')contacts=contacts.filter(isPendingNew);
   else if(currentFilter==='monthly')contacts=contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes('monthly'));
   else if(currentFilter==='quarterly')contacts=contacts.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('quarterly')||c.Stage.toLowerCase().includes('3 month')));
   else if(currentFilter!=='all')contacts=contacts.filter(c=>c.WA_Label&&c.WA_Label.includes(currentFilter));
@@ -1999,7 +2173,7 @@ function renderFollowUps(){
     // v29.0: same-day audits and brand-new contacts get a visible tag right
     // on the card, not just in the filter — so they stand out even when
     // browsing "ALL DUE TODAY" rather than the dedicated NEW filter.
-    const newTag=c.IsNewAudit?'<span style="font-size:9px;color:#fff;background:var(--red);border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:800">🆕 NEW AUDIT</span>':(c.IsNewContact?'<span style="font-size:9px;color:#fff;background:var(--orange);border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:800">🆕 NEW CONTACT</span>':'');
+    const newTag=!isPendingNew(c)?'':c.IsNewAudit?'<span style="font-size:9px;color:#fff;background:var(--red);border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:800">🆕 NEW AUDIT</span>':(c.IsNewContact?'<span style="font-size:9px;color:#fff;background:var(--orange);border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:800">🆕 NEW CONTACT</span>':'');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_');
     return `<div class="followup-item" style="${daysOv>0?'border-color:#2a1500;border-left:3px solid var(--red)':''}">
       <div class="followup-header"><div style="flex:1">
@@ -2155,7 +2329,7 @@ async function updateContactField(business, field, value, el, sheetSource) {
         el.style.outline = '2px solid var(--green)';
         setTimeout(() => { if (el) el.style.outline = ''; }, 1800);
       }
-      showToast('\u2713 ' + business + ' \u2014 ' + field + ' updated');
+      if(['Stage','WA_Label','Next_Follow_Up','Offer'].indexOf(field)!==-1)markNewActioned(business);showToast('\u2713 ' + business + ' \u2014 ' + field + ' updated');
     } else {
       showToast('Error: ' + (data.error || 'could not update'));
       if (el && !isTextInput) { el.value = orig; el.style.opacity = '1'; el.disabled = false; }
@@ -2269,7 +2443,7 @@ async function rejectContact(business,sheetSource,btn){
 // twice for the same send — this and the openWhatsApp() fix above together
 // are what makes Conversation %/avg-messages-to-convert on Summary populate
 // correctly from real daily sending activity.
-async function markFollowUpDone(id,business,stage,sheetSource,message,btn){
+async function markFollowUpDone(id,business,stage,sheetSource,message,btn){markNewActioned(business);
   btn.textContent='Logging...';btn.disabled=true;
   const skipOutreachLog=waSentThisSession.has(business);
   try{
@@ -2426,8 +2600,7 @@ async function submitBookAppointment(){
 }
 
 function renderPipeline(){
-  const stages=[{n:'Lead / New',key:'lead',color:'var(--text-dim)'},{n:'First Message',key:'first message',color:'var(--muted)'},{n:'Follow Up',key:'follow up',color:'var(--text-dim)'},{n:'Conversation',key:'conversation',color:'var(--teal)'},{n:'Interested',key:'interested',color:'var(--orange)'},{n:'Proposal Sent',key:'proposal',color:'var(--gold)'},{n:'Free Listing',key:'listed',color:'var(--green)'},{n:'Verified',key:'verified',color:'var(--blue)'},{n:'Monthly',key:'monthly',color:'var(--purple)'},{n:'Quarterly',key:'quarterly',color:'#6366f1'},{n:'Rejected',key:'not interested',color:'var(--red)'}];
-  document.getElementById('pipelineGrid').innerHTML=stages.map(s=>{const count=countByStage(s.key);return`<div class="pipeline-stage" onclick="openPipelineStage('${s.key}','${s.n}')"><div class="pipeline-count" style="color:${s.color}">${count}</div><div class="pipeline-name">${s.n}</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>`;}).join('');
+  renderPipelineGrid();
   document.getElementById('pipelineBody').innerHTML=state.contacts.map((c,pIdx)=>{
     const msgCount=state.messageCounts[c.Business]||0;
     let freqBadge='';
@@ -2436,11 +2609,11 @@ function renderPipeline(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-p'+pIdx;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
-function openPipelineStage(key,name){
-  const matches=state.contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes(key.toLowerCase()));
+function openPipelineStage(key,name,noScroll){
+  pipelineOpenKey=key;pipelineOpenName=name;const matches=state.contacts.filter(c=>normStageKey(c.Stage)===key);
   document.getElementById('pipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
   document.getElementById('pipelineContactBody').innerHTML=matches.length?matches.map(c=>{
     const sb=escJs(c.Business);
@@ -2451,17 +2624,17 @@ function openPipelineStage(key,name){
     // also re-filters this panel immediately (the row drops out once it
     // no longer matches "${name}"), which is the "click it and it filters"
     // behavior that was asked for.
-    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join(''):'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
   document.getElementById('pipelineContactPanel').style.display='block';
-  document.getElementById('pipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  if(!noScroll)document.getElementById('pipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function changePipelineStageAndRefilter(business,newValue,el,sheetSource,key,name){
   await updateFollowupStage(business,'Stage',newValue,el,sheetSource,null);
-  openPipelineStage(key,name);
+  openPipelineStage(key,name,true);
   renderPipeline();
 }
-function closePipelinePanel(){document.getElementById('pipelineContactPanel').style.display='none';}
+function closePipelinePanel(){document.getElementById('pipelineContactPanel').style.display='none';pipelineOpenKey=null;}
 
 const CALL_OUTCOME_OPTIONS=[
   {value:'',label:'— Select outcome —'},
@@ -2697,11 +2870,11 @@ function renderKoforidua(){
     {n:'Client',key:'client',color:'#22c55e'},
     {n:'Retainer',key:'retainer',color:'var(--purple)'},
     {n:'Phone Call Need',key:'phone call need',color:'var(--red)'},
-    {n:'Inactive',key:'inactive',color:'#666'},
+    {n:'Inactive',key:'inactive',color:'#666'},{n:'Lost',key:'lost',color:'var(--red)'},{n:'Monthly',key:'monthly',color:'var(--purple)'},{n:'Quarterly',key:'quarterly',color:'#6366f1'},{n:'Other / no stage',key:'other',color:'var(--text-dim)'},
     {n:'Not Interested',key:'not interested',color:'var(--red)'}
   ];
   document.getElementById('kofPipelineGrid').innerHTML=kofStages.map(s=>{
-    const count=kof.filter(c=>c.Stage&&c.Stage.toLowerCase()===s.key).length;
+    const count=kof.filter(c=>normStageKey(c.Stage)===s.key).length;
     return `<div class="pipeline-stage" onclick="openKofPipelineStage('${s.key}','${s.n}')"><div class="pipeline-count" style="color:${s.color}">${count}</div><div class="pipeline-name">${s.n}</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>`;
   }).join('');
 
@@ -2713,11 +2886,11 @@ function renderKoforidua(){
 
 function openKofPipelineStage(key,name){
   const kof=state.koforidua||[];
-  const matches=kof.filter(c=>c.Stage&&c.Stage.toLowerCase()===key);
+  const matches=kof.filter(c=>normStageKey(c.Stage)===key);
   document.getElementById('kofPipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
   document.getElementById('kofPipelineContactBody').innerHTML=matches.length?matches.map(c=>{
     const sb=escJs(c.Business||'');
-    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Koforidua Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Koforidua Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Koforidua Master')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
   document.getElementById('kofPipelineContactPanel').style.display='block';
   document.getElementById('kofPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2826,8 +2999,8 @@ function openConvertToClient(business,sheetSource,packageHint){
   if(packageHint)pkgSel.value=packageHint;
   toggleConvertClientCustomPackage();
   document.getElementById('convertClientNotes').value='';
-  document.getElementById('convertClientJoined').value='';
-  document.getElementById('convertClientRenewal').value='';
+  document.getElementById('convertClientJoined').value=todayISO();
+  autoRenewalDate('convertClient');
   document.getElementById('convertClientResult').innerHTML='';
   document.getElementById('convertClientModal').style.display='flex';
 }
@@ -2836,7 +3009,7 @@ function toggleConvertClientCustomPackage(){
   document.getElementById('convertClientCustomName').style.display=pkg==='Custom Package'?'block':'none';
   const preset=PACKAGE_PRICE_PRESETS[pkg];
   document.getElementById('convertClientMonthly').value=preset?(preset.monthly||''):'';
-  document.getElementById('convertClientOneTime').value=preset?(preset.oneTime||''):'';
+  document.getElementById('convertClientOneTime').value=preset?(preset.oneTime||''):'';autoRenewalDate('convertClient');
 }
 async function submitConvertToClient(){
   const business=document.getElementById('convertClientBusiness').value;
@@ -2846,8 +3019,8 @@ async function submitConvertToClient(){
   const monthlyAmount=document.getElementById('convertClientMonthly').value||'0';
   const oneTimeAmount=document.getElementById('convertClientOneTime').value||'0';
   const status=document.getElementById('convertClientStatus').value;
-  const joined=document.getElementById('convertClientJoined').value.trim();
-  const renewal=document.getElementById('convertClientRenewal').value.trim();
+  const joined=dateInputToSheetFormat(document.getElementById('convertClientJoined').value.trim());
+  const renewal=dateInputToSheetFormat(document.getElementById('convertClientRenewal').value.trim());
   const notes=document.getElementById('convertClientNotes').value.trim();
   const result=document.getElementById('convertClientResult');
   if(!business){result.innerHTML='<span style="color:var(--red)">No business selected.</span>';return;}
@@ -2903,7 +3076,7 @@ function toggleClientCustomPackage(){
   const preset=PACKAGE_PRICE_PRESETS[pkg];
   if(preset){
     document.getElementById('addClientMonthly').value=preset.monthly||'';
-    document.getElementById('addClientOneTime').value=preset.oneTime||'';
+    document.getElementById('addClientOneTime').value=preset.oneTime||'';autoRenewalDate('addClient');
   }
 }
 function onAddClientContactPicked(business){
@@ -2929,8 +3102,8 @@ async function submitAddClient(){
   const monthlyAmount=document.getElementById('addClientMonthly').value||'0';
   const oneTimeAmount=document.getElementById('addClientOneTime').value||'0';
   const status=document.getElementById('addClientStatus').value;
-  const joined=document.getElementById('addClientJoined').value.trim();
-  const renewal=document.getElementById('addClientRenewal').value.trim();
+  const joined=dateInputToSheetFormat(document.getElementById('addClientJoined').value.trim());
+  const renewal=dateInputToSheetFormat(document.getElementById('addClientRenewal').value.trim());
   const number=normalizePhoneClient(document.getElementById('addClientNumber').value);
   const notes=document.getElementById('addClientNotes').value.trim();
   const result=document.getElementById('addClientResult');
@@ -2968,7 +3141,7 @@ async function submitAddClient(){
       result.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+business+' added as '+data.package+'</span>';
       showToast('Client added — '+business);
       clearAddClientPick();
-      ['addClientCustomName','addClientMonthly','addClientOneTime','addClientJoined','addClientRenewal','addClientNumber','addClientNotes'].forEach(id=>document.getElementById(id).value='');
+      ['addClientCustomName','addClientMonthly','addClientOneTime','addClientJoined','addClientRenewal','addClientNumber','addClientNotes'].forEach(id=>document.getElementById(id).value='');try{toggleClientCustomPackage();}catch(e){}
       renderClients();renderToday();
       if(document.getElementById('tab-followup')&&document.getElementById('tab-followup').classList.contains('active'))renderFollowUps();
     }else{
@@ -3309,20 +3482,20 @@ function renderRevenueQuickWins(mrr){
 function renderRevenueProjections(mrr){
   const daily=mrr/30, weekly=mrr/4.345, monthly=mrr, quarterly=mrr*3, sixMo=mrr*6, yearly=mrr*12, y2=mrr*24, y3=mrr*36;
   const rows=[{l:'DAILY',v:daily},{l:'WEEKLY',v:weekly},{l:'MONTHLY',v:monthly},{l:'QUARTERLY',v:quarterly},{l:'6 MONTHS',v:sixMo},{l:'YEARLY',v:yearly},{l:'2 YEARS',v:y2},{l:'3 YEARS',v:y3}];
-  document.getElementById('revenueProjectionGrid').innerHTML=rows.map(r=>`<div class="proj-card"><div class="proj-period">${r.l}</div><div class="proj-amount">&#8373;${Math.round(r.v).toLocaleString()}</div><div class="proj-clients">at current combined MRR</div></div>`).join('');
+  document.getElementById('revenueProjectionGrid').innerHTML=rows.map(r=>`<div class="proj-card" style="cursor:pointer" onclick="drillRevenue('mrr')"><div class="proj-period">${r.l}</div><div class="proj-amount">&#8373;${Math.round(r.v).toLocaleString()}</div><div class="proj-clients">at current combined MRR</div></div>`).join('');
 }
 function renderRevenue(){
   const mrr=getMRR(),visMRR=getVisMRR(),smeMRR=getSmeMRR(),oneTime=getOneTimeRevenue();
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
   const smeActive=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length;
   document.getElementById('revenueActual').innerHTML=`
-    <div class="metric-card gold"><div class="metric-label">DAILY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/30)}</div><div class="metric-sub">MRR ÷ 30</div></div>
-    <div class="metric-card green"><div class="metric-label">WEEKLY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/4.3)}</div><div class="metric-sub">MRR ÷ 4.3</div></div>
-    <div class="metric-card blue"><div class="metric-label">VIS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${visMRR}</div><div class="metric-sub">${active} visibility clients</div></div>
-    <div class="metric-card teal"><div class="metric-label">SME SYSTEMS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${smeMRR}</div><div class="metric-sub">${smeActive} system members</div></div>
-    <div class="metric-card purple"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">&#8373;${oneTime}</div><div class="metric-sub">playbooks / custom</div></div>
-    <div class="metric-card orange"><div class="metric-label">TOTAL MRR</div><div class="metric-value" style="font-size:24px">&#8373;${mrr}</div><div class="metric-sub">vis + sme combined</div></div>${revenueCollectedCardsHtml()}`;
-  document.getElementById('projCards').innerHTML=[{p:'THIS MONTH',a:mrr,s:active+' active'},{p:'MONTH 2',a:mrr*2,s:'Target: '+(active*2)},{p:'MONTH 3',a:mrr*4,s:'Target: '+(active*4)},{p:'MONTH 6',a:mrr*8,s:'Target: '+(active*8)}].map(x=>`<div class="proj-card"><div class="proj-period">${x.p}</div><div class="proj-amount">&#8373;${x.a.toLocaleString()}</div><div class="proj-clients">${x.s}</div></div>`).join('');
+    <div class="metric-card gold clickable" onclick="drillRevenue('mrr')"><div class="metric-label">DAILY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/30)}</div><div class="metric-sub">MRR ÷ 30</div></div>
+    <div class="metric-card green clickable" onclick="drillRevenue('mrr')"><div class="metric-label">WEEKLY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/4.3)}</div><div class="metric-sub">MRR ÷ 4.3</div></div>
+    <div class="metric-card blue clickable" onclick="drillRevenue('vis')"><div class="metric-label">VIS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${visMRR}</div><div class="metric-sub">${active} visibility clients</div></div>
+    <div class="metric-card teal clickable" onclick="drillRevenue('sme')"><div class="metric-label">SME SYSTEMS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${smeMRR}</div><div class="metric-sub">${smeActive} system members</div></div>
+    <div class="metric-card purple clickable" onclick="drillRevenue('onetime')"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">&#8373;${oneTime}</div><div class="metric-sub">playbooks / custom</div></div>
+    <div class="metric-card orange clickable" onclick="drillRevenue('mrr')"><div class="metric-label">TOTAL MRR</div><div class="metric-value" style="font-size:24px">&#8373;${mrr}</div><div class="metric-sub">vis + sme combined</div></div>${revenueCollectedCardsHtml()}${convRateCardHtml()}`;
+  document.getElementById('projCards').innerHTML=[{p:'THIS MONTH',a:mrr,s:active+' active'},{p:'MONTH 2',a:mrr*2,s:'Target: '+(active*2)},{p:'MONTH 3',a:mrr*4,s:'Target: '+(active*4)},{p:'MONTH 6',a:mrr*8,s:'Target: '+(active*8)}].map(x=>`<div class="proj-card" style="cursor:pointer" onclick="drillRevenue('mrr')"><div class="proj-period">${x.p}</div><div class="proj-amount">&#8373;${x.a.toLocaleString()}</div><div class="proj-clients">${x.s}</div></div>`).join('');
   renderRevenueQuickWins(mrr);
   renderRevenueProjections(mrr);
 
@@ -3330,16 +3503,16 @@ function renderRevenue(){
   (state.clients||[]).forEach(c=>{if((c.Status||'').trim().toLowerCase()==='active'&&/presence/i.test(c.Package||''))presenceStats.count++;});
   document.getElementById('conversionTracker').innerHTML=REVENUE_PACKAGES.map(pkg=>{
     if(pkg.key==='presence'){
-      return `<div class="pkg-card"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">Free</div></div><div class="pkg-card-sub">${presenceStats.count} active listing${presenceStats.count!==1?'s':''} · always the entry offer</div></div>`;
+      return `<div class="pkg-card" style="cursor:pointer" onclick="drillPackage('${pkg.key}')"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">Free</div></div><div class="pkg-card-sub">${presenceStats.count} active listing${presenceStats.count!==1?'s':''} · always the entry offer</div></div>`;
     }
     if(pkg.tiers){
       const rows=pkg.tiers.map(t=>{const st=matchPackageStats(t.match);return `<div class="pkg-tier-row"><span style="color:var(--text-dim)">${t.label} — GHS ${t.amount.toLocaleString()}</span><span style="font-family:'Space Mono',monospace;color:${pkg.color};font-weight:700">${st.count} · GHS ${st.revenue.toLocaleString()}</span></div>`;}).join('');
       const totalCount=pkg.tiers.reduce((s,t)=>s+matchPackageStats(t.match).count,0);
       const totalRev=pkg.tiers.reduce((s,t)=>s+matchPackageStats(t.match).revenue,0);
-      return `<div class="pkg-card"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">${totalCount}</div></div><div class="pkg-card-sub">GHS ${totalRev.toLocaleString()} total from this package</div>${rows}</div>`;
+      return `<div class="pkg-card" style="cursor:pointer" onclick="drillPackage('${pkg.key}')"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">${totalCount}</div></div><div class="pkg-card-sub">GHS ${totalRev.toLocaleString()} total from this package</div>${rows}</div>`;
     }
     const st=matchPackageStats(pkg.match);
-    return `<div class="pkg-card"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}${pkg.amount?` — GHS ${pkg.amount.toLocaleString()}`:''}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">${st.count}</div></div><div class="pkg-card-sub">GHS ${st.revenue.toLocaleString()} total from this package</div></div>`;
+    return `<div class="pkg-card" style="cursor:pointer" onclick="drillPackage('${pkg.key}')"><div class="pkg-card-head"><div class="pkg-card-title">${pkg.name}${pkg.amount?` — GHS ${pkg.amount.toLocaleString()}`:''}</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${pkg.color}">${st.count}</div></div><div class="pkg-card-sub">GHS ${st.revenue.toLocaleString()} total from this package</div></div>`;
   }).join('');
 
   document.getElementById('closesNeeded').innerHTML=[{label:'Hit GHS 180/day',monthly:5400},{label:'Hit GHS 500/day',monthly:15000},{label:'Hit GHS 1,000/day',monthly:30000}].map(t=>{const needed=Math.max(0,Math.ceil((t.monthly-mrr)/180));const pct=Math.min(100,Math.round((mrr/t.monthly)*100));return`<div style="padding:12px 0;border-bottom:1px solid #1a1a1a"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><div style="font-size:13px;font-weight:700">${t.label}</div><div style="font-size:11px;color:var(--text-dim)">${needed} more Verified closes</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-dim);margin-top:4px">${pct}% · &#8373;${mrr.toLocaleString()} of &#8373;${t.monthly.toLocaleString()}/month</div></div>`;}).join('');
@@ -3472,33 +3645,33 @@ function revenueCollectedCardsHtml(){
   const lastR={start:new Date(now.getFullYear(),now.getMonth()-1,1),end:new Date(now.getFullYear(),now.getMonth(),0,23,59,59,999)};
   const sum=r=>ev.filter(e=>inRange(e.date,r)).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
   const cnt=r=>ev.filter(e=>inRange(e.date,r)).length;
-  return `<div class="metric-card green"><div class="metric-label">COLLECTED THIS MONTH</div><div class="metric-value" style="font-size:24px">&#8373;${sum(thisR).toLocaleString()}</div><div class="metric-sub">${cnt(thisR)} payment${cnt(thisR)!==1?'s':''} by date paid</div></div>
-    <div class="metric-card blue"><div class="metric-label">COLLECTED LAST MONTH</div><div class="metric-value" style="font-size:24px">&#8373;${sum(lastR).toLocaleString()}</div><div class="metric-sub">${cnt(lastR)} payment${cnt(lastR)!==1?'s':''}</div></div>`;
+  return `<div class="metric-card green clickable" onclick="drillRevenue('thisMonth')"><div class="metric-label">COLLECTED THIS MONTH</div><div class="metric-value" style="font-size:24px">&#8373;${sum(thisR).toLocaleString()}</div><div class="metric-sub">${cnt(thisR)} payment${cnt(thisR)!==1?'s':''} by date paid</div></div>
+    <div class="metric-card blue clickable" onclick="drillRevenue('lastMonth')"><div class="metric-label">COLLECTED LAST MONTH</div><div class="metric-value" style="font-size:24px">&#8373;${sum(lastR).toLocaleString()}</div><div class="metric-sub">${cnt(lastR)} payment${cnt(lastR)!==1?'s':''}</div></div>`;
 }
 function computeAnalytics(period){
   const range=getPeriodRange(period);
   const outreach=(trackerData.outreachLog||[]).filter(o=>inRange(o.date||o.timestamp,range));
   const revEvents=getAllRevenueEvents().filter(c=>inRange(c.date,range));
-  const conversions=revEvents.filter(e=>!e.renewal);
+  const allConv=getConversionEvents();const conversions=allConv.filter(e=>inRange(e.date,range));
   const renewals=revEvents.filter(e=>e.renewal);
   const calls=(trackerData.callLogs||[]).filter(c=>inRange(c.date||c.timestamp,range));
   const revenue=revEvents.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
   const newContacts=state.contacts.filter(c=>c.Created_Date&&inRange(c.Created_Date,range)).length;
 
-  let counts=[];
-  conversions.forEach(cv=>{
+  let counts=[];const convRows=[];
+  allConv.forEach(cv=>{
     const cd=parseAnyDate(cv.date||cv.timestamp);
     if(!cd)return;
-    const n=(trackerData.outreachLog||[]).filter(o=>o.business===cv.business && parseAnyDate(o.date||o.timestamp) && parseAnyDate(o.date||o.timestamp)<=cd).length;
-    if(n>0) counts.push(n);
+    const n=(trackerData.outreachLog||[]).filter(o=>(o.business||'').toLowerCase()===(cv.business||'').toLowerCase() && parseAnyDate(o.date||o.timestamp) && parseAnyDate(o.date||o.timestamp)<=cd).length;
+    if(n>0){counts.push(n);convRows.push({business:cv.business,date:cv.date,n:n});}
   });
   const avgOutreachBeforeConv=counts.length?Math.round((counts.reduce((a,b)=>a+b,0)/counts.length)*10)/10:null;
 
   const totalContacts=state.contacts.length;
-  const conversionRate=totalContacts>0?((trackerData.totalConversions||0)/totalContacts*100):0;
+  const _oc=getOverallConversion();const overallClients=_oc.clients,overallBase=_oc.base,overallRate=_oc.rate;const conversionRate=overallRate;
   const periodConvRate=outreach.length>0?(conversions.length/outreach.length*100):0;
 
-  return {range,outreach,conversions,renewals,calls,revenue,newContacts,avgOutreachBeforeConv,totalContacts,conversionRate,periodConvRate};
+  return {range,outreach,conversions,renewals,calls,revenue,newContacts,avgOutreachBeforeConv,totalContacts,conversionRate,periodConvRate,revEvents,convRows,overallRate,overallClients,overallBase};
 }
 
 // v21.0: MESSAGING FEEDBACK — the actual "advanced messaging %s + feedback"
@@ -3508,7 +3681,7 @@ function computeAnalytics(period){
 function computeMessagingFeedback(A,periodDays){
   const perDay=periodDays>0?(A.outreach.length/periodDays):0;
   const lines=[];
-  lines.push(`You sent ${A.outreach.length} messages this period — averaging ${perDay.toFixed(1)}/day.`);
+  lines.push(`You sent ${A.outreach.length} messages this period — averaging ${perDay.toFixed(1)}/day.`);lines.push(`Overall conversion: ${A.overallClients} clients from ${A.overallBase} contacts reached (${A.overallRate.toFixed(1)}%).`);
   if(A.outreach.length>0 && A.conversions.length>0){
     lines.push(`Conversion rate on outreach: ${A.periodConvRate.toFixed(1)}% (${A.conversions.length} of ${A.outreach.length} messages led to a conversion).`);
   } else if(A.outreach.length===0){
@@ -3545,12 +3718,12 @@ function renderAnalytics(){
   const statusText=pct>=100?'ON / ABOVE TARGET':pct>=70?'CLOSE TO TARGET':'BELOW TARGET';
 
   document.getElementById('analyticsMetrics').innerHTML=`
-    <div class="metric-card gold"><div class="metric-label">REVENUE — PERIOD</div><div class="metric-value">&#8373;${A.revenue.toLocaleString()}</div><div class="metric-sub">of &#8373;${periodTarget.toLocaleString()} target · ${A.renewals.length} renewal${A.renewals.length!==1?'s':''}</div></div>
-    <div class="metric-card green"><div class="metric-label">CONVERSIONS</div><div class="metric-value">${A.conversions.length}</div><div class="metric-sub">${A.periodConvRate.toFixed(1)}% of period outreach</div></div>
-    <div class="metric-card blue"><div class="metric-label">OUTREACH SENT</div><div class="metric-value">${A.outreach.length}</div><div class="metric-sub">calls logged: ${A.calls.length}</div></div>
-    <div class="metric-card teal"><div class="metric-label">NEW CONTACTS</div><div class="metric-value">${A.newContacts}</div><div class="metric-sub">added this period</div></div>
-    <div class="metric-card purple"><div class="metric-label">AVG MSGS &#8594; CONVERT</div><div class="metric-value">${A.avgOutreachBeforeConv!==null?A.avgOutreachBeforeConv:'—'}</div><div class="metric-sub">messages before close (this period)</div></div>
-    <div class="metric-card orange"><div class="metric-label">CONV RATE — THIS PERIOD</div><div class="metric-value">${A.periodConvRate.toFixed(1)}%</div><div class="metric-sub">${A.conversions.length} conv. of ${A.outreach.length} msgs sent, this period</div></div>`;
+    <div class="metric-card gold clickable" onclick="drillAnalytics('revenue')"><div class="metric-label">REVENUE — PERIOD</div><div class="metric-value">&#8373;${A.revenue.toLocaleString()}</div><div class="metric-sub">of &#8373;${periodTarget.toLocaleString()} target · ${A.renewals.length} renewal${A.renewals.length!==1?'s':''}</div></div>
+    <div class="metric-card green clickable" onclick="drillAnalytics('conversions')"><div class="metric-label">CONVERSIONS</div><div class="metric-value">${A.conversions.length}</div><div class="metric-sub">${A.periodConvRate.toFixed(1)}% of period outreach</div></div>
+    <div class="metric-card blue clickable" onclick="drillAnalytics('outreach')"><div class="metric-label">OUTREACH SENT</div><div class="metric-value">${A.outreach.length}</div><div class="metric-sub">calls logged: ${A.calls.length}</div></div>
+    <div class="metric-card teal clickable" onclick="drillAnalytics('contacts')"><div class="metric-label">NEW CONTACTS</div><div class="metric-value">${A.newContacts}</div><div class="metric-sub">added this period</div></div>
+    <div class="metric-card purple clickable" onclick="drillAnalytics('avg')"><div class="metric-label">AVG MSGS &#8594; CONVERT</div><div class="metric-value">${A.avgOutreachBeforeConv!==null?A.avgOutreachBeforeConv:'—'}</div><div class="metric-sub">messages before close (all-time, ${A.convRows.length} clients)</div></div>
+    <div class="metric-card orange clickable" onclick="drillAnalytics('rate')"><div class="metric-label">CONV RATE — OVERALL</div><div class="metric-value">${A.overallRate.toFixed(1)}%</div><div class="metric-sub">${A.overallClients} clients of ${A.overallBase} contacts</div></div><div class="metric-card red clickable" onclick="drillAnalytics('rate')"><div class="metric-label">CONV RATE — THIS PERIOD</div><div class="metric-value">${A.periodConvRate.toFixed(1)}%</div><div class="metric-sub">${A.conversions.length} new clients · ${A.outreach.length} msgs sent</div></div>`;
 
   document.getElementById('analyticsTargetBar').innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -3566,10 +3739,10 @@ function renderAnalytics(){
   const engaged=state.contacts.filter(c=>c.WA_Label&&(c.WA_Label.includes('🟢')||c.WA_Label.includes('🔵')||c.WA_Label.includes('🟠'))).length;
   const hot=state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length;
   const won=(state.clients.filter(c=>(c.Status||'').toLowerCase()==='active').length)+((state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length);
-  const stages=[{l:'Total Contacts',v:totalC,c:'var(--text-dim)'},{l:'Engaged (reading/replying)',v:engaged,c:'var(--orange)'},{l:'Hot Leads',v:hot,c:'var(--blue)'},{l:'Converted (clients)',v:won,c:'var(--green)'}];
+  const stages=[{l:'Total Contacts',v:totalC,c:'var(--text-dim)',go:"activateTab('contacts')"},{l:'Engaged (reading/replying)',v:engaged,c:'var(--orange)',go:"goFollowupFilter('🟢',true)"},{l:'Hot Leads',v:hot,c:'var(--blue)',go:"goFollowupFilter('🔵',true)"},{l:'Converted (clients)',v:won,c:'var(--green)',go:"activateTab('clients')"}];
   document.getElementById('analyticsFunnel').innerHTML=stages.map(s=>{
     const w=totalC>0?Math.max(6,Math.round((s.v/totalC)*100)):6;
-    return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>${s.l}</span><span style="font-weight:700;color:${s.c}">${s.v}</span></div><div class="progress-track"><div class="progress-fill" style="width:${w}%;background:${s.c}"></div></div></div>`;
+    return `<div style="margin-bottom:10px;cursor:pointer" onclick="${s.go}"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>${s.l}</span><span style="font-weight:700;color:${s.c}">${s.v}</span></div><div class="progress-track"><div class="progress-fill" style="width:${w}%;background:${s.c}"></div></div></div>`;
   }).join('');
 
   const advice=[];
@@ -3604,7 +3777,7 @@ function renderAnalytics(){
   const labels={today:'Today',week:'This Week',month:'This Month',q1:'Q1',q2:'Q2',q3:'Q3',q4:'Q4','6m':'6 Months',year:'This Year',all:'All Time'};
   document.getElementById('analyticsPeriodGrid').innerHTML=periods.map(p=>{
     const d=computeAnalytics(p);
-    return `<div class="proj-card"><div class="proj-period">${labels[p]}</div><div class="proj-amount">&#8373;${d.revenue.toLocaleString()}</div><div class="proj-clients">${d.conversions.length} conv · ${d.outreach.length} msgs</div></div>`;
+    return `<div class="proj-card" style="cursor:pointer" onclick="jumpAnalyticsPeriod('${p}')"><div class="proj-period">${labels[p]}</div><div class="proj-amount">&#8373;${d.revenue.toLocaleString()}</div><div class="proj-clients">${d.conversions.length} conv · ${d.outreach.length} msgs</div></div>`;
   }).join('');
 }
 
@@ -3631,7 +3804,7 @@ function filterContacts(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td style="font-size:11px;white-space:nowrap">${c.Town||'—'}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
+    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td><div class="clip" title="${(c.Town||'').replace(/"/g,'&quot;')}">${c.Town||'—'}</div></td><td><div class="clip" title="${(c.Category||'').replace(/"/g,'&quot;')}">${c.Category||'—'}</div></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
       <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
       <div style="display:flex;gap:4px;align-items:center">
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
@@ -3942,7 +4115,7 @@ async function archiveNotes(){
 function showFullNotes(business,notes,stage,number,category){
   document.getElementById('notesModalTitle').textContent=business;
   document.getElementById('notesModalMeta').textContent=number+(category?' · '+category:'')+(stage?' · '+stage:'');
-  document.getElementById('notesModalBody').textContent=notes||'No notes recorded yet.';
+  document.getElementById('notesModalBody').style.whiteSpace='pre-wrap';document.getElementById('notesModalBody').textContent=notes||'No notes recorded yet.';
   // v27.0: a "convert to client" shortcut right on the contact detail
   // panel — satisfies "in pipeline I should be able to click a business
   // and change them to a package" without a second, divergent picker.
@@ -4278,6 +4451,7 @@ window.addEventListener('resize',syncHeaderHeight);
 
 document.addEventListener('DOMContentLoaded',()=>{
   syncHeaderHeight();
+  try{toggleClientCustomPackage();}catch(e){}
   document.getElementById('addContactStage').innerHTML =
     STAGE_OPTIONS.map(s=>`<option${s==='First message sent'?' selected':''}>${s}</option>`).join('');
   document.getElementById('addContactOffer').innerHTML =
