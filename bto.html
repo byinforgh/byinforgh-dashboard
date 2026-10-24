@@ -229,6 +229,19 @@ html,body{max-width:100%;overflow-x:clip;}
 .contact-table select{min-width:118px!important;max-width:150px!important;font-size:11px!important}
 .contact-table select[onchange*="WA_Label"]{min-width:112px!important;max-width:125px!important}
 .contact-table.stk3 th,.contact-table.stk3 td{padding-left:6px;padding-right:6px}
+
+/* v30.0 — who-added chips, sent-messages modal */
+.by-chip{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.3px;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1px 7px 1px 2px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.by-chip .by-av{width:15px;height:15px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;flex:none}
+.msg-link{color:var(--teal);font-weight:800;text-decoration:underline;cursor:pointer;font-family:'Space Mono',monospace}
+.msg-link:hover{color:var(--gold)}
+#sentMsgModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+#sentMsgModal .sm-box{background:#fff;border-radius:10px;max-width:560px;width:100%;padding:18px 18px 14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sm-item{border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:var(--surface)}
+.sm-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.sm-text{font-size:12px;line-height:1.6;white-space:pre-wrap;color:var(--text)}
+.sm-none{font-size:11px;color:var(--muted);font-style:italic}
+.team-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -246,7 +259,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="btoBanner">BUSINESS TRUST OFFICER VIEW &mdash; signed in as <span id="btoBannerName"></span><button onclick="btoLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v29.3</span></div>
+  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v30.0</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -261,6 +274,8 @@ html,body{max-width:100%;overflow-x:clip;}
   <button class="tab" onclick="switchTab('pipeline',event)">PIPELINE</button>
   <button class="tab" onclick="switchTab('calls',event)">&#128222; CALLS</button>
   <button class="tab" onclick="switchTab('koforidua',event)">KOFORIDUA</button>
+  <button class="tab" onclick="switchTab('kumasi',event)">KUMASI</button>
+  <button class="tab" onclick="switchTab('accra',event)">ACCRA</button>
   <button class="tab" onclick="switchTab('clients',event)">CLIENTS</button>
   <button class="tab" onclick="switchTab('sme',event)">SME SYSTEMS</button>
   <button class="tab" onclick="switchTab('messages',event)">MESSAGES</button>
@@ -292,6 +307,8 @@ html,body{max-width:100%;overflow-x:clip;}
         <select id="addContactSheetSource" onchange="toggleAddContactAreaField()" style="margin-bottom:8px">
           <option value="Master CRM">Master CRM (general outreach)</option>
           <option value="Koforidua Master">Koforidua Master (physical visit)</option>
+          <option value="Kumasi Master">Kumasi Master (physical visit)</option>
+          <option value="Accra Master">Accra Master (physical visit)</option>
         </select>
         <input id="addContactBusiness" class="search-input" placeholder="Business name*" style="margin-bottom:8px">
         <input id="addContactNumber" class="search-input" placeholder="WhatsApp number* (0XXXXXXXXX)" style="margin-bottom:8px">
@@ -317,6 +334,8 @@ html,body{max-width:100%;overflow-x:clip;}
     </div>
   </div>
   <div class="section-title" style="margin-top:20px">&#128205; KOFORIDUA PRIORITY VISITS</div><div id="kofVisitList"></div>
+  <div class="section-title" style="margin-top:20px">&#128205; KUMASI PRIORITY VISITS</div><div id="kumVisitList"></div>
+  <div class="section-title" style="margin-top:20px">&#128205; ACCRA PRIORITY VISITS</div><div id="accVisitList"></div>
 </div>
 
 <!-- AI ASSIST -->
@@ -433,7 +452,7 @@ html,body{max-width:100%;overflow-x:clip;}
     <button class="filter-btn" onclick="setFilter('🟢',this)">🟢 CONVERSATION</button>
     <button class="filter-btn" onclick="setFilter('🔄',this)">🔄 RE-ENGAGE</button>
     <button class="filter-btn" onclick="setFilter('🔵',this)">🔵 HOT LEAD</button>
-    <button class="filter-btn" onclick="setFilter('📍',this)">📍 KOFORIDUA PHYSICAL</button>
+    <button class="filter-btn" onclick="setFilter('📍',this)">📍 PHYSICAL VISITS</button>
     <button class="filter-btn" onclick="setFilter('monthly',this)">&#128310; MONTHLY</button>
     <button class="filter-btn" onclick="setFilter('quarterly',this)">&#128311; QUARTERLY</button>
   </div>
@@ -564,6 +583,48 @@ html,body{max-width:100%;overflow-x:clip;}
   <div class="kof-area" id="kofAreas"></div>
   <div class="section-title" style="margin-top:12px">&#127959; KOFORIDUA VISIT LIST — PRIORITY ORDER</div>
   <div id="kofList"></div>
+</div>
+
+<!-- KUMASI -->
+<div class="tab-content" id="tab-kumasi">
+  <div class="metrics-grid" id="kumMetrics"></div>
+  <div class="section-title">CLICK ANY STAGE TO SEE REAL CONTACTS INSIDE</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px" id="kumPipelineGrid"></div>
+  <div id="kumPipelineContactPanel" style="display:none;margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-title" id="kumPipelineContactTitle" style="margin-bottom:0">—</div>
+      <button onclick="closeKumPipelinePanel()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 12px;border-radius:3px;cursor:pointer;font-size:11px">CLOSE &#x2715;</button>
+    </div>
+    <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>AREA</th><th>WA</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="kumPipelineContactBody"></tbody></table></div>
+  </div>
+  <div style="background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
+    <strong style="color:var(--teal)">VISIT PRIORITY:</strong> B1 Active first. B2 Warm next. Filter by area to plan your route for the day.
+  </div>
+  <div class="section-title">AREA FILTER</div>
+  <div class="kof-area" id="kumAreas"></div>
+  <div class="section-title" style="margin-top:12px">&#127959; KUMASI VISIT LIST — PRIORITY ORDER</div>
+  <div id="kumList"></div>
+</div>
+
+<!-- ACCRA -->
+<div class="tab-content" id="tab-accra">
+  <div class="metrics-grid" id="accMetrics"></div>
+  <div class="section-title">CLICK ANY STAGE TO SEE REAL CONTACTS INSIDE</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px" id="accPipelineGrid"></div>
+  <div id="accPipelineContactPanel" style="display:none;margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-title" id="accPipelineContactTitle" style="margin-bottom:0">—</div>
+      <button onclick="closeAccPipelinePanel()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 12px;border-radius:3px;cursor:pointer;font-size:11px">CLOSE &#x2715;</button>
+    </div>
+    <div class="scroll-table"><table class="contact-table"><thead><tr><th>BUSINESS</th><th>NUMBER</th><th>AREA</th><th>WA</th><th>LAST CONTACT</th><th>NEXT FOLLOW-UP</th><th>NOTES</th></tr></thead><tbody id="accPipelineContactBody"></tbody></table></div>
+  </div>
+  <div style="background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
+    <strong style="color:var(--teal)">VISIT PRIORITY:</strong> B1 Active first. B2 Warm next. Filter by area to plan your route for the day.
+  </div>
+  <div class="section-title">AREA FILTER</div>
+  <div class="kof-area" id="accAreas"></div>
+  <div class="section-title" style="margin-top:12px">&#127959; ACCRA VISIT LIST — PRIORITY ORDER</div>
+  <div id="accList"></div>
 </div>
 
 <!-- CLIENTS -->
@@ -942,6 +1003,8 @@ html,body{max-width:100%;overflow-x:clip;}
       <select id="apptNewSheetSource" style="margin-bottom:8px">
         <option value="Master CRM">Master CRM (general outreach)</option>
         <option value="Koforidua Master">Koforidua Master (physical visit)</option>
+          <option value="Kumasi Master">Kumasi Master (physical visit)</option>
+          <option value="Accra Master">Accra Master (physical visit)</option>
       </select>
     </div>
     <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:10px 0 4px">APPOINTMENT DATE*</div>
@@ -1056,7 +1119,84 @@ const API_URL='https://script.google.com/macros/s/AKfycby9X4OTmZERFAsLlHXf80G3C5
 // Business Solutions Apps Script — read-only source for the BIZ SOLUTIONS reporting tab.
 const BIZ_SOLUTIONS_API_URL='https://script.google.com/macros/s/AKfycbzQcFIitJAH-ezedgxmaUotkVcalQDuaHorMIbZ_NBxNiVP4dPYk4yb6SOQsKuOTFwIww/exec';
 let bizSolData=null;
-let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],smeMembers:[],raw:{},messageCounts:{}};let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
+
+// =====================================================
+// v30.0 — shared helpers: who-did-it, own-numbers scoping, sent messages
+// =====================================================
+let currentKumArea='ALL',currentAccArea='ALL';
+const CITIES=[{key:'koforidua',sheet:'Koforidua Master',name:'Koforidua'},{key:'kumasi',sheet:'Kumasi Master',name:'Kumasi'},{key:'accra',sheet:'Accra Master',name:'Accra'}];
+function cityBySheet(sheet){return CITIES.find(x=>x.sheet===sheet)||null;}
+function IS_BTO(){return document.body.classList.contains('role-bto');}
+function MY_NAME(){try{return (typeof BTO_DISPLAY_NAME!=='undefined'&&BTO_DISPLAY_NAME)||(typeof MASTER_DISPLAY_NAME!=='undefined'&&MASTER_DISPLAY_NAME)||'';}catch(e){return '';}}
+function isMine(c){return (c.Added_By||'').toString().trim().toLowerCase()===MY_NAME().toLowerCase()&&MY_NAME()!=='';}
+// Numbers shown to a Business Trust Officer are HER OWN (contacts she added).
+// Lists (follow-ups, all contacts, visit lists) stay fully visible so she can
+// still see who to contact. Master always sees everything.
+function scopeMine(arr){arr=arr||[];return IS_BTO()?arr.filter(isMine):arr;}
+function metricContacts(){return scopeMine(state.contacts);}
+function countByLabelM(emoji){return metricContacts().filter(c=>c.WA_Label&&c.WA_Label.includes(emoji)).length;}
+function countUnlabeledM(){return metricContacts().filter(c=>c.Business&&(!c.WA_Label||!KNOWN_WA_EMOJIS.some(e=>c.WA_Label.includes(e)))).length;}
+function byColor(name){let h=0;for(let i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))>>>0;return 'hsl('+(h%360)+',55%,42%)';}
+function byChipHtml(c){
+  const n=((c&&c.Added_By)||'').toString().trim();
+  if(!n)return '';
+  const sys={'landing page':'🌐','audit scan':'🔍','sheet':'📄'};
+  const low=n.toLowerCase();
+  const av=sys[low]?`<span class="by-av" style="background:var(--muted);font-size:9px">${sys[low]}</span>`:(low==='ceo'?`<span class="by-av" style="background:var(--gold)">👑</span>`:`<span class="by-av" style="background:${byColor(n)}">${n.charAt(0).toUpperCase()}</span>`);
+  const safe=n.replace(/</g,'&lt;');
+  return `<span class="by-chip" title="Added by ${safe}">${av}${safe}</span>`;
+}
+function byNameChip(n){return byChipHtml({Added_By:n});}
+function msgLinkHtml(business,count){
+  return `<a class="msg-link" title="See what was sent" onclick="event.stopPropagation();openSentMessages('${escJs(business)}')">${count}</a>`;
+}
+const sentLocal={};
+function recordSentLocal(business,text,type){
+  if(!business||!text)return;
+  (sentLocal[business]=sentLocal[business]||[]).unshift({date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}),type:type||'WhatsApp Message',by:MY_NAME(),message:text});
+}
+async function openSentMessages(business){
+  let m=document.getElementById('sentMsgModal');
+  if(!m){m=document.createElement('div');m.id='sentMsgModal';m.onclick=function(e){if(e.target===m)m.style.display='none';};document.body.appendChild(m);}
+  m.style.display='flex';
+  const title=(business||'').replace(/</g,'&lt;');
+  m.innerHTML=`<div class="sm-box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="section-title" style="margin:0">&#9993; MESSAGES SENT — ${title}</div><button onclick="document.getElementById('sentMsgModal').style.display='none'" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:11px">CLOSE &#x2715;</button></div><div id="sentMsgBody"><div class="loading">Loading</div></div></div>`;
+  let items=[],failed=false;
+  try{
+    const r=await fetch(API_URL+'?action=getContactMessages&business='+encodeURIComponent(business)+'&t='+Date.now());
+    const d=await r.json();
+    if(d&&d.success)items=d.messages||[];else failed=true;
+  }catch(e){failed=true;}
+  const loc=(sentLocal[business]||[]);
+  if(failed||!items.length)items=[...loc,...items];
+  const body=document.getElementById('sentMsgBody');
+  if(!body)return;
+  if(!items.length){body.innerHTML='<div class="empty">'+(failed?'Could not load the history right now.':'Nothing logged as sent to this contact yet.')+'</div>';return;}
+  body.innerHTML=items.map(it=>`<div class="sm-item"><div class="sm-meta"><span>${(it.date||'').replace(/</g,'&lt;')} · ${(it.type||'Message').replace(/</g,'&lt;')}</span><span>${it.by?byNameChip(it.by):''}</span></div>${it.message?`<div class="sm-text">${it.message.replace(/</g,'&lt;')}</div>`:'<div class="sm-none">Sent — the message text was not saved for this one (sent before text tracking, or logged by hand).</div>'}${it.notes&&it.message?`<div style="font-size:10px;color:var(--muted);margin-top:6px">${it.notes.replace(/</g,'&lt;')}</div>`:''}</div>`).join('');
+}
+// Follow-up wording once something has already been sent: no price, no package,
+// no listing pitch. It checks in, asks, or steps back — it never re-offers.
+function buildNoOfferFollowup(c,msgCount,version){
+  const name=((c.Business||'').split(' ')[0])||'there';
+  const t=msgCount>=3?3:(msgCount>=2?2:1);
+  const V={
+    1:{A:`Hey ${name}, just following up on my last message. Did it reach you okay?\n\nNo pressure at all. Happy to answer anything you want to ask.`,
+       B:`Hey ${name}, hope your week is going well. I sent you a message earlier and wanted to make sure it did not get buried. Any questions so far?`,
+       C:`Hey ${name}, quick check-in. How is business going this week?`,
+       D:`Hey ${name}, checking in. Is there anything in my last message you would like me to explain better?`},
+    2:{A:`Hey ${name}, hope all is well on your side. Quick question: what is the biggest thing slowing your business down right now?`,
+       B:`Hey ${name}, I will keep this short. How are new customers finding you these days?`,
+       C:`Hey ${name}, nothing to sell you today. I just wanted to hear how things are going with the business.`,
+       D:`Hey ${name}, if you could change one thing about how your business runs right now, what would it be?`},
+    3:{A:`Hey ${name}, I do not want to crowd your inbox, so this is a light check-in. If now is not the right time, just say so and I will check back later.`,
+       B:`Hey ${name}, just letting you know I am still around if you ever want to talk. How has business been?`,
+       C:`Hey ${name}, would it be easier if I reached out at a different time, or by a quick call instead?`,
+       D:`Hey ${name}, hope things are going well. Anything I can clear up, whenever you are ready?`}
+  };
+  return (V[t][version]||V[t].A);
+}
+
+let state={contacts:[],clients:[],renewals:[],outreach:[],koforidua:[],kumasi:[],accra:[],smeMembers:[],raw:{},messageCounts:{}};let currentFilter='all',currentMsgVersion='A',currentMsgCategory='cold',currentKofArea='ALL',currentDeployment='Presence';
 let followupPage=0,activityPage=0;
 let apptMode='existing'; // v25.0: Book Appointment modal — 'existing' or 'new'
 const FOLLOWUP_PAGE_SIZE=12,ACTIVITY_PAGE_SIZE=15;
@@ -1112,7 +1252,7 @@ let versionManuallySet=false;
 
 // Order must match the .tab buttons in the header exactly — used by activateTab()
 // so metric cards / WA board items can jump straight to a tab from code.
-const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','clients','sme','messages','revenue','analytics','contacts','tracker','archive','bizsolutions'];
+const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','kumasi','accra','clients','sme','messages','revenue','analytics','contacts','tracker','archive','bizsolutions'];
 // Daily rotation: changes each calendar day so messages are never the same two days running
 const TODAY_SEED=(()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})();
 
@@ -1127,10 +1267,12 @@ const WA_LABEL_OPTIONS=[
   '✅ Client Paying',
   '⬛ Rejected Closed, no contact',
   '🔄 OutdatedOld client, re-engage warm',
-  '📍 Koforidua PhysicalFace-to-face only, no WhatsApp reach'
+  '📍 Koforidua PhysicalFace-to-face only, no WhatsApp reach',
+  '📍 Kumasi PhysicalFace-to-face only, no WhatsApp reach',
+  '📍 Accra PhysicalFace-to-face only, no WhatsApp reach'
 ];
 const WA_SHORT={'🔴':'🔴 1 Tick','🟡':'🟡 Unread','🟠':'🟠 Read, no reply','🟢':'🟢 Conversation','🔵':'🔵 Hot lead','✅':'✅ Client','⬛':'⬛ Rejected','🔄':'🔄 Re-engage','📍':'📍 Koforidua'};
-function waShortText(o){for(const k in WA_SHORT){if(o.indexOf(k)!==-1)return WA_SHORT[k];}return o;}
+function waShortText(o){if(o.indexOf('📍')!==-1){if(o.indexOf('Kumasi')!==-1)return'📍 Kumasi';if(o.indexOf('Accra')!==-1)return'📍 Accra';return'📍 Koforidua';}for(const k in WA_SHORT){if(o.indexOf(k)!==-1)return WA_SHORT[k];}return o;}
 function buildWaLabelOptionsHtml(current,short){
   const opts=[...WA_LABEL_OPTIONS];
   if(current&&opts.indexOf(current)===-1)opts.unshift(current);
@@ -1558,9 +1700,9 @@ function getConversionEvents(){
 }
 function getOverallConversion(){
   const allConv=getConversionEvents();
-  const cn=new Set((state.contacts||[]).map(c=>(c.Business||'').toLowerCase()));
+  const cn=new Set(metricContacts().map(c=>(c.Business||'').toLowerCase()));
   const extra=allConv.filter(e=>!cn.has((e.business||'').toLowerCase())).length;
-  const base=(state.contacts||[]).length+extra;
+  const base=metricContacts().length+extra;
   return {clients:allConv.length,base:base,rate:base>0?allConv.length/base*100:0};
 }
 function convRateCardHtml(){
@@ -1580,11 +1722,11 @@ function normStageKey(stage){
 }
 function renderPipelineGrid(){
   const counts={};
-  (state.contacts||[]).forEach(c=>{const k=normStageKey(c.Stage);counts[k]=(counts[k]||0)+1;});
+  metricContacts().forEach(c=>{const k=normStageKey(c.Stage);counts[k]=(counts[k]||0)+1;});
   const defs=STAGE_OPTIONS.map(o=>({key:o.toLowerCase(),n:o}));
   if(counts.other>0)defs.push({key:'other',n:'Other / no stage'});
   const allocated=Object.keys(counts).reduce((a,k)=>a+counts[k],0);
-  document.getElementById('pipelineGrid').innerHTML=defs.map(d=>'<div class="pipeline-stage" onclick="openPipelineStage(\''+d.key+'\',\''+d.n+'\')"><div class="pipeline-count" style="color:'+(STAGE_COLORS[d.key]||'var(--gold)')+'">'+(counts[d.key]||0)+'</div><div class="pipeline-name">'+d.n+'</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>').join('')+'<div style="grid-column:1/-1;font-size:11px;color:var(--text-dim)">'+allocated+' of '+(state.contacts||[]).length+' contacts allocated to a stage</div>';
+  document.getElementById('pipelineGrid').innerHTML=defs.map(d=>'<div class="pipeline-stage" onclick="openPipelineStage(\''+d.key+'\',\''+d.n+'\')"><div class="pipeline-count" style="color:'+(STAGE_COLORS[d.key]||'var(--gold)')+'">'+(counts[d.key]||0)+'</div><div class="pipeline-name">'+d.n+'</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>').join('')+'<div style="grid-column:1/-1;font-size:11px;color:var(--text-dim)">'+allocated+' of '+metricContacts().length+' contacts allocated to a stage</div>';
   const panel=document.getElementById('pipelineContactPanel');
   if(pipelineOpenKey&&panel&&panel.style.display==='block')openPipelineStage(pipelineOpenKey,pipelineOpenName,true);
 }
@@ -1617,11 +1759,12 @@ function openWhatsApp(number,idx){
   const contact=followupAllContacts[idx];
   if(contact){
     waSentThisSession.add(contact.Business);markNewActioned(contact.Business);
-    fetch(API_URL+'?action=logOutreach&business='+encodeURIComponent(contact.Business)+'&number='+encodeURIComponent(number)+'&messageType='+encodeURIComponent('WhatsApp Message')+'&waLabel='+encodeURIComponent(contact.WA_Label||'')+'&notes='+encodeURIComponent('Sent via WhatsApp button')+'&t='+Date.now()).catch(()=>{});
+    fetch(API_URL+'?action=logOutreach&business='+encodeURIComponent(contact.Business)+'&number='+encodeURIComponent(number)+'&messageType='+encodeURIComponent('WhatsApp Message')+'&waLabel='+encodeURIComponent(contact.WA_Label||'')+'&notes='+encodeURIComponent('Sent via WhatsApp button')+'&message='+encodeURIComponent((text||'').substring(0,1000))+'&t='+Date.now()).catch(()=>{});
+    recordSentLocal(contact.Business,text,'WhatsApp Message');
     trackerData.todayOutreachCount=(trackerData.todayOutreachCount||0)+1;
     trackerData.totalOutreachCount=(trackerData.totalOutreachCount||0)+1;
     const ds=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-    trackerData.outreachLog=[{timestamp:new Date().toString(),date:ds,business:contact.Business,number,type:'WhatsApp Message'},...(trackerData.outreachLog||[])];
+    trackerData.outreachLog=[{timestamp:new Date().toString(),date:ds,business:contact.Business,number,type:'WhatsApp Message',by:MY_NAME()},...(trackerData.outreachLog||[])];
     state.messageCounts[contact.Business]=(state.messageCounts[contact.Business]||0)+1;
     state.todayOutreach=(state.todayOutreach||0)+1;
     showToast('WhatsApp opened — logged as sent');
@@ -1819,6 +1962,8 @@ function activateTab(name){
   if(name==='contacts')renderAllContacts();
   if(name==='messages')renderMsgLibrary();
   if(name==='koforidua')renderKoforidua();
+  if(name==='kumasi')renderKumasi();
+  if(name==='accra')renderAccra();
   if(name==='revenue')renderRevenue();
   if(name==='analytics'){loadTrackerData().then(renderAnalytics);}
   if(name==='pipeline')renderPipeline();
@@ -1874,7 +2019,7 @@ async function loadData(){
     const dbg=document.getElementById('dataDebug');
     const clRaw=raw.clients||[];const acRaw=clRaw.filter(c=>(c.Status||'').trim().toLowerCase()==='active');
     const smeRaw=raw.smeMembers||[];const smeAct=smeRaw.filter(m=>(m.Status||'').toLowerCase()==='active');
-    dbg.innerHTML='DATA: CRM='+(raw.crmCount||0)+' Kof='+(raw.kofCount||0)+' Clients='+clRaw.length+' (Active='+acRaw.length+') SME='+smeAct.length+' | VisMRR=GHS'+acRaw.reduce((s,c)=>s+(parseFloat(c.Amount)||0),0)+' SmeMRR=GHS'+smeAct.reduce((s,m)=>s+(parseFloat(m.Amount)||0),0)+' | Errors: '+(raw.clientError||raw.smeError||'none');
+    dbg.innerHTML='DATA: CRM='+(raw.crmCount||0)+' Kof='+(raw.kofCount||0)+' Kum='+(raw.kumCount||0)+' Acc='+(raw.accCount||0)+' Clients='+clRaw.length+' (Active='+acRaw.length+') SME='+smeAct.length+' | VisMRR=GHS'+acRaw.reduce((s,c)=>s+(parseFloat(c.Amount)||0),0)+' SmeMRR=GHS'+smeAct.reduce((s,m)=>s+(parseFloat(m.Amount)||0),0)+' | Errors: '+(raw.clientError||raw.smeError||'none');
     dbg.style.display='block';setTimeout(()=>{if(dbg)dbg.style.display='none';},12000);
     if(raw.allContacts&&Array.isArray(raw.allContacts))state.contacts=raw.allContacts.filter(r=>r.Business);
     else if(raw.masterCRM&&Array.isArray(raw.masterCRM))state.contacts=raw.masterCRM.filter(r=>r.ID&&r.Business);
@@ -1883,10 +2028,14 @@ async function loadData(){
     if(raw.renewals&&Array.isArray(raw.renewals))state.renewals=raw.renewals;
     if(raw.outreachLog&&Array.isArray(raw.outreachLog))state.outreach=raw.outreachLog;
     if(raw.koforidua&&Array.isArray(raw.koforidua))state.koforidua=raw.koforidua;
+    if(raw.kumasi&&Array.isArray(raw.kumasi))state.kumasi=raw.kumasi;
+    if(raw.accra&&Array.isArray(raw.accra))state.accra=raw.accra;
     if(raw.smeMembers&&Array.isArray(raw.smeMembers))state.smeMembers=raw.smeMembers;
     if(raw.messageCounts)state.messageCounts=raw.messageCounts;
     state.crmCount=raw.crmCount||(state.crmContacts||[]).length;
     state.kofCount=raw.kofCount||(state.koforidua||[]).length;
+    state.kumCount=raw.kumCount||(state.kumasi||[]).length;
+    state.accCount=raw.accCount||(state.accra||[]).length;
     state.totalCount=raw.totalContacts||state.contacts.length;
     state.todayOutreach=raw.todayOutreachCount||0;
     // v28.0: append the live Apps Script deployment version (from
@@ -1937,16 +2086,16 @@ async function loadData(){
 
 function renderToday(){
   checkShabbat();
-  const total=state.contacts.filter(c=>c.Business).length;
+  const mc=metricContacts();const total=mc.filter(c=>c.Business).length;const cnt=sh=>mc.filter(c=>(c.Sheet_Source||'Master CRM')===sh).length;
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
   const smeActive=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length;
   const mrr=getMRR(),visMRR=getVisMRR(),smeMRR=getSmeMRR(),oneTime=getOneTimeRevenue();
-  const hot=countByLabel('🔵'),conv=countByLabel('🟢');
+  const hot=countByLabelM('🔵'),conv=countByLabelM('🟢');
   const overdue=getOverdueClientRenewals().length;
   const todayOut=state.todayOutreach||0;
   document.getElementById('topMetrics').innerHTML=`
     <div class="metric-card gold clickable" data-financial onclick="activateTab('revenue')"><div class="metric-label">TOTAL MRR</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
-    <div class="metric-card green clickable" onclick="activateTab('contacts')"><div class="metric-label">TOTAL CONTACTS</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM:${state.crmCount||0}</span><span style="color:var(--teal)">Kof:${state.kofCount||0}</span></div></div>
+    <div class="metric-card green clickable" onclick="activateTab('contacts')"><div class="metric-label">${IS_BTO()?'MY CONTACTS':'TOTAL CONTACTS'}</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM:${cnt('Master CRM')}</span><span style="color:var(--teal)">Kof:${cnt('Koforidua Master')}</span><span style="color:var(--teal)">Kum:${cnt('Kumasi Master')}</span><span style="color:var(--teal)">Acc:${cnt('Accra Master')}</span></div></div>
     <div class="metric-card orange clickable" onclick="goFollowupFilter('🔵',true)"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
     <div class="metric-card blue clickable" onclick="goFollowupFilter('🟢',true)"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
     <div class="metric-card teal clickable" onclick="activateTab('sme')"><div class="metric-label">SME MEMBERS</div><div class="metric-value">${smeActive}</div><div class="metric-sub">${(state.smeMembers||[]).length} total · GHS ${smeMRR}/mo</div></div>
@@ -1977,7 +2126,7 @@ function renderToday(){
     </div></div>`;
     document.getElementById('waBoard').innerHTML=`<div class="empty" style="grid-column:1/-1">WA Board resumes Sunday — rest day</div>`;
     document.getElementById('callList').innerHTML='<div class="empty">No call targets on Shabbat</div>';
-    document.getElementById('kofVisitList').innerHTML='<div class="empty">No visits on Shabbat</div>';
+    ['kof','kum','acc'].forEach(p=>{const el=document.getElementById(p+'VisitList');if(el)el.innerHTML='<div class="empty">No visits on Shabbat</div>';});
     return;
   }
   document.getElementById('todayActions').innerHTML=`<div class="card">
@@ -1989,11 +2138,15 @@ function renderToday(){
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Post on TikTok today — content builds trust before close</div><div class="action-tag tag-content">CONTENT</div></div>
     <div class="action-item"><div class="action-check" onclick="toggleCheck(this)"></div><div class="action-text">Update CRM after every conversation</div><div class="action-tag tag-client">CRM</div></div>
   </div>`;
-  const labels=[{e:'🔴',l:'1 Tick — call only'},{e:'🟡',l:'2 Tick unread'},{e:'🟠',l:'Read no reply'},{e:'🟢',l:'Conversation'},{e:'🔵',l:'Hot lead'},{e:'✅',l:'Client'},{e:'⬛',l:'Rejected'},{e:'🔄',l:'Re-engage'},{e:'📍',l:'Koforidua physical'},{e:'⬜',l:'Non-business'},{e:'❔',l:'No label set'}];
-  document.getElementById('waBoard').innerHTML=labels.map(l=>`<div class="wa-item" onclick="goToWA('${l.e}')" title="Tap to open"><div class="wa-emoji">${l.e}</div><div><div class="wa-count" style="color:${l.e==='❔'?'#999':getColorForLabel(l.e)}">${l.e==='❔'?countUnlabeled():countByLabel(l.e)}</div><div class="wa-label">${l.l}</div></div></div>`).join('');
+  const labels=[{e:'🔴',l:'1 Tick — call only'},{e:'🟡',l:'2 Tick unread'},{e:'🟠',l:'Read no reply'},{e:'🟢',l:'Conversation'},{e:'🔵',l:'Hot lead'},{e:'✅',l:'Client'},{e:'⬛',l:'Rejected'},{e:'🔄',l:'Re-engage'},{e:'📍',l:'Physical visit (all cities)'},{e:'⬜',l:'Non-business'},{e:'❔',l:'No label set'}];
+  document.getElementById('waBoard').innerHTML=labels.map(l=>`<div class="wa-item" onclick="goToWA('${l.e}')" title="Tap to open"><div class="wa-emoji">${l.e}</div><div><div class="wa-count" style="color:${l.e==='❔'?'#999':getColorForLabel(l.e)}">${l.e==='❔'?countUnlabeledM():countByLabelM(l.e)}</div><div class="wa-label">${l.l}</div></div></div>`).join('');
   document.getElementById('callList').innerHTML=callC.length?callC.slice(0,6).map(c=>`<div class="call-item" style="cursor:pointer" onclick="activateTab('calls')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No 1-tick contacts right now</div>';
   const kofPri=(state.koforidua||[]).filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('active')||c.Stage.toLowerCase().includes('warm')));
   document.getElementById('kofVisitList').innerHTML=kofPri.length?kofPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal);cursor:pointer" onclick="activateTab('koforidua')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Koforidua'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
+  const kumPri=(state.kumasi||[]).filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('active')||c.Stage.toLowerCase().includes('warm')));
+  document.getElementById('kumVisitList').innerHTML=kumPri.length?kumPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal);cursor:pointer" onclick="activateTab('kumasi')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Kumasi'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
+  const accPri=(state.accra||[]).filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('active')||c.Stage.toLowerCase().includes('warm')));
+  document.getElementById('accVisitList').innerHTML=accPri.length?accPri.slice(0,5).map(c=>`<div class="call-item" style="border-left-color:var(--teal);cursor:pointer" onclick="activateTab('accra')"><div class="call-item-row"><div><div class="call-name">${c.Business}</div><div class="call-sub">&#128205; ${c.Area||'Accra'} · ${c.Sells||c.Category||'—'} · <span class="stage-badge ${getBucketBadge(c.Stage)}">${c.Stage}</span></div></div><div class="call-number">${c.Number}</div></div></div>`).join(''):'<div class="empty">No B1/B2 priority visits today</div>';
 }
 
 // v29.0: picking any specific WA-label filter (not just Monthly/Quarterly)
@@ -2148,7 +2301,7 @@ function renderFollowUps(){
     const isFirstTouch=msgCount===0&&(!c.Stage||stageLower.includes('first message')||stageLower===''||stageLower==='new'||stageLower==='lead');
     // v21.0: pass currentMsgVersion through so contextual messages vary by
     // version too, not just the generic templates.
-    const contextualMsg=buildContextualFollowup(c,msgCount,currentMsgVersion);
+    const contextualMsg=buildContextualFollowup(c,msgCount,currentMsgVersion)||(msgCount>=1?buildNoOfferFollowup(c,msgCount,currentMsgVersion):null);
     const tmpl=contextualMsg?null:(isFirstTouch?(OPENER_VERSIONS[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||''));
     const msg=contextualMsg||tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
     const fd=parseFollowUpDate(c.Next_Follow_Up);
@@ -2177,8 +2330,8 @@ function renderFollowUps(){
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_');
     return `<div class="followup-item" style="${daysOv>0?'border-color:#2a1500;border-left:3px solid var(--red)':''}">
       <div class="followup-header"><div style="flex:1">
-        <div class="followup-name"><span id="bizname-${bizSafe}"><span style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}</span> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button>${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag}${newTag}</span></div>
-        <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgCount}</div>
+        <div class="followup-name"><span id="bizname-${bizSafe}"><span style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}</span> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button>${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag}${newTag}${byChipHtml(c)}</span></div>
+        <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgLinkHtml(c.Business,msgCount)}</div>
         <textarea
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
           oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')"
@@ -2350,7 +2503,7 @@ async function updateContactField(business, field, value, el, sheetSource) {
 // contact's starting label can be set explicitly instead of always landing
 // on the same generic default.
 function toggleAddContactAreaField(){
-  const isKof=document.getElementById('addContactSheetSource').value==='Koforidua Master';
+  const isKof=!!cityBySheet(document.getElementById('addContactSheetSource').value);
   document.getElementById('addContactArea').style.display=isKof?'block':'none';
 }
 function normalizePhoneClient(raw){
@@ -2388,10 +2541,10 @@ async function submitManualContact(){
     if(data.success){
       const nowDs=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
       const todayDdMmYyyy=(function(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();})();
-      const isKof=sheetSource==='Koforidua Master';
-      const finalWaLabel=data.waLabel||(isKof?'📍 Koforidua PhysicalFace-to-face only, no WhatsApp reach':'🟡 2 Tick No Read Delivered, unread follow up in 3 days');
-      state.contacts.push({ID:data.id,WA_Label:finalWaLabel,Business:business,Number:number,Town:isKof?(area||town):town,Area:area||town,Category:category,Contact_Name:contactName,Source:source,Stage:stage,Offer:offer,Last_Contact:todayDdMmYyyy,Next_Follow_Up:'',Notes:notes,Extra_Notes:'',Created_Date:todayDdMmYyyy,Sheet_Source:isKof?'Koforidua Master':'Master CRM'});
-      if(isKof)state.koforidua.push(state.contacts[state.contacts.length-1]);
+      const cityObj=cityBySheet(sheetSource);const isKof=!!cityObj;
+      const finalWaLabel=data.waLabel||(isKof?'📍 '+cityObj.name+' PhysicalFace-to-face only, no WhatsApp reach':'🟡 2 Tick No Read Delivered, unread follow up in 3 days');
+      state.contacts.push({ID:data.id,WA_Label:finalWaLabel,Business:business,Number:number,Town:isKof?(area||town):town,Area:area||town,Category:category,Contact_Name:contactName,Source:source,Stage:stage,Offer:offer,Last_Contact:todayDdMmYyyy,Next_Follow_Up:'',Notes:notes,Extra_Notes:'',Created_Date:todayDdMmYyyy,Sheet_Source:isKof?sheetSource:'Master CRM',Added_By:MY_NAME()});
+      if(isKof)state[cityObj.key].push(state.contacts[state.contacts.length-1]);
       if(!isKof){
         state.todayOutreach=(state.todayOutreach||0)+1;
         trackerData.todayOutreachCount=(trackerData.todayOutreachCount||0)+1;
@@ -2609,11 +2762,11 @@ function renderPipeline(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-p'+pIdx;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}${byChipHtml(c)}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgLinkHtml(c.Business,msgCount)}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
 function openPipelineStage(key,name,noScroll){
-  pipelineOpenKey=key;pipelineOpenName=name;const matches=state.contacts.filter(c=>normStageKey(c.Stage)===key);
+  pipelineOpenKey=key;pipelineOpenName=name;const matches=metricContacts().filter(c=>normStageKey(c.Stage)===key);
   document.getElementById('pipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
   document.getElementById('pipelineContactBody').innerHTML=matches.length?matches.map(c=>{
     const sb=escJs(c.Business);
@@ -2624,7 +2777,7 @@ function openPipelineStage(key,name,noScroll){
     // also re-filters this panel immediately (the row drops out once it
     // no longer matches "${name}"), which is the "click it and it filters"
     // behavior that was asked for.
-    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${state.messageCounts[c.Business]||0}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Town||'—'} · ${c.Category||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number}</td><td style="font-size:11px">${c.Category||'—'}</td><td><select data-orig="${c.Stage||''}" onchange="changePipelineStageAndRefilter('${sb}',this.value,this,'${src}','${escJs(key)}','${escJs(name)}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:130px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal)">${msgLinkHtml(c.Business,state.messageCounts[c.Business]||0)}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join(''):'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
   document.getElementById('pipelineContactPanel').style.display='block';
   if(!noScroll)document.getElementById('pipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2849,7 +3002,7 @@ async function logCallTap(){
 }
 
 function renderKoforidua(){
-  const kof=state.koforidua||[];
+  const kofAll=state.koforidua||[];const kof=scopeMine(kofAll);
   const active=kof.filter(c=>(c.WA_Label||'').includes('✅')||(c.Stage||'').toLowerCase()==='client').length;
   const conv=kof.filter(c=>(c.Stage||'').toLowerCase()==='conversation').length;
   const hot=kof.filter(c=>(c.WA_Label||'').includes('🔵')).length;
@@ -2879,13 +3032,13 @@ function renderKoforidua(){
   }).join('');
 
   const areaSet=new Set(['ALL','★ B1+B2 PRIORITY']);
-  kof.forEach(c=>{if(c.Area&&c.Area.trim())areaSet.add(c.Area.trim());});
+  kofAll.forEach(c=>{if(c.Area&&c.Area.trim())areaSet.add(c.Area.trim());});
   document.getElementById('kofAreas').innerHTML=Array.from(areaSet).slice(0,14).map(a=>`<div class="kof-tag ${a===currentKofArea?'active':''}" onclick="setKofArea('${a.replace(/'/g,"\\'").replace(/★/g,'★')}',this)">${a}</div>`).join('');
   renderKofList();
 }
 
 function openKofPipelineStage(key,name){
-  const kof=state.koforidua||[];
+  const kof=scopeMine(state.koforidua||[]);
   const matches=kof.filter(c=>normStageKey(c.Stage)===key);
   document.getElementById('kofPipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
   document.getElementById('kofPipelineContactBody').innerHTML=matches.length?matches.map(c=>{
@@ -2911,7 +3064,7 @@ function renderKofList(){
     const bizSafe=(c.Business||'').replace(/[^a-zA-Z0-9]/g,'_')+'-kof'+i;
     return `<div class="followup-item" style="${(c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active')))?'border-left:3px solid var(--green)':c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))?'border-left:3px solid var(--orange)':''}">
     <div class="followup-header"><div style="flex:1">
-      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Koforidua Master','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','Koforidua Master')">&#127942;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
+      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong>${byChipHtml(c)} <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Koforidua Master','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','Koforidua Master')">&#127942;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
         <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">NUMBER</span><input type="text" data-orig="${c.Number||''}" value="${c.Number||''}" onchange="updateContactField('${sb}','Number',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Space Mono',monospace;width:120px"></div>
         <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">AREA / VISITING PLACE</span><input type="text" data-orig="${c.Area||''}" value="${c.Area||''}" onchange="updateContactField('${sb}','Town',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
@@ -2930,6 +3083,182 @@ function renderKofList(){
       <select data-orig="${c.Stage||''}" onchange="updateContactField('${sb}','Stage',this.value,this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select>
       <select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Koforidua Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:12px;cursor:pointer;max-width:150px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select>
       <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font-size:9px;color:var(--muted);font-weight:700">NEXT FOLLOW-UP</span><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Koforidua Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none"></div>
+    </div>
+    </div>
+  </div>`;
+  }).join('');
+}
+
+// v30.0: Kumasi (same layout as Koforidua)
+function renderKumasi(){
+  const kumAll=state.kumasi||[];const kum=scopeMine(kumAll);
+  const active=kum.filter(c=>(c.WA_Label||'').includes('✅')||(c.Stage||'').toLowerCase()==='client').length;
+  const conv=kum.filter(c=>(c.Stage||'').toLowerCase()==='conversation').length;
+  const hot=kum.filter(c=>(c.WA_Label||'').includes('🔵')).length;
+  document.getElementById('kumMetrics').innerHTML=`
+    <div class="metric-card teal"><div class="metric-label">TOTAL KUMASI</div><div class="metric-value">${kum.length}</div><div class="metric-sub">Kumasi Master</div></div>
+    <div class="metric-card blue"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
+    <div class="metric-card green"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
+    <div class="metric-card gold"><div class="metric-label">CLIENTS</div><div class="metric-value">${active}</div><div class="metric-sub">converted</div></div>`;
+
+  const kumStages=[
+    {n:'First Message',key:'first message sent',color:'var(--muted)'},
+    {n:'Follow Up',key:'follow up',color:'var(--text-dim)'},
+    {n:'Conversation',key:'conversation',color:'var(--teal)'},
+    {n:'Interested',key:'interested',color:'var(--orange)'},
+    {n:'Proposal Sent',key:'proposal sent',color:'var(--gold)'},
+    {n:'Listed Business',key:'listed business',color:'var(--green)'},
+    {n:'Verified',key:'verified',color:'var(--blue)'},
+    {n:'Client',key:'client',color:'#22c55e'},
+    {n:'Retainer',key:'retainer',color:'var(--purple)'},
+    {n:'Phone Call Need',key:'phone call need',color:'var(--red)'},
+    {n:'Inactive',key:'inactive',color:'#666'},{n:'Lost',key:'lost',color:'var(--red)'},{n:'Monthly',key:'monthly',color:'var(--purple)'},{n:'Quarterly',key:'quarterly',color:'#6366f1'},{n:'Other / no stage',key:'other',color:'var(--text-dim)'},
+    {n:'Not Interested',key:'not interested',color:'var(--red)'}
+  ];
+  document.getElementById('kumPipelineGrid').innerHTML=kumStages.map(s=>{
+    const count=kum.filter(c=>normStageKey(c.Stage)===s.key).length;
+    return `<div class="pipeline-stage" onclick="openKumPipelineStage('${s.key}','${s.n}')"><div class="pipeline-count" style="color:${s.color}">${count}</div><div class="pipeline-name">${s.n}</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>`;
+  }).join('');
+
+  const areaSet=new Set(['ALL','★ B1+B2 PRIORITY']);
+  kumAll.forEach(c=>{if(c.Area&&c.Area.trim())areaSet.add(c.Area.trim());});
+  document.getElementById('kumAreas').innerHTML=Array.from(areaSet).slice(0,14).map(a=>`<div class="kof-tag ${a===currentKumArea?'active':''}" onclick="setKumArea('${a.replace(/'/g,"\\'").replace(/★/g,'★')}',this)">${a}</div>`).join('');
+  renderKumList();
+}
+
+function openKumPipelineStage(key,name){
+  const kum=scopeMine(state.kumasi||[]);
+  const matches=kum.filter(c=>normStageKey(c.Stage)===key);
+  document.getElementById('kumPipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
+  document.getElementById('kumPipelineContactBody').innerHTML=matches.length?matches.map(c=>{
+    const sb=escJs(c.Business||'');
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Kumasi Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Kumasi Master')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Kumasi Master')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+  }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
+  document.getElementById('kumPipelineContactPanel').style.display='block';
+  document.getElementById('kumPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeKumPipelinePanel(){document.getElementById('kumPipelineContactPanel').style.display='none';}
+function setKumArea(area,el){currentKumArea=area;document.querySelectorAll('.kof-tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderKumList();}
+function renderKumList(){
+  const kum=state.kumasi||[];
+  let f;
+  if(currentKumArea==='ALL')f=kum;
+  else if(currentKumArea==='★ B1+B2 PRIORITY')f=kum.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('active')||c.Stage.toLowerCase().includes('warm')));
+  else f=kum.filter(c=>c.Area&&c.Area.trim()===currentKumArea);
+  f=[...f].sort((a,b)=>{const score=c=>{const s=(c.Stage||'').toLowerCase();if(s.includes('b1')||s.includes('active'))return 0;if(s.includes('b2')||s.includes('warm'))return 1;return 2;};return score(a)-score(b);});
+  if(!f.length){document.getElementById('kumList').innerHTML='<div class="empty">No contacts for this area</div>';return;}
+  document.getElementById('kumList').innerHTML=f.map((c,i)=>{
+    const sb=escJs(c.Business||'');
+    const bizSafe=(c.Business||'').replace(/[^a-zA-Z0-9]/g,'_')+'-kum'+i;
+    return `<div class="followup-item" style="${(c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active')))?'border-left:3px solid var(--green)':c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))?'border-left:3px solid var(--orange)':''}">
+    <div class="followup-header"><div style="flex:1">
+      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong>${byChipHtml(c)} <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Kumasi Master','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','Kumasi Master')">&#127942;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">NUMBER</span><input type="text" data-orig="${c.Number||''}" value="${c.Number||''}" onchange="updateContactField('${sb}','Number',this.value,this,'Kumasi Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Space Mono',monospace;width:120px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">AREA / VISITING PLACE</span><input type="text" data-orig="${c.Area||''}" value="${c.Area||''}" onchange="updateContactField('${sb}','Town',this.value,this,'Kumasi Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">SELLS / CATEGORY</span><input type="text" data-orig="${c.Sells||c.Category||''}" value="${c.Sells||c.Category||''}" onchange="updateContactField('${sb}','Category',this.value,this,'Kumasi Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
+        <div style="align-self:flex-end">${callLinkHtml(c.Number)}</div>
+      </div>
+      <textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Kumasi Master')" placeholder="No notes — tap to add" style="width:100%;min-height:40px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-family:Syne,sans-serif;font-size:11px;margin-top:8px;padding:7px;border-radius:5px;resize:vertical;outline:none" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">
+        <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;max-width:160px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
+        <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:'Space Mono',monospace;width:120px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
+        <button class="copy-btn" onclick="logAllContactsAction('${sb}','Kumasi Master','${bizSafe}')">LOG VISIT</button>
+        <span style="font-size:10px;color:var(--text-dim)">Last: ${cleanDate(c.Last_Contact)}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <select data-orig="${c.Stage||''}" onchange="updateContactField('${sb}','Stage',this.value,this,'Kumasi Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select>
+      <select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Kumasi Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:12px;cursor:pointer;max-width:150px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select>
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font-size:9px;color:var(--muted);font-weight:700">NEXT FOLLOW-UP</span><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Kumasi Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none"></div>
+    </div>
+    </div>
+  </div>`;
+  }).join('');
+}
+
+// v30.0: Accra (same layout as Koforidua)
+function renderAccra(){
+  const accAll=state.accra||[];const acc=scopeMine(accAll);
+  const active=acc.filter(c=>(c.WA_Label||'').includes('✅')||(c.Stage||'').toLowerCase()==='client').length;
+  const conv=acc.filter(c=>(c.Stage||'').toLowerCase()==='conversation').length;
+  const hot=acc.filter(c=>(c.WA_Label||'').includes('🔵')).length;
+  document.getElementById('accMetrics').innerHTML=`
+    <div class="metric-card teal"><div class="metric-label">TOTAL ACCRA</div><div class="metric-value">${acc.length}</div><div class="metric-sub">Accra Master</div></div>
+    <div class="metric-card blue"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
+    <div class="metric-card green"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
+    <div class="metric-card gold"><div class="metric-label">CLIENTS</div><div class="metric-value">${active}</div><div class="metric-sub">converted</div></div>`;
+
+  const accStages=[
+    {n:'First Message',key:'first message sent',color:'var(--muted)'},
+    {n:'Follow Up',key:'follow up',color:'var(--text-dim)'},
+    {n:'Conversation',key:'conversation',color:'var(--teal)'},
+    {n:'Interested',key:'interested',color:'var(--orange)'},
+    {n:'Proposal Sent',key:'proposal sent',color:'var(--gold)'},
+    {n:'Listed Business',key:'listed business',color:'var(--green)'},
+    {n:'Verified',key:'verified',color:'var(--blue)'},
+    {n:'Client',key:'client',color:'#22c55e'},
+    {n:'Retainer',key:'retainer',color:'var(--purple)'},
+    {n:'Phone Call Need',key:'phone call need',color:'var(--red)'},
+    {n:'Inactive',key:'inactive',color:'#666'},{n:'Lost',key:'lost',color:'var(--red)'},{n:'Monthly',key:'monthly',color:'var(--purple)'},{n:'Quarterly',key:'quarterly',color:'#6366f1'},{n:'Other / no stage',key:'other',color:'var(--text-dim)'},
+    {n:'Not Interested',key:'not interested',color:'var(--red)'}
+  ];
+  document.getElementById('accPipelineGrid').innerHTML=accStages.map(s=>{
+    const count=acc.filter(c=>normStageKey(c.Stage)===s.key).length;
+    return `<div class="pipeline-stage" onclick="openAccPipelineStage('${s.key}','${s.n}')"><div class="pipeline-count" style="color:${s.color}">${count}</div><div class="pipeline-name">${s.n}</div><div style="font-size:9px;color:var(--muted);margin-top:4px">click to view</div></div>`;
+  }).join('');
+
+  const areaSet=new Set(['ALL','★ B1+B2 PRIORITY']);
+  accAll.forEach(c=>{if(c.Area&&c.Area.trim())areaSet.add(c.Area.trim());});
+  document.getElementById('accAreas').innerHTML=Array.from(areaSet).slice(0,14).map(a=>`<div class="kof-tag ${a===currentAccArea?'active':''}" onclick="setAccArea('${a.replace(/'/g,"\\'").replace(/★/g,'★')}',this)">${a}</div>`).join('');
+  renderAccList();
+}
+
+function openAccPipelineStage(key,name){
+  const acc=scopeMine(state.accra||[]);
+  const matches=acc.filter(c=>normStageKey(c.Stage)===key);
+  document.getElementById('accPipelineContactTitle').textContent=name+' ('+matches.length+' contacts)';
+  document.getElementById('accPipelineContactBody').innerHTML=matches.length?matches.map(c=>{
+    const sb=escJs(c.Business||'');
+    return `<tr><td><strong>${c.Business}</strong><br><span style="font-size:10px;color:var(--text-dim)">${c.Category||c.Sells||'—'}</span></td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)">${c.Number||'—'}</td><td style="font-size:11px">${c.Area||'—'}</td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Accra Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Accra Master')" style="background:var(--surface);border:1px solid ${isOverdue(c.Next_Follow_Up)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Accra Master')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+  }).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No contacts in this stage</td></tr>';
+  document.getElementById('accPipelineContactPanel').style.display='block';
+  document.getElementById('accPipelineContactPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeAccPipelinePanel(){document.getElementById('accPipelineContactPanel').style.display='none';}
+function setAccArea(area,el){currentAccArea=area;document.querySelectorAll('.kof-tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderAccList();}
+function renderAccList(){
+  const acc=state.accra||[];
+  let f;
+  if(currentAccArea==='ALL')f=acc;
+  else if(currentAccArea==='★ B1+B2 PRIORITY')f=acc.filter(c=>c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('active')||c.Stage.toLowerCase().includes('warm')));
+  else f=acc.filter(c=>c.Area&&c.Area.trim()===currentAccArea);
+  f=[...f].sort((a,b)=>{const score=c=>{const s=(c.Stage||'').toLowerCase();if(s.includes('b1')||s.includes('active'))return 0;if(s.includes('b2')||s.includes('warm'))return 1;return 2;};return score(a)-score(b);});
+  if(!f.length){document.getElementById('accList').innerHTML='<div class="empty">No contacts for this area</div>';return;}
+  document.getElementById('accList').innerHTML=f.map((c,i)=>{
+    const sb=escJs(c.Business||'');
+    const bizSafe=(c.Business||'').replace(/[^a-zA-Z0-9]/g,'_')+'-acc'+i;
+    return `<div class="followup-item" style="${(c.Stage&&(c.Stage.toLowerCase().includes('b1')||c.Stage.toLowerCase().includes('active')))?'border-left:3px solid var(--green)':c.Stage&&(c.Stage.toLowerCase().includes('b2')||c.Stage.toLowerCase().includes('warm'))?'border-left:3px solid var(--orange)':''}">
+    <div class="followup-header"><div style="flex:1">
+      <div class="followup-name"><span id="bizname-${bizSafe}"><strong>${i+1}. ${c.Business||c.Name||'—'}</strong>${byChipHtml(c)} <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','Accra Master','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','Accra Master')">&#127942;</button></span> ${i<3?'<span style="font-size:10px;color:var(--gold)">★ VISIT TODAY</span>':''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">NUMBER</span><input type="text" data-orig="${c.Number||''}" value="${c.Number||''}" onchange="updateContactField('${sb}','Number',this.value,this,'Accra Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Space Mono',monospace;width:120px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">AREA / VISITING PLACE</span><input type="text" data-orig="${c.Area||''}" value="${c.Area||''}" onchange="updateContactField('${sb}','Town',this.value,this,'Accra Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:9px;color:var(--muted);font-weight:700">SELLS / CATEGORY</span><input type="text" data-orig="${c.Sells||c.Category||''}" value="${c.Sells||c.Category||''}" onchange="updateContactField('${sb}','Category',this.value,this,'Accra Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;width:140px"></div>
+        <div style="align-self:flex-end">${callLinkHtml(c.Number)}</div>
+      </div>
+      <textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'Accra Master')" placeholder="No notes — tap to add" style="width:100%;min-height:40px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-family:Syne,sans-serif;font-size:11px;margin-top:8px;padding:7px;border-radius:5px;resize:vertical;outline:none" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">
+        <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;max-width:160px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
+        <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:10px;font-family:'Space Mono',monospace;width:120px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
+        <button class="copy-btn" onclick="logAllContactsAction('${sb}','Accra Master','${bizSafe}')">LOG VISIT</button>
+        <span style="font-size:10px;color:var(--text-dim)">Last: ${cleanDate(c.Last_Contact)}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <select data-orig="${c.Stage||''}" onchange="updateContactField('${sb}','Stage',this.value,this,'Accra Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select>
+      <select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'Accra Master'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:12px;cursor:pointer;max-width:150px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'')}</select>
+      <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font-size:9px;color:var(--muted);font-weight:700">NEXT FOLLOW-UP</span><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'Accra Master')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none"></div>
     </div>
     </div>
   </div>`;
@@ -3048,6 +3377,8 @@ async function submitConvertToClient(){
         if(document.getElementById('tab-clients').classList.contains('active'))renderClients();
         if(document.getElementById('tab-contacts').classList.contains('active'))renderAllContacts();
         if(document.getElementById('tab-koforidua').classList.contains('active'))renderKoforidua();
+        if(document.getElementById('tab-kumasi').classList.contains('active'))renderKumasi();
+        if(document.getElementById('tab-accra').classList.contains('active'))renderAccra();
       },1200);
     }else{
       result.innerHTML='<span style="color:var(--red)">'+(data.error||'Could not convert.')+'</span>';
@@ -3804,7 +4135,7 @@ function filterContacts(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td><div class="clip" title="${(c.Town||'').replace(/"/g,'&quot;')}">${c.Town||'—'}</div></td><td><div class="clip" title="${(c.Category||'').replace(/"/g,'&quot;')}">${c.Category||'—'}</div></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgCount}</td><td style="min-width:170px">
+    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}${byChipHtml(c)}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td><div class="clip" title="${(c.Town||'').replace(/"/g,'&quot;')}">${c.Town||'—'}</div></td><td><div class="clip" title="${(c.Category||'').replace(/"/g,'&quot;')}">${c.Category||'—'}</div></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgLinkHtml(c.Business,msgCount)}</td><td style="min-width:170px">
       <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
       <div style="display:flex;gap:4px;align-items:center">
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
@@ -4021,10 +4352,12 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx,t
   // Maps listing, no follow-up system) instead of a generic pitch.
   const auditMatch=fullNotes.match(/\[AUDIT SCAN[^\]]*\][^\n]*/i);
   const auditLine=auditMatch?auditMatch[0]:'No audit on file for this business — do not reference audit results.';
-  const context=`Business: ${business}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nAUDIT RESULT (use this if present — this is the real, specific leak to reference instead of a generic pitch):\n${auditLine}\nFull notes: ${fullNotes.substring(0,1500)||'No notes'}\nRecent history:\n${history}`;
+  let sentBefore='';
+  try{const rr=await fetch(API_URL+'?action=getContactMessages&business='+encodeURIComponent(business)+'&t='+Date.now());const dd=await rr.json();if(dd&&dd.success){sentBefore=(dd.messages||[]).filter(x=>x.message).slice(0,4).map((x,i)=>'#'+(i+1)+' ('+(x.date||'')+'): '+x.message.substring(0,300)).join('\n---\n');}}catch(e){}
+  const context=`Business: ${business}\nMESSAGES ALREADY SENT TO THEM (newest first — do NOT repeat or re-offer anything in these):\n${sentBefore||(msgCount>0?'(text not saved, but '+msgCount+' message(s) were already sent)':'None yet')}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nAUDIT RESULT (use this if present — this is the real, specific leak to reference instead of a generic pitch):\n${auditLine}\nFull notes: ${fullNotes.substring(0,1500)||'No notes'}\nRecent history:\n${history}`;
   const sp=`You are writing the exact next WhatsApp message for a BYINFORGH sales contact in Ghana, based ONLY on the real facts given below.
 CRITICAL RULES — violating any of these makes the message unusable:
-- Never invent, assume, or fabricate any event or claim (no "someone searched for you", no "a business near you just went live", no made-up numbers or dates).
+- If any message has already been sent (see MESSAGES ALREADY SENT), do NOT offer, pitch, price or push any package, listing or service again. Check in, ask one honest question, or answer what they said. Only mention an offer if the notes show THEY asked about it.\n- Never invent, assume, or fabricate any event or claim (no "someone searched for you", no "a business near you just went live", no made-up numbers or dates).
 - Never name a location other than the one explicitly given above. If no location is given, do not mention any place at all.
 - If an AUDIT RESULT is given, the message MUST reference the specific gap(s) named there (e.g. no Maps listing, no WhatsApp catalogue, no follow-up system) rather than a generic "get listed" pitch — the audit already told this business exactly what's wrong, so the message should sound like it remembers that, not like a first-touch cold message.
 - Do NOT default to pitching the free listing if the notes/audit show the conversation has already moved past that (e.g. price already discussed, a stage of Interested/Proposal/Hot Lead, or a package already named) — match the actual stage of the relationship.
@@ -4058,6 +4391,7 @@ Keep it 2-4 sentences, warm, specific to the real notes, end with one clear next
 function generatePersonalMsgLocal(business,notes,category,emoji,stage,idx,town){
   const n=(notes||'').toLowerCase(),s=(stage||'').toLowerCase(),name=business.split(' ')[0],cat=category||'business';
   const loc=town?' near you in '+town:' near you';
+  if((state.messageCounts[business]||0)>=1){const cc=state.contacts.find(x=>x.Business===business)||{Business:business};const mb0=document.getElementById('msgbox-'+idx);if(mb0)mb0.textContent=buildNoOfferFollowup(cc,state.messageCounts[business]||1,currentMsgVersion);return;}
   const hasPrize=n.includes('price')||n.includes('ghs')||n.includes('cost');
   const hasBusy=n.includes('busy')||n.includes('later')||n.includes('not now');
   const hasThink=n.includes('think')||n.includes('consider');
@@ -4202,9 +4536,20 @@ function renderOutreachCounter(){
   document.getElementById('outreachTodayCount').textContent=trackerData.todayOutreachCount||0;
   document.getElementById('outreachTotalCount').textContent=trackerData.totalOutreachCount||0;
   const r=trackerData.outreachLog||[];
-  document.getElementById('outreachRecentList').innerHTML=r.slice(0,5).map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:12px"><div style="font-weight:700">${o.business||'—'}</div><div style="color:var(--text-dim);font-size:11px">${o.type||'WhatsApp'} · ${cleanDate(o.date||o.timestamp)}</div></div>`).join('')||'<div class="empty">No outreach logged yet</div>';
+  document.getElementById('outreachRecentList').innerHTML=r.slice(0,5).map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:12px"><div style="font-weight:700">${o.business||'—'}${o.by?byNameChip(o.by):''}</div><div style="color:var(--text-dim);font-size:11px">${o.type||'WhatsApp'} · ${cleanDate(o.date||o.timestamp)}</div></div>`).join('')||'<div class="empty">No outreach logged yet</div>';
+  renderTeamSummary();
 }
 
+function renderTeamSummary(){
+  let box=document.getElementById('teamSummaryBox');
+  const host=document.getElementById('outreachRecentList');
+  if(!host)return;
+  if(!box){box=document.createElement('div');box.id='teamSummaryBox';host.parentNode.insertBefore(box,host.nextSibling);}
+  const t=(trackerData&&trackerData.teamSummary)||{};
+  const names=Object.keys(t);
+  if(IS_BTO()||!names.length){box.innerHTML='';return;}
+  box.innerHTML='<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin:14px 0 6px">WHO DID WHAT (feeds the totals above once each)</div>'+names.sort((a,b)=>(t[b].outreachTotal||0)-(t[a].outreachTotal||0)).map(n=>`<div class="team-row"><div>${n?byNameChip(n):'<span style="font-size:11px;color:var(--muted)">Before names were tracked</span>'}</div><div style="font-size:11px;color:var(--text-dim)">Today <strong>${t[n].outreachToday||0}</strong> · Total <strong>${t[n].outreachTotal||0}</strong> sent · <strong>${t[n].conversions||0}</strong> converted · <strong>${t[n].calls||0}</strong> calls</div></div>`).join('');
+}
 function renderStatusViewers(){
   const v=trackerData.statusViewers||[];const tv=trackerData.topStatusViewers||[];
   const th=tv.length?tv.slice(0,5).map((x,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a"><div style="font-size:12px"><span style="color:var(--gold);font-weight:700;min-width:22px;display:inline-block">#${i+1}</span> ${x.business}</div><div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--blue);font-weight:700">${x.count}x</div></div>`).join(''):'';
@@ -4215,7 +4560,7 @@ function renderStatusViewers(){
 function renderConversions(){
   const c=trackerData.conversions||[];const tr=trackerData.totalConversionRevenue||0;
   document.getElementById('conversionStats').innerHTML=`<div class="metric-card gold"><div class="metric-label">TOTAL CONVERSIONS</div><div class="metric-value">${trackerData.totalConversions||0}</div><div class="metric-sub">all time</div></div><div class="metric-card green"><div class="metric-label">REVENUE LOGGED</div><div class="metric-value" style="font-size:22px">&#8373;${tr.toLocaleString()}</div><div class="metric-sub">from conversions</div></div><div class="metric-card blue"><div class="metric-label">AVG DAYS TO CONVERT</div><div class="metric-value">${trackerData.avgDaysToConvert||'—'}</div><div class="metric-sub">from first contact</div></div>`;
-  document.getElementById('conversionList').innerHTML=c.slice(0,10).map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a"><div><div style="font-size:13px;font-weight:700">&#127881; ${x.business||'—'}</div><div style="font-size:11px;color:var(--text-dim)">${x.offer||'—'} · ${x.daysToConvert?x.daysToConvert+'d to convert':''}</div></div><div style="text-align:right"><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">&#8373;${x.amount||0}</div><div style="font-size:10px;color:var(--text-dim)">${x.date||''}</div></div></div>`).join('')||'<div class="empty">No conversions logged yet</div>';
+  document.getElementById('conversionList').innerHTML=c.slice(0,10).map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a"><div><div style="font-size:13px;font-weight:700">&#127881; ${x.business||'—'}${x.by?byNameChip(x.by):''}</div><div style="font-size:11px;color:var(--text-dim)">${x.offer||'—'} · ${x.daysToConvert?x.daysToConvert+'d to convert':''}</div></div><div style="text-align:right"><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">&#8373;${x.amount||0}</div><div style="font-size:10px;color:var(--text-dim)">${x.date||''}</div></div></div>`).join('')||'<div class="empty">No conversions logged yet</div>';
 }
 
 function filterActivityLog(){activityPage=0;renderActivityLog();}
@@ -4229,7 +4574,7 @@ function renderActivityLog(){
   activityAllItems=f;const total=f.length,tp=Math.ceil(total/ACTIVITY_PAGE_SIZE);
   const start=activityPage*ACTIVITY_PAGE_SIZE,page=f.slice(start,start+ACTIVITY_PAGE_SIZE);
   const ac={stage_change:'var(--gold)',followup_change:'var(--blue)',conversation:'var(--green)',note_added:'var(--text-dim)',proposal_sent:'var(--orange)',rejected:'var(--red)',wa_label_change:'var(--purple)',phone_call:'var(--red)'};
-  document.getElementById('activityRecentList').innerHTML=page.length?page.map(a=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:12px"><div style="color:${ac[a.action]||'var(--text-dim)'};font-weight:700;white-space:nowrap;font-size:10px;min-width:100px">${(a.action||'').replace(/_/g,' ').toUpperCase()}</div><div style="flex:1"><strong>${a.business||'—'}</strong> ${a.notes?'— '+a.notes.substring(0,60):''}</div><div style="color:var(--text-dim);font-size:10px;white-space:nowrap">${cleanDate(a.timestamp)}</div></div>`).join(''):'<div class="empty">No activity matching filter</div>';
+  document.getElementById('activityRecentList').innerHTML=page.length?page.map(a=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:12px"><div style="color:${ac[a.action]||'var(--text-dim)'};font-weight:700;white-space:nowrap;font-size:10px;min-width:100px">${(a.action||'').replace(/_/g,' ').toUpperCase()}</div><div style="flex:1"><strong>${a.business||'—'}</strong>${a.by?byNameChip(a.by):''} ${a.notes?'— '+a.notes.substring(0,60):''}</div><div style="color:var(--text-dim);font-size:10px;white-space:nowrap">${cleanDate(a.timestamp)}</div></div>`).join(''):'<div class="empty">No activity matching filter</div>';
   let ph='';
   if(tp>1){ph=`<span style="font-size:11px;color:var(--muted)">${total} entries · Page ${activityPage+1}/${tp}</span>`;if(activityPage>0)ph+=`<button class="page-btn" onclick="activityPage--;renderActivityLog();scrollToTabTop('tab-tracker')">← Prev</button>`;for(let i=Math.max(0,activityPage-1);i<=Math.min(tp-1,activityPage+1);i++)ph+=`<button class="page-btn ${i===activityPage?'active':''}" onclick="activityPage=${i};renderActivityLog();scrollToTabTop('tab-tracker')">${i+1}</button>`;if(activityPage<tp-1)ph+=`<button class="page-btn" onclick="activityPage++;renderActivityLog();scrollToTabTop('tab-tracker')">Next →</button>`;}
   document.getElementById('activityPagination').innerHTML=ph;
@@ -4248,7 +4593,7 @@ async function loadContactHistory(){
   let daysInDB='—';if(c&&c.Created_Date){const cr=new Date(c.Created_Date);if(!isNaN(cr.getTime()))daysInDB=Math.floor((new Date()-cr)/(1000*60*60*24))+' days';}
   const msgCount=state.messageCounts[business]||0;
   panel.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">${msgCount}</div><div style="font-size:10px;color:var(--muted)">MSGS SENT</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:'Space Mono',monospace;color:var(--gold)">${msgLinkHtml(business,msgCount)}</div><div style="font-size:10px;color:var(--muted)">MSGS SENT — tap to read</div></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:'Space Mono',monospace;color:var(--green)">${acts.filter(a=>a.action==='conversation').length}</div><div style="font-size:10px;color:var(--muted)">CONVERSATIONS</div></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:'Space Mono',monospace;color:var(--red)">${calls.length}</div><div style="font-size:10px;color:var(--muted)">CALLS LOGGED</div></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:'Space Mono',monospace;color:var(--teal)">${daysInDB}</div><div style="font-size:10px;color:var(--muted)">IN DATABASE</div></div>
