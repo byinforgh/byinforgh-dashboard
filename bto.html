@@ -283,7 +283,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="btoBanner">BUSINESS TRUST OFFICER VIEW &mdash; signed in as <span id="btoBannerName"></span><button onclick="btoLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v34.2</span></div>
+  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v34.3</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -6487,6 +6487,89 @@ renderTeam=function(){
 // reload shifts when the Team tab opens or data refreshes
 const _loadDataV33=loadData;
 loadData=async function(){await _loadDataV33();try{await loadShifts(false);}catch(e){}try{renderMyDay();renderTeamStrip();}catch(e){}};
+
+
+// =====================================================
+// v34.3 — phone numbers, autofill guard, live sync, shared "actioned today"
+// =====================================================
+// Any way of writing a Ghana number: +233 54 991 2589, 233549912589, 0054..., (054) 991-2589, pasted with hidden characters.
+normalizePhoneClient=function(raw){
+  let d=(raw||'').toString().replace(/\D/g,'');
+  if(!d)return '';
+  if(/^00233/.test(d))d=d.substring(2);
+  if(/^2330\d{9}$/.test(d))return d.substring(3);
+  if(/^233\d{9}$/.test(d))return '0'+d.substring(3);
+  if(/^0\d{9}$/.test(d))return d;
+  if(/^\d{9}$/.test(d))return '0'+d;
+  return d;
+};
+// tidy the number box as soon as the person leaves it
+document.addEventListener('focusout',ev=>{
+  const el=ev.target;
+  if(el&&el.tagName==='INPUT'&&/(Number)$/.test(el.id||'')&&/^(addContact|addClient|addSME|apptNew)/.test(el.id)){
+    const n=normalizePhoneClient(el.value);if(n&&n!==el.value)el.value=n;
+  }
+});
+
+// Browsers/password managers sometimes drop the saved login name (e.g. BTO@BYINFORGH) into the first
+// text box on a page. Name boxes must stay empty until a person types in them.
+const NAME_BOXES=['addContactName','addSMEContactName','addSMEOwner','apptNewContactName'];
+function hardenNameBoxes(){
+  NAME_BOXES.forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(!el.dataset.hardened){
+      el.dataset.hardened='1';el.setAttribute('autocomplete','off');el.setAttribute('data-lpignore','true');el.setAttribute('data-1p-ignore','true');
+      el.setAttribute('name','nm_'+id+'_'+Math.random().toString(36).slice(2,7));
+      el.readOnly=true;el.addEventListener('focus',()=>{el.readOnly=false;if(/@byinforgh/i.test(el.value))el.value='';});
+    }
+    if(/@byinforgh/i.test(el.value)&&document.activeElement!==el)el.value='';
+  });
+}
+setInterval(hardenNameBoxes,700);
+// belt and braces: never send a login name as a contact name
+(function(){const f=window.fetch;window.fetch=function(input,init){
+  try{if(typeof input==='string'&&/[?&]action=(addManualContact|addSMEMember|bookAppointment)\b/.test(input)){
+    input=input.replace(/([?&](?:contactName|owner)=)([^&]*)/g,(m,k,v)=>/%40byinforgh/i.test(v)||/@byinforgh/i.test(v)?k:m);}}catch(e){}
+  return f.call(this,input,init);};})();
+
+// something already messaged/called today (by anyone) is no longer "new today" on either page
+const _isPendingNewV34=isPendingNew;
+isPendingNew=function(c){return !(c&&c.ActionedToday)&&_isPendingNewV34(c);};
+
+// ---------- live sync between pages ----------
+const SYNC={stamp:null,busy:false,last:0};
+function syncUserTyping(){
+  const a=document.activeElement;
+  return !!(a&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&/^(text|search|tel|number|email|password)?$/.test(a.type||'text')))&&(a.value||'').length>0);   // only hold off while something is actually typed
+}
+async function syncRefresh(){
+  try{await loadData();}catch(e){}
+  try{await loadTrackerData();}catch(e){}
+  try{await loadTeam(true);}catch(e){}
+  try{renderMyDay();}catch(e){}
+  try{renderTeamStrip();}catch(e){}
+  try{const t=document.getElementById('tab-team');if(t&&t.classList.contains('active'))renderTeam();}catch(e){}
+  try{renderToday();}catch(e){}
+}
+async function syncCheck(force){
+  if(SYNC.busy||(document.hidden&&!force))return;
+  if(!(IS_BTO()?BTO_TOKEN:MASTER_TOKEN))return;
+  SYNC.busy=true;
+  try{
+    const d=await (await fetch(API_URL+'?action=getSyncStamp&t='+Date.now())).json();
+    if(!d||!d.success)return;
+    if(SYNC.stamp===null){SYNC.stamp=d.stamp;return;}
+    if(d.stamp!==SYNC.stamp){
+      if(syncUserTyping()&&!force)return;      // don't wipe what someone is typing; retried on the next tick
+      await syncRefresh();SYNC.stamp=d.stamp;SYNC.last=Date.now();
+      const el=document.getElementById('lastUpdated');
+    }
+  }catch(e){}finally{SYNC.busy=false;}
+}
+setInterval(()=>syncCheck(false),8000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCheck(true);});
+window.addEventListener('focus',()=>syncCheck(true));
+window.addEventListener('online',()=>syncCheck(true));
 
 </script>
 </body>
