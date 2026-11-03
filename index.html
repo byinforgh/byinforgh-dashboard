@@ -275,7 +275,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="masterBanner">MASTER VIEW &mdash; signed in as <span id="masterBannerName"></span><button onclick="masterLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v34.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v34.1</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -4833,6 +4833,7 @@ async function masterLogin(ev){
     const res=await _origFetchMaster(API_URL+'?action=login&username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p)+'&t='+Date.now());
     const data=await res.json();
     if(!data.success){errEl.textContent=data.error||'Login failed.';btn.disabled=false;btn.textContent='SIGN IN';return;}
+    if(data.role==='bto'){goToBtoPage(data.token,data.displayName||u);return;}
     MASTER_TOKEN=data.token; MASTER_DISPLAY_NAME=data.displayName||u;
     sessionStorage.setItem('master_token',MASTER_TOKEN);
     sessionStorage.setItem('master_display_name',MASTER_DISPLAY_NAME);
@@ -6477,6 +6478,19 @@ renderTeam=function(){
 // reload shifts when the Team tab opens or data refreshes
 const _loadDataV33=loadData;
 loadData=async function(){await _loadDataV33();try{await loadShifts(false);}catch(e){}try{renderMyDay();renderTeamStrip();}catch(e){}};
+
+
+// ---- v34.1: officers belong on bto.html (shift buttons, My Day). Never show them the CEO view. ----
+function goToBtoPage(token,name){
+  try{sessionStorage.removeItem('master_token');sessionStorage.removeItem('master_display_name');
+      sessionStorage.setItem('bto_token',token);sessionStorage.setItem('bto_display_name',name);}catch(e){}
+  location.replace('bto.html');
+}
+const _loadDataV34=loadData;
+loadData=async function(){
+  await _loadDataV34();
+  try{if(state.raw&&state.raw.role==='bto'&&MASTER_TOKEN){goToBtoPage(MASTER_TOKEN,MASTER_DISPLAY_NAME);}}catch(e){}
+};
 
 </script>
 </body>
