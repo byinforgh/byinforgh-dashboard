@@ -283,7 +283,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="btoBanner">BUSINESS TRUST OFFICER VIEW &mdash; signed in as <span id="btoBannerName"></span><button onclick="btoLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v31.0</span></div>
+  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v34.0</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -693,7 +693,7 @@ html,body{max-width:100%;overflow-x:clip;}
         </optgroup>
         <option value="Custom Package">Custom Package</option>
       </select>
-      <select id="addClientStatus"><option>Active</option><option>Paused</option><option>Churned</option></select>
+      <select id="addClientStatus"><option>Active</option><option>Pending</option><option>Paused</option><option>Churned</option></select>
     </div>
     <input id="addClientCustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -738,7 +738,7 @@ html,body{max-width:100%;overflow-x:clip;}
         <option value="SME Systems — Authority 500">SME Systems — Authority (GHS 500)</option>
         <option value="Custom Package">Custom Package</option>
       </select>
-      <select id="addSMEStatus"><option>Active</option><option>Paused</option><option>Inactive</option></select>
+      <select id="addSMEStatus"><option>Active</option><option>Pending</option><option>Paused</option><option>Inactive</option></select>
     </div>
     <input id="addSMECustomName" class="search-input" style="margin-bottom:8px;display:none" placeholder="Custom package name">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -1053,7 +1053,7 @@ html,body{max-width:100%;overflow-x:clip;}
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">START DATE</div><input type="date" id="convertClientJoined" class="search-input" style="margin:0" onchange="autoRenewalDate('convertClient')"></div>
       <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">NEXT RENEWAL (auto +1 month if monthly)</div><input type="date" id="convertClientRenewal" class="search-input" style="margin:0"></div>
     </div>
-    <select id="convertClientStatus" style="margin-bottom:8px"><option>Active</option><option>Paused</option><option>Churned</option></select>
+    <select id="convertClientStatus" style="margin-bottom:8px"><option>Active</option><option>Pending</option><option>Paused</option><option>Churned</option></select>
     <textarea id="convertClientNotes" class="conv-review-area" style="min-height:50px" placeholder="Notes (optional)"></textarea>
     <button class="refresh-btn" onclick="submitConvertToClient()" style="background:var(--gold);color:var(--black);width:100%;margin-top:10px;padding:10px;font-weight:800">&#127942; CONFIRM &mdash; MOVE TO CLIENTS</button>
     <div id="convertClientResult" style="margin-top:8px;font-size:12px"></div>
@@ -1625,7 +1625,7 @@ function drillAnalyticsLegacy(kind){
   const A=computeAnalytics(analyticsPeriod);
   const lbl=analyticsPeriod.toUpperCase();
   const when=x=>(parseAnyDate(x.date)||new Date(0)).getTime();
-  const ev=e=>({a:e.business||'—',b:(e.renewal?'Renewal':'New client')+' · '+e.date,c:fmtMoney(e.amount),m:true});
+  const ev=e=>({a:e.business||'—',b:kindLabel(e)+' · '+e.date,c:fmtMoney(e.amount),m:true});
   const plural=(n,w)=>n+' '+w+(n===1?'':'s');
   if(kind==='revenue')return openDrill('Revenue — '+lbl,plural(A.revEvents.length,'payment')+' in this period',[...A.revEvents].sort((x,y)=>when(y)-when(x)).map(ev));
   if(kind==='conversions')return openDrill('New clients — '+lbl,plural(A.conversions.length,'client')+' started in this period',[...A.conversions].sort((x,y)=>when(y)-when(x)).map(ev));
@@ -1658,7 +1658,7 @@ function drillRevenue(kind){
     const now=new Date();
     const r=kind==='thisMonth'?getPeriodRange('month'):{start:new Date(now.getFullYear(),now.getMonth()-1,1),end:new Date(now.getFullYear(),now.getMonth(),0,23,59,59,999)};
     const evs=getAllRevenueEvents().filter(e=>inRange(e.date,r)).sort((x,y)=>(parseAnyDate(y.date)||0)-(parseAnyDate(x.date)||0));
-    return openDrill(kind==='thisMonth'?'Collected this month':'Collected last month',evs.length+' payment(s) by date paid',evs.map(e=>({a:e.business||'—',b:(e.renewal?'Renewal':'New client')+' · '+e.date,c:fmtMoney(e.amount),m:true})));
+    return openDrill(kind==='thisMonth'?'Collected this month':'Collected last month',evs.length+' payment(s) by date paid',evs.map(e=>({a:e.business||'—',b:kindLabel(e)+' · '+e.date,c:fmtMoney(e.amount),m:true})));
   }
 }
 function drillPackage(key){
@@ -1990,7 +1990,7 @@ function goToWA(emoji){
   activateTab('contacts'); // ⬜ non-business, ❔ unlabeled, and anything else — just show full list
 }
 
-async function loadData(){
+async function loadDataBase(){
   document.getElementById('lastRefresh').textContent='Refreshing...';
   try{
     const ctrl=new AbortController();
@@ -2077,7 +2077,8 @@ async function loadData(){
   }catch(e){document.getElementById('lastRefresh').textContent='Offline — check connection';console.log('Load error:',e.message);}
 }
 
-function renderToday(){try{liveRefreshTabs();}catch(e){}
+function renderToday(){try{renderTodayBase();}finally{try{renderTodayIncome();}catch(e){console.log('income block:',e.message);}}}
+function renderTodayBase(){try{liveRefreshTabs();}catch(e){}
   checkShabbat();
   const mc=metricContacts();const total=mc.filter(c=>c.Business).length;const cnt=sh=>mc.filter(c=>(c.Sheet_Source||'Master CRM')===sh).length;
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
@@ -2087,7 +2088,7 @@ function renderToday(){try{liveRefreshTabs();}catch(e){}
   const overdue=getOverdueClientRenewals().length;
   const todayOut=state.todayOutreach||0;
   document.getElementById('topMetrics').innerHTML=`
-    <div class="metric-card gold clickable" data-financial onclick="activateTab('revenue')"><div class="metric-label">TOTAL MRR</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
+    <div class="metric-card gold clickable" data-financial onclick="activateTab('revenue')"><div class="metric-label">RECURRING / MO (EXPECTED)</div><div class="metric-value">&#8373;${mrr}</div><div class="metric-sub">Vis: &#8373;${visMRR} · SME: &#8373;${smeMRR}${oneTime>0?' · 1x:&#8373;'+oneTime:''}</div></div>
     <div class="metric-card green clickable" onclick="activateTab('contacts')"><div class="metric-label">${IS_BTO()?'MY CONTACTS':'TOTAL CONTACTS'}</div><div class="metric-value" style="font-size:28px">${total}</div><div class="metric-sub" style="display:flex;gap:10px;margin-top:6px"><span style="color:var(--gold)">CRM:${cnt('Master CRM')}</span><span style="color:var(--teal)">Kof:${cnt('Koforidua Master')}</span><span style="color:var(--teal)">Kum:${cnt('Kumasi Master')}</span><span style="color:var(--teal)">Acc:${cnt('Accra Master')}</span></div></div>
     <div class="metric-card orange clickable" onclick="goFollowupFilter('🔵',true)"><div class="metric-label">HOT LEADS</div><div class="metric-value">${hot}</div><div class="metric-sub">verbal yes / proposal sent</div></div>
     <div class="metric-card blue clickable" onclick="goFollowupFilter('🟢',true)"><div class="metric-label">CONVERSATIONS</div><div class="metric-value">${conv}</div><div class="metric-sub">active this week</div></div>
@@ -3266,7 +3267,7 @@ function renderSME(){
     <div class="metric-card teal"><div class="metric-label">TOTAL MEMBERS</div><div class="metric-value">${members.length}</div><div class="metric-sub">${active.length} active</div></div>
     <div class="metric-card gold" data-financial><div class="metric-label">SME MRR</div><div class="metric-value">&#8373;${smeMRR}</div><div class="metric-sub">monthly recurring</div></div>
     <div class="metric-card green"><div class="metric-label">ACTIVE DEPLOYMENTS</div><div class="metric-value">${active.length}</div><div class="metric-sub">live BBCS systems</div></div>
-    <div class="metric-card purple" data-financial><div class="metric-label">AVG FEE</div><div class="metric-value" style="font-size:22px">&#8373;${active.length>0?Math.round(smeMRR/active.length):0}</div><div class="metric-sub">per member/month</div></div>`;
+    <div class="metric-card purple" data-financial><div class="metric-label">AVG FEE</div><div class="metric-value" style="font-size:22px">&#8373;${active.length>0?Math.round(smeMRR/active.length):0}</div><div class="metric-sub">per member/month</div></div>${smeNoDateCardHtml()}`;
   if(members.length===0){document.getElementById('smeMembersList').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px;text-align:center"><div style="font-size:14px;color:var(--text-dim);margin-bottom:10px">No SME Systems Members found</div><div style="font-size:12px;color:var(--muted)">Check the <strong style="color:var(--teal)">SME Systems Members</strong> sheet tab has data starting row 2, and that columns N (Monthly Amount) and O (Status) are filled in. These two columns are auto-created — set Status to Active for each live member.</div></div>`;return;}
   const SME_STATUS_OPTIONS=['Active','Paused','Inactive'];
   document.getElementById('smeMembersList').innerHTML=members.map(m=>{
@@ -3281,6 +3282,7 @@ function renderSME(){
       </div>
       <select data-orig="${m.Status||''}" onchange="updateSMEField('${sb}','Status',this.value,this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;width:auto">${statusOpts}</select>
       <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace">${m.Number||'—'}</div>
+      ${IS_BTO()?'':`<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;color:var(--muted);font-weight:700;width:52px;text-align:right">NEXT DUE</span><input type="date" style="background:var(--surface);border:1px solid ${(smeRenewalInfo(m).days<0&&isAct)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${dateToInputValue(m.Renewal)}" onchange="updateSMEField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)"><button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 10px;font-size:10px;font-weight:800" onclick="openRenewModal('${sb}')">&#8635; RENEW</button></div>`}
     </div></div>`;
   }).join('');
 }
@@ -3582,7 +3584,7 @@ async function restoreContact(business,number,btn){
   }catch(e){showToast('Connection error');btn.textContent='&#8634; RESTORE TO ACTIVE PIPELINE';btn.disabled=false;}
 }
 
-const CLIENT_STATUS_OPTIONS=['Active','Paused','Churned'];
+const CLIENT_STATUS_OPTIONS=['Active','Pending','Paused','Churned'];
 const CLIENT_FIELD_TO_STATE_KEY={OneTime:'OneTimeAmount'};
 async function updateClientField(business,field,value,el){
   const orig=el?el.dataset.orig:'';
@@ -3612,7 +3614,7 @@ async function updateClientField(business,field,value,el){
   }
 }
 // ---- RENEW: pick the date on a calendar, next due date + revenue follow automatically
-function openRenewModal(business){
+function openRenewModalLegacy(business){
   const c=(state.clients||[]).find(x=>x.Business===business);
   if(!c){showToast('Client not found');return;}
   const info=getRenewalInfo(c);
@@ -3636,7 +3638,7 @@ function updateRenewPreview(){
   const next=addMonthsDate(new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])),n);
   el.innerHTML='Paid on <strong>'+p[2]+'/'+p[1]+'/'+p[0]+'</strong> &rarr; next renewal <strong>'+fmtDMY(next)+'</strong>';
 }
-async function submitRenew(){
+async function submitRenewLegacy(){
   const business=document.getElementById('renewBusiness').value;
   const v=document.getElementById('renewDate').value;
   const cycle=parseInt(document.getElementById('renewCycle').value)||1;
@@ -3813,8 +3815,8 @@ function renderRevenue(){
   const active=state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length;
   const smeActive=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length;
   document.getElementById('revenueActual').innerHTML=`
-    <div class="metric-card gold clickable" onclick="drillRevenue('mrr')"><div class="metric-label">DAILY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/30)}</div><div class="metric-sub">MRR ÷ 30</div></div>
-    <div class="metric-card green clickable" onclick="drillRevenue('mrr')"><div class="metric-label">WEEKLY ACTUAL</div><div class="metric-value">&#8373;${Math.round(mrr/4.3)}</div><div class="metric-sub">MRR ÷ 4.3</div></div>
+    <div class="metric-card gold clickable" onclick="drillRevenue('mrr')"><div class="metric-label">DAILY RUN-RATE</div><div class="metric-value">&#8373;${Math.round(mrr/30)}</div><div class="metric-sub">MRR ÷ 30</div></div>
+    <div class="metric-card green clickable" onclick="drillRevenue('mrr')"><div class="metric-label">WEEKLY RUN-RATE</div><div class="metric-value">&#8373;${Math.round(mrr/4.3)}</div><div class="metric-sub">MRR ÷ 4.3</div></div>
     <div class="metric-card blue clickable" onclick="drillRevenue('vis')"><div class="metric-label">VIS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${visMRR}</div><div class="metric-sub">${active} visibility clients</div></div>
     <div class="metric-card teal clickable" onclick="drillRevenue('sme')"><div class="metric-label">SME SYSTEMS MRR</div><div class="metric-value" style="font-size:22px">&#8373;${smeMRR}</div><div class="metric-sub">${smeActive} system members</div></div>
     <div class="metric-card purple clickable" onclick="drillRevenue('onetime')"><div class="metric-label">ONE-TIME REVENUE</div><div class="metric-value" style="font-size:24px">&#8373;${oneTime}</div><div class="metric-sub">playbooks / custom</div></div>
@@ -3905,7 +3907,7 @@ function daysBetween(a,b){ return Math.max(1,Math.round((b-a)/(1000*60*60*24)));
 // logged conversion (matched by business name), using their real Joined
 // date as the event date — every figure still traces back to an actual
 // row in the sheet, nothing is invented.
-function getAllRevenueEvents(){
+function getAllRevenueEventsLegacy(){
   // Every payment is dated by the day it actually happened:
   //  1) logged conversions / renewals (each RENEW click logs one on the date picked)
   //  2) older history rebuilt from a client's start date, one payment per month
@@ -3962,7 +3964,7 @@ function getAllRevenueEvents(){
   });
   return events.filter(e=>parseAnyDate(e.date));
 }
-function revenueCollectedCardsHtml(){
+function revenueCollectedCardsHtmlLegacy(){
   const now=new Date();
   const ev=getAllRevenueEvents();
   const thisR=getPeriodRange('month');
@@ -4464,7 +4466,7 @@ async function saveTargetSettings(){
   document.getElementById('settingsModal').style.display='none';showToast('Target saved — GHS '+monthly+'/month');renderToday();
 }
 
-async function loadTrackerData(){
+async function loadTrackerDataBase(){
   try{const r=await fetch(API_URL+'?action=getActivityLog&t='+Date.now());if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();if(d.error)throw new Error(d.error);trackerData=d;if(d.callLogs)trackerData.callLogs=d.callLogs;const el=document.getElementById('outreachTodayCount');if(el)el.textContent=d.todayOutreachCount||0;const el2=document.getElementById('outreachTotalCount');if(el2)el2.textContent=d.totalOutreachCount||0;}
   catch(e){console.log('Tracker load error:',e.message);trackerData={activities:[],statusViewers:[],outreachLog:[],conversions:[],callLogs:[],todayOutreachCount:0,totalOutreachCount:0};}
 }
@@ -5156,7 +5158,7 @@ function sumDrill(kind,key){
   const plural=(n,w)=>n+' '+w+(n===1?'':'s');
   if(kind==='rev'){
     const ev=getAllRevenueEvents().filter(e=>inRange(e.date,r)).sort((x,y)=>(parseAnyDate(y.date)||0)-(parseAnyDate(x.date)||0));
-    return openDrill('Revenue — '+lbl,plural(ev.length,'payment'),ev.map(e=>({a:e.business||'—',b:(e.renewal?'Renewal':'New client')+' · '+e.date,c:sMoney(e.amount),m:true})));
+    return openDrill('Revenue — '+lbl,plural(ev.length,'payment'),ev.map(e=>({a:e.business||'—',b:kindLabel(e)+' · '+e.date,c:sMoney(e.amount),m:true})));
   }
   if(kind==='clients'){
     const ev=getConversionEvents().filter(e=>inRange(e.date,r)).sort((x,y)=>(parseAnyDate(y.date)||0)-(parseAnyDate(x.date)||0));
@@ -5510,6 +5512,981 @@ function renderAnalytics(){
   root.innerHTML=h;
   if(S.tab==='intake')sumFillBizSol(r);
 }
+
+
+/* =====================================================================
+   v32.0 — INCOME ENGINE · ACTUAL DAILY / WEEKLY / MONTHLY ON TODAY
+   Rule: money counts ONLY once a payment is confirmed
+         (a logged payment, or a renewal date that was moved forward).
+         Subscriptions that have not renewed = ₵0 income. MRR is shown as
+         "expected", never as income.
+   ===================================================================== */
+
+// ---------- 1. Revenue events (every payment, dated by the day it happened) ----------
+function getAllRevenueEvents(){
+  const events=[];
+  const now=new Date();
+  const todayEnd=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59,999);
+  const withStart=new Set();
+  (state.clients||[]).forEach(c=>{if(c.Business&&parseAnyDate(c.Joined))withStart.add(c.Business.toLowerCase());});
+  (state.smeMembers||[]).forEach(m=>{if(m.Business&&parseAnyDate(m.Joined))withStart.add(m.Business.toLowerCase());});
+
+  // A) confirmed payments = rows in the Conversions log
+  const firstLogged={};
+  (trackerData.conversions||[]).forEach(c=>{
+    const d=parseAnyDate(c.date||c.timestamp);
+    if(!d)return;
+    const key=(c.business||'').toLowerCase();
+    const notes=c.notes||'';
+    if(/auto-logged/i.test(notes)&&withStart.has(key))return;   // rebuilt from the client's own start date below
+    const amt=parseFloat(c.amount)||0;
+    const isRen=/renewal/i.test(notes),isOne=/^\s*one[\s-]?off/i.test(notes);
+    events.push({date:fmtDMY(d),business:c.business||'',amount:amt,renewal:isRen,kind:isRen?'renewal':(isOne?'oneoff':'new'),sub:isOne?0:amt,oneoff:isOne?amt:0,source:'logged',confirmed:true,notes});
+    // one-off projects must never cut off a client's subscription history
+    if(key&&!isOne&&(!firstLogged[key]||d<firstLogged[key]))firstLogged[key]=d;
+  });
+
+  // B) first payment on the start date; later months ONLY when a renewal date proves
+  //    how far the client has actually paid. No renewal date = no inferred renewals.
+  function synth(name,joinedStr,monthly,oneTime,due,allowRecurring,source){
+    const key=(name||'').toLowerCase();
+    const first=(monthly||0)+(oneTime||0);
+    if(!key||first<=0)return;
+    const start=parseAnyDate(joinedStr);
+    if(!start)return;
+    start.setHours(0,0,0,0);
+    const stop=firstLogged[key];
+    if(start<=todayEnd&&(!stop||start<stop))events.push({date:fmtDMY(start),business:name,amount:first,renewal:false,kind:'new',sub:monthly||0,oneoff:oneTime||0,source,confirmed:false});
+    if(monthly>0&&due&&allowRecurring){
+      const lastPaid=addMonthsDate(due,-1);
+      for(let k=1;k<=120;k++){
+        const d=addMonthsDate(start,k);
+        if(d>todayEnd||d>lastPaid||(stop&&d>=stop))break;
+        events.push({date:fmtDMY(d),business:name,amount:monthly,renewal:true,kind:'renewal',sub:monthly,oneoff:0,source,confirmed:false});
+      }
+    }
+  }
+  (state.clients||[]).forEach(c=>{
+    if((c.Status||'').trim().toLowerCase()==='pending')return;
+    const monthly=parseFloat(c.Amount)||0;
+    const due=parseAnyDate(c.Renewal);
+    let joined=c.Joined;
+    if(!parseAnyDate(joined)&&due&&monthly>0)joined=fmtDMY(addMonthsDate(due,-1));
+    synth(c.Business,joined,monthly,parseFloat(c.OneTimeAmount)||0,due,true,'client');
+  });
+  (state.smeMembers||[]).forEach(m=>{
+    if((m.Status||'').trim().toLowerCase()==='pending')return;
+    const active=(m.Status||'').toLowerCase()==='active';
+    synth(m.Business,m.Joined,parseFloat(m.Amount)||0,0,parseAnyDate(m.Renewal),active,'sme');
+  });
+  return events.filter(e=>parseAnyDate(e.date));
+}
+
+function incRangeToday(){const T=sDay0(new Date());return {start:T,end:sEnd(T)};}
+function income(range,evs){
+  const list=(evs||getAllRevenueEvents()).filter(e=>inRange(e.date,range));
+  const o={total:0,sub:0,oneoff:0,n:list.length,renewals:0,newN:0,list};
+  list.forEach(e=>{o.total+=e.amount;o.sub+=e.sub||0;o.oneoff+=e.oneoff||0;if(e.kind==='renewal')o.renewals++;else if(e.kind==='new')o.newN++;});
+  return o;
+}
+function workdaysBetween(a,b){let n=0;const d=sDay0(a);const e=sDay0(b);while(d<=e){if(d.getDay()!==6)n++;d.setDate(d.getDate()+1);}return Math.max(1,n);}
+
+// ---------- 2. Who still has to renew this month ----------
+function smeRenewalInfo(m){
+  const today=sDay0(new Date());
+  const due=parseFollowUpDate(m.Renewal);
+  if(!due)return {due:null,days:null};
+  due.setHours(0,0,0,0);
+  return {due,days:Math.round((due-today)/86400000)};
+}
+function awaitingRenewals(){
+  const now=new Date(),mEnd=sEnd(new Date(now.getFullYear(),now.getMonth()+1,0));
+  const rows=[],noDate=[];
+  (state.clients||[]).forEach(c=>{
+    if((c.Status||'').trim().toLowerCase()!=='active')return;
+    const monthly=parseFloat(c.Amount)||0;
+    if(monthly<=0||(c.PaymentType||'Monthly')==='One-Time')return;
+    const info=getRenewalInfo(c);
+    if(!info.due){noDate.push({business:c.Business,kind:'client'});return;}
+    if(info.due<=mEnd)rows.push({business:c.Business,amount:monthly,due:info.due,days:info.days,kind:'client',pkg:c.Package||''});
+  });
+  (state.smeMembers||[]).forEach(m=>{
+    if((m.Status||'').toLowerCase()!=='active')return;
+    const monthly=parseFloat(m.Amount)||0;
+    if(monthly<=0)return;
+    const info=smeRenewalInfo(m);
+    if(!info.due){noDate.push({business:m.Business,kind:'sme'});return;}
+    if(info.due<=mEnd)rows.push({business:m.Business,amount:monthly,due:info.due,days:info.days,kind:'sme',pkg:m.Package||'SME Systems'});
+  });
+  rows.sort((a,b)=>a.due-b.due);
+  return {rows,noDate,total:rows.reduce((s,r)=>s+r.amount,0),overdue:rows.filter(r=>r.days<0).length};
+}
+function smeNoDateCardHtml(){
+  if(IS_BTO())return '';
+  const n=(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active'&&(parseFloat(m.Amount)||0)>0&&!parseFollowUpDate(m.Renewal)).length;
+  if(!n)return '';
+  return `<div class="metric-card red clickable" onclick="awaitingDrill()"><div class="metric-label">NO RENEWAL DATE</div><div class="metric-value" style="font-size:24px">${n}</div><div class="metric-sub">set "NEXT DUE" so income can be confirmed</div></div>`;
+}
+
+// ---------- 3. Snapshot + cards ----------
+function incSnapshot(){
+  const now=new Date(),evs=getAllRevenueEvents();
+  const T=incRangeToday();
+  const wk=weekSunRange(now),lwk=weekSunRange(addDays(now,-7));
+  const mo=monthRange(now.getFullYear(),now.getMonth());
+  const pmDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const pmo=monthRange(pmDate.getFullYear(),pmDate.getMonth());
+  const wkToDate={start:wk.start,end:T.end};
+  return {now,T,wk,mo,today:income(T,evs),week:income(wkToDate,evs),lastWeek:income(lwk,evs),month:income(mo,evs),lastMonth:income(pmo,evs),yesterday:income({start:addDays(T.start,-1),end:sEnd(addDays(T.start,-1))},evs),awaiting:awaitingRenewals()};
+}
+function incSplit(o){return (o.sub||o.oneoff)?`subs ${fmtMoney(o.sub)} · one-off ${fmtMoney(o.oneoff)}`:'no payments confirmed';}
+function incomeCardsHtml(S1){
+  const ready=window._trackerOk===true;
+  const v=x=>ready?fmtMoney(x):'…';
+  const pl=n=>n+' payment'+(n===1?'':'s');
+  const mrr=getMRR();
+  return `<div class="metric-card green clickable" onclick="incomeDrill('today')"><div class="metric-label">COLLECTED TODAY</div><div class="metric-value" style="font-size:24px">${v(S1.today.total)}</div><div class="metric-sub">${ready?pl(S1.today.n)+' · '+incSplit(S1.today):'loading payment log…'}</div></div>
+    <div class="metric-card blue clickable" onclick="incomeDrill('week')"><div class="metric-label">COLLECTED THIS WEEK</div><div class="metric-value" style="font-size:24px">${v(S1.week.total)}</div><div class="metric-sub">${ready?pl(S1.week.n)+' · last week '+fmtMoney(S1.lastWeek.total):'loading payment log…'}</div></div>
+    <div class="metric-card gold clickable" onclick="incomeDrill('month')"><div class="metric-label">COLLECTED THIS MONTH</div><div class="metric-value" style="font-size:24px">${v(S1.month.total)}</div><div class="metric-sub">${ready?pl(S1.month.n)+' · last month '+fmtMoney(S1.lastMonth.total):'loading payment log…'}</div></div>
+    <div class="metric-card orange clickable" onclick="awaitingDrill()"><div class="metric-label">AWAITING RENEWAL</div><div class="metric-value" style="font-size:24px">${fmtMoney(S1.awaiting.total)}</div><div class="metric-sub">${S1.awaiting.rows.length} due by month-end${S1.awaiting.overdue?' · '+S1.awaiting.overdue+' overdue':''}${S1.awaiting.noDate.length?' · '+S1.awaiting.noDate.length+' no date':''}</div></div>
+    <div class="metric-card purple clickable" onclick="drillRevenue('mrr')"><div class="metric-label">RECURRING / MONTH</div><div class="metric-value" style="font-size:24px">${fmtMoney(mrr)}</div><div class="metric-sub">expected — not income until renewed</div></div>`;
+}
+function revenueCollectedCardsHtml(){return incomeCardsHtml(incSnapshot());}
+
+// ---------- 4. Today screen: actual daily / weekly / monthly ----------
+function incBar(label,val,target,sub){
+  const pct=target>0?Math.round(val/target*100):0;
+  return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:4px"><span style="font-weight:700;letter-spacing:1px;color:var(--muted)">${label}</span><span style="font-family:'Space Mono',monospace;font-weight:700">${fmtMoney(val)} / ${fmtMoney(target)} · ${pct}%</span></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100,pct)}%"></div></div>${sub?`<div style="font-size:10px;color:var(--text-dim);margin-top:3px">${sub}</div>`:''}</div>`;
+}
+function renderTodayIncome(){
+  const el=document.getElementById('targetBar');
+  if(!el)return;
+  if(IS_BTO()){el.style.display='none';return;}
+  el.style.display='';
+  const S1=incSnapshot(),ready=window._trackerOk===true;
+  const mt=state.settings?(parseInt(state.settings.monthly_target)||5400):5400;
+  const wd=state.settings?(parseInt(state.settings.working_days)||26):26;
+  const dt=Math.round(mt/wd),wt=dt*6;
+  const elapsed=workdaysBetween(S1.mo.start,S1.T.start);
+  const avg=ready?Math.round(S1.month.total/elapsed):0;
+  const aw=S1.awaiting;
+  const best=S1.month.total+aw.total;
+  const rowsHtml=aw.rows.slice(0,8).map(r=>{
+    const badge=r.days<0?`<span style="color:var(--red);font-weight:800">OVERDUE ${-r.days}d</span>`:(r.days===0?'<span style="color:var(--orange);font-weight:800">DUE TODAY</span>':`<span style="color:${r.days<=7?'var(--orange)':'var(--green)'};font-weight:700">in ${r.days}d</span>`);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="min-width:0"><strong>${escHtml(r.business)}</strong><div style="font-size:10px;color:var(--text-dim)">${r.kind==='sme'?'SME':'Client'} · ${escHtml(r.pkg)} · due ${fmtDMY(r.due)} · ${badge}</div></div><div style="display:flex;align-items:center;gap:8px;white-space:nowrap"><span style="font-family:'Space Mono',monospace;font-weight:700;color:var(--gold)">${fmtMoney(r.amount)}</span><button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 10px;font-size:10px;font-weight:800" onclick="openRenewModal('${escJs(r.business)}')">&#8635; RENEW</button></div></div>`;
+  }).join('');
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <div><div style="font-size:12px;font-weight:700;letter-spacing:2px;color:var(--muted)">💰 ACTUAL INCOME — CONFIRMED PAYMENTS ONLY</div><div style="font-size:10px;color:var(--muted);margin-top:2px">A subscription counts only after it is renewed / paid. Unrenewed = ₵0 this month. Targets: ${fmtMoney(mt)} ÷ ${wd} working days = ${fmtMoney(dt)}/day</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="refresh-btn" style="background:var(--gold);color:#fff;padding:6px 12px;font-size:11px;font-weight:800" onclick="openOneOffModal()">+ LOG ONE-OFF PAYMENT</button><button onclick="openTargetSettings()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-family:Syne,sans-serif">&#9881; SET TARGET</button></div>
+    </div>
+    <div class="metrics-grid" style="margin-bottom:14px">${incomeCardsHtml(S1)}</div>
+    ${incBar('TODAY',S1.today.total,dt,ready?'Yesterday '+fmtMoney(S1.yesterday.total):'')}
+    ${incBar('THIS WEEK (Sun–Fri)',S1.week.total,wt,ready?'Last week '+fmtMoney(S1.lastWeek.total)+' · weekly target = daily × 6 working days':'')}
+    ${incBar('THIS MONTH',S1.month.total,mt,ready?`Running average ${fmtMoney(avg)} per working day (target ${fmtMoney(dt)}) · still to collect ${fmtMoney(Math.max(0,mt-S1.month.total))}`:'')}
+    ${ready&&aw.rows.length?`<div style="font-size:11px;color:var(--text-dim);margin:2px 0 8px">If every renewal due by month-end is paid, this month reaches <strong style="color:var(--gold)">${fmtMoney(best)}</strong> (${best>=mt?'target met':fmtMoney(mt-best)+' short of target'}).</div>`:''}
+    ${aw.noDate.length?`<div style="padding:8px 12px;background:var(--surface);border-left:3px solid var(--red);border-radius:5px;margin:6px 0;font-size:12px;line-height:1.6">⚠ <strong>${aw.noDate.length}</strong> active subscription${aw.noDate.length===1?' has':'s have'} no renewal date, so their income cannot be confirmed: <span style="color:var(--text-dim)">${aw.noDate.slice(0,6).map(x=>escHtml(x.business)).join(', ')}${aw.noDate.length>6?'…':''}</span> — set <strong>NEXT DUE</strong> on the Clients / SME tab.</div>`:''}
+    ${aw.rows.length?`<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);margin:14px 0 4px">DUE TO RENEW BY MONTH-END — tap RENEW the moment they pay</div>${rowsHtml}${aw.rows.length>8?`<div style="margin-top:8px"><button class="copy-btn" onclick="awaitingDrill()">SEE ALL ${aw.rows.length}</button></div>`:''}`:''}`;
+}
+
+// ---------- 5. Drill-downs ----------
+function incomeDrill(kind){
+  const S1=incSnapshot();
+  const o={today:S1.today,week:S1.week,month:S1.month}[kind];
+  const title={today:'Collected today',week:'Collected this week',month:'Collected this month'}[kind];
+  const rows=[...o.list].sort((a,b)=>(parseAnyDate(b.date)||0)-(parseAnyDate(a.date)||0)).map(e=>({a:e.business||'—',b:({new:'New client',renewal:'Renewal',oneoff:'One-off project'}[e.kind]||'Payment')+' · '+e.date+(e.confirmed?' · logged':' · from renewal date'),c:fmtMoney(e.amount),m:true}));
+  openDrill(title,fmtMoney(o.total)+' from '+o.n+' payment'+(o.n===1?'':'s')+' · subs '+fmtMoney(o.sub)+' · one-off '+fmtMoney(o.oneoff),rows);
+}
+function awaitingDrill(){
+  const a=awaitingRenewals();
+  const rows=a.rows.map(r=>({a:r.business,b:(r.kind==='sme'?'SME':'Client')+' · due '+fmtDMY(r.due)+' · '+(r.days<0?'OVERDUE '+(-r.days)+' day'+(r.days===-1?'':'s'):(r.days===0?'due today':'in '+r.days+' days')),c:fmtMoney(r.amount),m:true}));
+  a.noDate.forEach(x=>rows.push({a:x.business,b:(x.kind==='sme'?'SME':'Client')+' · NO renewal date — set NEXT DUE so income can be tracked',c:'',m:true}));
+  openDrill('Awaiting renewal',fmtMoney(a.total)+' due by month-end from '+a.rows.length+' subscription'+(a.rows.length===1?'':'s')+(a.noDate.length?' · '+a.noDate.length+' with no date':''),rows);
+}
+
+// ---------- 6. One-off project payments (snapshots, audits, custom work) ----------
+const ONEOFF_PRESETS=[['Business Snapshot',600],['Quick Audit',1800],['Full Audit',3200],['Verified Business (one-time)',180],['Custom project',0]];
+function ensureOneOffModal(){
+  if(document.getElementById('oneOffModal'))return;
+  const opts=ONEOFF_PRESETS.map((p,i)=>`<option value="${i}">${p[0]}${p[1]?' — ₵'+p[1]:''}</option>`).join('');
+  document.body.insertAdjacentHTML('beforeend',`<div id="oneOffModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto"><div style="background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:24px;width:100%;max-width:440px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:var(--gold)">💰 LOG ONE-OFF PAYMENT</div><button onclick="closeOneOffModal()" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button></div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.6">For project work paid once — snapshot, audit, custom job. It counts as income on the date you pick. Monthly subscriptions use RENEW instead.</div>
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">BUSINESS</div>
+    <input id="oneOffBiz" class="search-input" list="oneOffBizList" placeholder="Start typing a client or contact…" style="margin-bottom:8px"><datalist id="oneOffBizList"></datalist>
+    <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">WHAT WAS IT FOR</div>
+    <select id="oneOffWhat" onchange="oneOffPreset()" style="margin-bottom:8px">${opts}</select>
+    <input id="oneOffDesc" class="search-input" placeholder="Describe the project (optional)" style="margin-bottom:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">AMOUNT PAID (GHS)</div><input id="oneOffAmt" type="number" class="search-input" style="margin:0"></div><div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px">DATE PAID</div><input id="oneOffDate" type="date" class="search-input" style="margin:0"></div></div>
+    <button id="oneOffBtn" class="refresh-btn" onclick="submitOneOff()" style="background:var(--gold);color:#fff;width:100%;margin-top:6px;padding:10px;font-weight:800">CONFIRM PAYMENT RECEIVED</button>
+    <div id="oneOffResult" style="margin-top:8px;font-size:12px"></div></div></div>`);
+}
+function openOneOffModal(){
+  ensureOneOffModal();
+  const names=new Set();
+  (state.clients||[]).forEach(c=>c.Business&&names.add(c.Business));
+  (state.smeMembers||[]).forEach(m=>m.Business&&names.add(m.Business));
+  (state.contacts||[]).forEach(c=>c.Business&&names.add(c.Business));
+  document.getElementById('oneOffBizList').innerHTML=[...names].sort().map(n=>`<option value="${escHtml(n)}">`).join('');
+  const t=new Date();
+  document.getElementById('oneOffDate').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  document.getElementById('oneOffBiz').value='';document.getElementById('oneOffDesc').value='';
+  document.getElementById('oneOffWhat').value='0';oneOffPreset();
+  document.getElementById('oneOffResult').innerHTML='';
+  document.getElementById('oneOffBtn').disabled=false;
+  document.getElementById('oneOffModal').style.display='flex';
+}
+function closeOneOffModal(){const m=document.getElementById('oneOffModal');if(m)m.style.display='none';}
+function oneOffPreset(){const p=ONEOFF_PRESETS[parseInt(document.getElementById('oneOffWhat').value)||0];document.getElementById('oneOffAmt').value=p[1]||'';}
+async function submitOneOff(){
+  const biz=(document.getElementById('oneOffBiz').value||'').trim();
+  const what=ONEOFF_PRESETS[parseInt(document.getElementById('oneOffWhat').value)||0][0];
+  const desc=(document.getElementById('oneOffDesc').value||'').trim();
+  const amt=parseFloat(document.getElementById('oneOffAmt').value)||0;
+  const v=document.getElementById('oneOffDate').value;
+  const res=document.getElementById('oneOffResult'),btn=document.getElementById('oneOffBtn');
+  if(!biz){res.innerHTML='<span style="color:var(--red)">Enter the business.</span>';return;}
+  if(amt<=0){res.innerHTML='<span style="color:var(--red)">Enter the amount paid.</span>';return;}
+  if(!v){res.innerHTML='<span style="color:var(--red)">Pick the date it was paid.</span>';return;}
+  const p=v.split('-'),paid=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])),paidStr=fmtDMY(paid);
+  if(paid>sEnd(new Date())){res.innerHTML='<span style="color:var(--red)">That date is in the future — only log money already received.</span>';return;}
+  const known=(state.clients||[]).some(c=>c.Business===biz)||(state.smeMembers||[]).some(m=>m.Business===biz)||(state.contacts||[]).some(c=>c.Business===biz);
+  if(!known&&!confirm('"'+biz+'" is not in your clients or contacts. Log the payment anyway?'))return;
+  const notes='One-off — '+what+(desc?' — '+desc:'')+' — paid '+paidStr;
+  const num=((state.clients||[]).find(c=>c.Business===biz)||(state.contacts||[]).find(c=>c.Business===biz)||{}).Number||'';
+  btn.disabled=true;res.innerHTML='<span style="color:var(--muted)">Saving...</span>';
+  try{
+    const r=await fetch(API_URL+'?action=logConversion&business='+encodeURIComponent(biz)+'&number='+encodeURIComponent(num)+'&offer='+encodeURIComponent(what)+'&amount='+encodeURIComponent(amt)+'&notes='+encodeURIComponent(notes)+'&date='+encodeURIComponent(paidStr)+'&source='+encodeURIComponent('Dashboard — One-off payment')+'&t='+Date.now());
+    const d=await r.json();
+    if(!d||!d.success)throw new Error((d&&d.error)||'server error');
+    if(d.duplicate){res.innerHTML='<span style="color:var(--orange);font-weight:700">Already recorded — not counted twice.</span>';btn.disabled=false;return;}
+    trackerData.conversions=[{timestamp:new Date().toString(),date:paidStr,business:biz,number:num,offer:what,amount:amt,notes},...(trackerData.conversions||[])];
+    trackerData.totalConversionRevenue=(trackerData.totalConversionRevenue||0)+amt;
+    res.innerHTML='<span style="color:var(--green);font-weight:700">✓ '+fmtMoney(amt)+' recorded for '+escHtml(biz)+'</span>';
+    showToast('💰 '+fmtMoney(amt)+' one-off — '+biz);
+    incRefreshAll();
+    setTimeout(closeOneOffModal,900);
+  }catch(e){res.innerHTML='<span style="color:var(--red)">Not saved — '+escHtml(e.message||'connection error')+'. Nothing was counted.</span>';btn.disabled=false;}
+}
+function incRefreshAll(){
+  const on=id=>{const e=document.getElementById(id);return !!(e&&e.classList.contains('active'));};
+  try{renderToday();}catch(e){}
+  try{if(on('tab-revenue'))renderRevenue();}catch(e){}
+  try{if(on('tab-analytics'))renderAnalytics();}catch(e){}
+  try{if(on('tab-clients'))renderClients();}catch(e){}
+  try{if(on('tab-sme'))renderSME();}catch(e){}
+}
+
+// ---------- 7. RENEW — clients AND SME members ----------
+function ensureRenewKind(){
+  if(document.getElementById('renewKind'))return;
+  const b=document.getElementById('renewBusiness');
+  if(b)b.insertAdjacentHTML('afterend','<input type="hidden" id="renewKind" value="client">');
+}
+function openRenewModal(business){
+  ensureRenewKind();
+  const cl=(state.clients||[]).find(x=>x.Business===business);
+  const sme=cl?null:(state.smeMembers||[]).find(x=>x.Business===business);
+  const c=cl||sme;
+  if(!c){showToast('Client not found');return;}
+  if(sme&&IS_BTO()){showToast('SME renewals are recorded by BYINFORGH');return;}
+  const info=cl?getRenewalInfo(cl):smeRenewalInfo(sme);
+  document.getElementById('renewKind').value=cl?'client':'sme';
+  document.getElementById('renewBusiness').value=business;
+  document.getElementById('renewBizLabel').textContent=(sme?'SME · ':'')+business+' — '+(c.Package||'');
+  const t=new Date();
+  document.getElementById('renewDate').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  document.getElementById('renewCycle').value='1';
+  document.getElementById('renewAmount').value=parseFloat(c.Amount)||0;
+  document.getElementById('renewCurrent').innerHTML=info.due?('Currently due: <strong>'+fmtDMY(info.due)+'</strong>'+(cl?' · '+renewalBadgeHtml(info):'')):'No renewal date yet — confirming sets it.';
+  document.getElementById('renewResult').innerHTML='';
+  const btn=document.querySelector('#renewModal button[onclick="submitRenew()"]');if(btn)btn.disabled=false;
+  updateRenewPreview();
+  document.getElementById('renewModal').style.display='flex';
+}
+async function submitRenew(){
+  ensureRenewKind();
+  const business=document.getElementById('renewBusiness').value;
+  const kind=document.getElementById('renewKind').value==='sme'?'sme':'client';
+  const v=document.getElementById('renewDate').value;
+  const cycle=parseInt(document.getElementById('renewCycle').value)||1;
+  const amount=parseFloat(document.getElementById('renewAmount').value)||0;
+  const result=document.getElementById('renewResult');
+  const btn=document.querySelector('#renewModal button[onclick="submitRenew()"]');
+  const c=((kind==='sme'?state.smeMembers:state.clients)||[]).find(x=>x.Business===business);
+  if(!c){result.innerHTML='<span style="color:var(--red)">Client not found.</span>';return;}
+  if(!v){result.innerHTML='<span style="color:var(--red)">Pick the renewal date.</span>';return;}
+  const p=v.split('-');
+  const paid=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+  if(paid>sEnd(new Date())){result.innerHTML='<span style="color:var(--red)">That date is in the future — confirm a renewal only once it has been paid.</span>';return;}
+  const next=addMonthsDate(paid,cycle),nextStr=fmtDMY(next),paidStr=fmtDMY(paid);
+  const sheetSrc=kind==='sme'?'SME Systems Members':'Clients';
+  if(btn)btn.disabled=true;
+  result.innerHTML='<span style="color:var(--muted)">Saving...</span>';
+  try{
+    // 1) record the payment FIRST — if this fails nothing changes
+    const r2=await fetch(API_URL+'?action=logConversion&business='+encodeURIComponent(business)+'&number='+encodeURIComponent(c.Number||'')+'&offer='+encodeURIComponent(c.Package||'')+'&amount='+encodeURIComponent(amount)+'&notes='+encodeURIComponent('Renewal — '+(c.Package||'')+' — paid '+paidStr)+'&date='+encodeURIComponent(paidStr)+'&source='+encodeURIComponent(kind==='sme'?'Dashboard — SME renewal':'Dashboard — Renewal')+'&t='+Date.now());
+    const d2=await r2.json();
+    if(!d2||!d2.success){result.innerHTML='<span style="color:var(--red)">Payment not recorded — '+escHtml((d2&&d2.error)||'server error')+'. Nothing was changed.</span>';if(btn)btn.disabled=false;return;}
+    // 2) then move the due date forward
+    const r1=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field=Renewal&value='+encodeURIComponent(nextStr)+'&sheetSource='+encodeURIComponent(sheetSrc)+'&t='+Date.now());
+    const d1=await r1.json();
+    const dateOk=!!(d1&&d1.success);
+    if((c.Status||'').trim().toLowerCase()!=='active'){
+      try{await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field=Status&value=Active&sheetSource='+encodeURIComponent(sheetSrc)+'&t='+Date.now());c.Status='Active';}catch(e){}
+    }
+    if(dateOk)c.Renewal=nextStr;
+    if(!d2.duplicate){
+      trackerData.conversions=[{timestamp:paid.toString(),date:paidStr,business,number:c.Number||'',offer:c.Package||'',amount,notes:'Renewal — '+(c.Package||'')+' — paid '+paidStr},...(trackerData.conversions||[])];
+      trackerData.totalConversionRevenue=(trackerData.totalConversionRevenue||0)+amount;
+    }
+    result.innerHTML=dateOk
+      ?'<span style="color:var(--green);font-weight:700">&#10003; '+(d2.duplicate?'Already recorded — ':'')+fmtMoney(amount)+' confirmed — next due '+nextStr+'</span>'
+      :'<span style="color:var(--orange);font-weight:700">Payment recorded, but the next-due date did not save ('+escHtml((d1&&d1.error)||'error')+'). Set NEXT DUE by hand.</span>';
+    showToast((dateOk?'Renewed — ':'Paid — ')+business+(dateOk?' · next '+nextStr:''));
+    setTimeout(()=>{document.getElementById('renewModal').style.display='none';incRefreshAll();renderClients();renderSME();},900);
+  }catch(e){result.innerHTML='<span style="color:var(--red)">Connection error — check before retrying (a retry will not double count).</span>';if(btn)btn.disabled=false;}
+}
+
+// ---------- 8. Data stays fresh: payment log reloads with every refresh ----------
+window._trackerOk=false;let _trackerAt=0;
+async function loadTrackerData(){
+  await loadTrackerDataBase();
+  window._trackerOk=!!(trackerData&&trackerData.lastUpdated);
+  _trackerAt=Date.now();
+}
+async function loadData(){
+  await loadDataBase();
+  if(Date.now()-_trackerAt>45000||!window._trackerOk){try{await loadTrackerData();}catch(e){}}
+  try{incRefreshAll();}catch(e){}
+}
+
+function kindLabel(e){return ({new:'New client',renewal:'Renewal',oneoff:'One-off project'}[e&&e.kind])||(e&&e.renewal?'Renewal':'New client');}
+
+
+// =====================================================
+// v33.0 — TEAM ACCOUNTABILITY, MY DAY, ASSIGNMENT, PENDING PAYMENTS
+// =====================================================
+const TEAM_T={cMin:20,cGoal:30,dMin:3,dGoal:5,start:8,end:17,full:8};
+const TEAM={loaded:false,events:[],outreach:[],calls:[],users:[],day:null,who:'ALL',at:0,err:''};
+const TEAM_CLOSE={client_added:1,client_added_from_pipeline:1,converted_to_client:1,sme_member_added:1};
+const TEAM_SYS={'':1,'sheet':1,'landing page':1,'audit scan':1,'ceo':1};
+const TEAM_ACT={
+  client_added:['🏆','Closed a new client'],client_added_from_pipeline:['🏆','Converted a contact to a client'],
+  converted_to_client:['🏆','Converted to client'],sme_member_added:['🏆','Added SME member'],
+  contact_action:['📱','Contacted'],label_change:['🏷️','Moved stage'],stage_change:['🏷️','Changed pipeline stage'],
+  consultation_change:['🗓️','Consultation'],landing_lead_created:['🌐','New inbound lead'],audit_lead_created:['🔍','New audit lead'],
+  assigned:['👥','Assignment'],next_follow_up_change:['⏰','Set follow-up'],status_change:['🔁','Changed status']
+};
+function tmLocalKey(ms){const d=new Date(ms);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function tmKeyToDate(k){const p=k.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function tmShiftKey(k,n){const d=tmKeyToDate(k);d.setDate(d.getDate()+n);return tmLocalKey(d.getTime());}
+function tmTodayKey(){return tmLocalKey(Date.now());}
+function tmFrac(dayKey){
+  if(dayKey!==tmTodayKey())return dayKey<tmTodayKey()?1:0;
+  const n=new Date(),h=n.getHours()+n.getMinutes()/60;
+  return Math.max(0,Math.min(1,(h-TEAM_T.start)/Math.max(1,TEAM_T.end-TEAM_T.start)));
+}
+function tmIsRest(k){return tmKeyToDate(k).getDay()===6;}
+function tmPeople(){
+  const set={};
+  (TEAM.users||[]).forEach(u=>{if(u.role==='bto'&&u.active)set[u.name]=1;});
+  const add=n=>{const l=(n||'').toLowerCase();if(!l||TEAM_SYS[l]||l===(typeof MASTER_DISPLAY_NAME!=='undefined'?MASTER_DISPLAY_NAME:'').toLowerCase())return;
+    const u=(TEAM.users||[]).find(x=>x.name.toLowerCase()===l);if(u&&u.role!=='bto')return;set[u?u.name:n]=1;};
+  if(IS_BTO())return [MY_NAME()];
+  TEAM.events.forEach(e=>add(e[3]));TEAM.outreach.forEach(o=>add(o[3]));TEAM.calls.forEach(c=>add(c[3]));
+  return Object.keys(set).sort();
+}
+// per person / day: unique businesses contacted, unique closes, counts
+function tmDay(person,key){
+  const lc=person.toLowerCase();const con={},cls={};let msgs=0,calls=0,cons=0,conv=0;
+  TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()!==lc||tmLocalKey(o[0])!==key)return;msgs++;con[o[1].toLowerCase()]=1;});
+  TEAM.calls.forEach(c=>{if(c[3].toLowerCase()!==lc||tmLocalKey(c[0])!==key)return;calls++;con[c[1].toLowerCase()]=1;});
+  TEAM.events.forEach(e=>{if(e[3].toLowerCase()!==lc||tmLocalKey(e[0])!==key)return;
+    if(e[1]==='contact_action')con[e[2].toLowerCase()]=1;
+    if(TEAM_CLOSE[e[1]])cls[e[2].toLowerCase()]=1;
+    if(e[1]==='consultation_change'&&/yes/i.test(e[5]))cons++;});
+  const contacted=Object.keys(con).length,closes=Object.keys(cls).length;
+  return {contacted,closes,msgs,calls,cons};
+}
+function tmStatus(x,key){
+  if(tmIsRest(key)&&!x.contacted&&!x.closes)return {t:'Rest day',c:'var(--muted)'};
+  const T=TEAM_T,f=tmFrac(key),today=key===tmTodayKey();
+  if(x.contacted>=T.cGoal&&x.closes>=T.dGoal)return {t:'Goal hit',c:'var(--gold)'};
+  if(x.contacted>=T.cMin&&x.closes>=T.dMin)return {t:'Target met',c:'var(--green)'};
+  if(today){
+    if(f<=0.02&&!x.contacted)return {t:'Not started',c:'var(--muted)'};
+    if(x.contacted>=T.cMin*f*0.9&&x.closes>=T.dMin*f*0.8)return {t:'On pace',c:'var(--green)'};
+    return {t:'Behind',c:'var(--red)'};
+  }
+  if(!x.contacted&&!x.closes)return {t:'No activity',c:'var(--red)'};
+  return {t:'Missed',c:'var(--red)'};
+}
+function tmBar(v,min,goal,label){
+  const pct=Math.min(100,Math.round(v/goal*100)),mp=Math.round(min/goal*100);
+  const col=v>=goal?'var(--gold)':(v>=min?'var(--green)':'var(--blue,#3b82f6)');
+  return `<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--muted);font-weight:700">${label}</span><span style="font-family:'Space Mono',monospace"><strong>${v}</strong> / ${min}–${goal}</span></div>
+  <div style="position:relative;height:10px;background:var(--surface);border-radius:5px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col}"></div><div title="minimum" style="position:absolute;left:${mp}%;top:0;bottom:0;width:2px;background:var(--text)"></div></div></div>`;
+}
+async function loadTeamTargets(){
+  try{const r=await fetch(API_URL+'?action=getSettings&t='+Date.now());const d=await r.json();
+    const n=(k,def)=>{const v=parseInt(d[k]);return isNaN(v)?def:v;};
+    TEAM_T.cMin=n('bto_contact_min',20);TEAM_T.cGoal=n('bto_contact_goal',30);TEAM_T.dMin=n('bto_close_min',3);TEAM_T.dGoal=n('bto_close_goal',5);
+    TEAM_T.start=n('bto_day_start',8);TEAM_T.end=n('bto_day_end',17);TEAM_T.full=n('bto_full_day_hours',8);}catch(e){}
+}
+async function loadTeam(force){
+  if(!force&&Date.now()-TEAM.at<30000)return;
+  TEAM.at=Date.now();
+  try{
+    const r=await fetch(API_URL+'?action=getTeamData&days=60&t='+Date.now());
+    const d=await r.json();
+    if(!d||!d.success)throw new Error((d&&d.error)||'Team data unavailable — deploy the v33 script');
+    TEAM.events=d.events||[];TEAM.outreach=d.outreach||[];TEAM.calls=d.calls||[];TEAM.users=d.users||[];TEAM.loaded=true;TEAM.err='';
+  }catch(e){TEAM.err=e.message||String(e);}
+}
+
+// ---------- ownership: assigned-to wins over added-by ----------
+function ownerOf(c){return ((c&&c.Assigned_To)||(c&&c.Added_By)||'').toString().trim();}
+function isMine(c){const me=MY_NAME().toLowerCase();return !!me&&ownerOf(c).toLowerCase()===me;}
+function tmHideOthers(){
+  if(!IS_BTO())return;
+  const me=MY_NAME().toLowerCase();
+  const keep=c=>!c||!c.Assigned_To||c.Assigned_To.toString().trim().toLowerCase()===me;
+  ['contacts','koforidua','kumasi','accra'].forEach(k=>{if(Array.isArray(state[k]))state[k]=state[k].filter(keep);});
+}
+const _byChipV32=byChipHtml;
+byChipHtml=function(c){
+  let h=_byChipV32(c);
+  const a=((c&&c.Assigned_To)||'').toString().trim();
+  if(a&&a.toLowerCase()!==((c.Added_By||'')+'').toLowerCase())h+=`<span class="by-chip" title="Assigned to ${escHtml(a)}" style="margin-left:4px">➜ ${escHtml(a)}</span>`;
+  return h;
+};
+const _loadDataV32=loadData;
+loadData=async function(){
+  await _loadDataV32();
+  tmHideOthers();
+  try{await loadTeam(false);}catch(e){}
+  try{renderMyDay();}catch(e){}
+  try{if(document.getElementById('tab-team')&&document.getElementById('tab-team').classList.contains('active'))renderTeam();}catch(e){}
+};
+
+// ---------- BTO "MY DAY" ----------
+function tmQueue(){
+  const today=sEnd(new Date());const rows=[];const now=Date.now();
+  const mine=(state.contacts||[]).filter(c=>c.Business&&(!c.Assigned_To||isMine(c)));
+  mine.forEach(c=>{
+    const l=c.WA_Label||'';if(l.includes('✅')||l.includes('⬛'))return;
+    const fu=parseFollowUpDate(c.Next_Follow_Up);
+    const created=parseAnyDateSafe(c.Created_Date);
+    const inbound=/landing page|audit scan/i.test(c.Added_By||'')&&created&&(now-created.getTime())<48*3600e3;
+    let p=0,why='';
+    if(l.includes('🔵')){p=1;why='Hot lead — close today';}
+    else if(inbound){p=2;why='New inbound lead — reply within the hour';}
+    else if(fu&&fu<=today&&sEnd(fu).getTime()>=new Date().setHours(0,0,0,0)){p=3;why='Follow-up due today';}
+    else if(fu&&fu<today){p=4;why='Follow-up overdue';}
+    else if(l.includes('🔴')){p=5;why='On the call list';}
+    if(p)rows.push({p,why,c});
+  });
+  rows.sort((a,b)=>a.p-b.p);
+  return rows;
+}
+function renderMyDay(){
+  if(!IS_BTO())return;
+  const t=document.getElementById('tab-today');if(!t)return;
+  let box=document.getElementById('myDay');
+  if(!box){box=document.createElement('div');box.id='myDay';t.insertBefore(box,t.firstChild);}
+  const key=tmTodayKey(),x=tmDay(MY_NAME(),key),st=tmStatus(x,key),f=tmFrac(key);
+  const T=TEAM_T;
+  const needC=Math.max(0,T.cMin-x.contacted),needD=Math.max(0,T.dMin-x.closes);
+  const hoursLeft=Math.max(0,(T.end-T.start)*(1-f));
+  const perHr=hoursLeft>0?Math.ceil(needC/hoursLeft):needC;
+  const q=tmQueue();
+  const qh=q.slice(0,8).map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openNotesModal('${escJs(r.c.Business)}')"><span><strong>${escHtml(r.c.Business)}</strong><br><span style="font-size:10px;color:var(--muted)">${r.why}</span></span><span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">${escHtml(r.c.Number||'')}</span></div>`).join('')||'<div style="color:var(--muted);font-size:12px;padding:8px 0">Nothing urgent. Work the call list or add new businesses.</div>';
+  let coach='';
+  if(tmIsRest(key))coach='Rest day — enjoy it.';
+  else if(x.contacted>=T.cGoal&&x.closes>=T.dGoal)coach='Goal hit — outstanding.';
+  else if(needC===0&&needD>0)coach=`Contact target done. Now push for ${needD} more close${needD>1?'s':''}: book consultations with warm leads.`;
+  else if(f>0&&needC>0)coach=`${needC} more contacts to reach ${T.cMin}${hoursLeft>0?' — about '+perHr+' per hour for the rest of the day':''}. About 1 in ${Math.max(2,Math.round(T.cMin/Math.max(1,T.dMin)))} contacts should close.`;
+  else coach=`Start with the priority list below, then new contacts. Target: ${T.cMin}–${T.cGoal} contacts, ${T.dMin}–${T.dGoal} closes.`;
+  box.innerHTML=`<div class="section-title">🎯 MY DAY — ${escHtml(MY_NAME())}</div>
+  <div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:800;color:${st.c}">${st.t}</span><span style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls</span></div>
+    ${tmBar(x.contacted,T.cMin,T.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,T.dMin,T.dGoal,'DEALS CLOSED')}
+    <div style="font-size:12px;margin:8px 0 10px;color:var(--text)">${coach}</div>
+    <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:2px">NEXT UP (${q.length})</div>${qh}
+  </div>`;
+}
+
+// ---------- MASTER: TEAM tab ----------
+function ensureTeamTab(){
+  if(IS_BTO()||document.getElementById('tab-team'))return;
+  const host=document.getElementById('tab-analytics');if(!host)return;
+  const d=document.createElement('div');d.className='tab-content';d.id='tab-team';host.parentNode.insertBefore(d,host.nextSibling);
+}
+const _activateTabV32=activateTab;
+activateTab=function(name){
+  if(name==='team')ensureTeamTab();
+  _activateTabV32(name);
+  if(name==='team'){renderTeam();loadTeam(true).then(()=>{if(document.getElementById('tab-team').classList.contains('active'))renderTeam();});}
+};
+function tmDescribe(it){
+  // it: {t,kind,business,by,how,where,what}
+  return it;
+}
+function tmFeed(key,who){
+  const out=[];const lw=who==='ALL'?null:who.toLowerCase();
+  const town=b=>{const c=(state.contacts||[]).find(x=>x.Business&&x.Business.toLowerCase()===b.toLowerCase());return c?(c.Town||c.City||c.Location||''):'';};
+  const ok=by=>!(TEAM_SYS[(by||'').toLowerCase()])&&(!lw||(by||'').toLowerCase()===lw);
+  TEAM.outreach.forEach(o=>{if(tmLocalKey(o[0])!==key||!ok(o[3]))return;
+    out.push({t:o[0],icon:'💬',by:o[3],what:'Messaged '+o[1],how:(o[2]||'Message')+(o[4]?' · '+o[4]:'')+(o[5]?' — “'+o[5]+'”':''),where:town(o[1])});});
+  TEAM.calls.forEach(c=>{if(tmLocalKey(c[0])!==key||!ok(c[3]))return;
+    out.push({t:c[0],icon:'📞',by:c[3],what:'Called '+c[1],how:'Phone call'+(c[2]?' · '+c[2]:'')+(c[4]?' — '+c[4]:''),where:town(c[1])});});
+  TEAM.events.forEach(e=>{if(tmLocalKey(e[0])!==key||!ok(e[3]))return;
+    if(e[1]==='contact_action'){out.push({t:e[0],icon:'📱',by:e[3],what:'Contacted '+e[2],how:e[5]||'Direct action',where:town(e[2])||e[6]});return;}
+    const m=TEAM_ACT[e[1]];if(!m)return;
+    out.push({t:e[0],icon:m[0],by:e[3],what:m[1]+' — '+e[2],how:[e[4]&&e[5]?e[4]+' → '+e[5]:(e[5]||''),e[7]].filter(Boolean).join(' · '),where:town(e[2])||e[6],close:!!TEAM_CLOSE[e[1]]});});
+  return out.sort((a,b)=>b.t-a.t);
+}
+function renderTeam(){
+  ensureTeamTab();
+  const host=document.getElementById('tab-team');if(!host)return;
+  if(!TEAM.day)TEAM.day=tmTodayKey();
+  const key=TEAM.day,T=TEAM_T,people=tmPeople();
+  if(TEAM.err){host.innerHTML=`<div class="section-title">👥 TEAM</div><div style="color:var(--red);padding:14px">${escHtml(TEAM.err)}</div>`;return;}
+  const nav=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <button class="copy-btn" onclick="tmGo(-1)">◀</button>
+    <input type="date" value="${key}" onchange="TEAM.day=this.value||TEAM.day;renderTeam()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px">
+    <button class="copy-btn" onclick="tmGo(1)">▶</button><button class="copy-btn" onclick="TEAM.day=tmTodayKey();renderTeam()">TODAY</button>
+    <span style="font-size:11px;color:var(--muted)">Targets: ${T.cMin}–${T.cGoal} contacts · ${T.dMin}–${T.dGoal} closes per day</span>
+    <button class="copy-btn" style="margin-left:auto" onclick="openTeamTargets()">⚙ TARGETS</button></div>`;
+  const cards=people.map(p=>{
+    const x=tmDay(p,key),st=tmStatus(x,key);
+    return `<div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;min-width:260px;flex:1">
+      <div style="display:flex;justify-content:space-between"><strong>${escHtml(p)}</strong><span style="font-weight:800;color:${st.c}">${st.t}</span></div>
+      ${tmBar(x.contacted,T.cMin,T.cGoal,'CONTACTED')}${tmBar(x.closes,T.dMin,T.dGoal,'CLOSED')}
+      <div style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls · ${x.cons} consultations booked</div>
+      <div style="font-size:11px;margin-top:4px">Conversion: <strong>${x.contacted?Math.round(x.closes/x.contacted*100):0}%</strong> of contacts closed</div>
+      <button class="copy-btn" style="margin-top:8px;font-size:10px" onclick="TEAM.who='${escJs(p)}';renderTeam()">SEE ONLY ${escHtml(p.split(' ')[0].toUpperCase())}</button></div>`;
+  }).join('')||'<div style="color:var(--muted);padding:12px">No Business Trust Officers with activity yet. Create accounts with setupUser_BTO_Template in the script.</div>';
+  // last 7 days table
+  const days=[];for(let i=6;i>=0;i--)days.push(tmShiftKey(key,-i));
+  const th=days.map(d=>`<th style="padding:6px;font-size:10px;color:var(--muted)">${tmKeyToDate(d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric'})}</th>`).join('');
+  const rows=people.map(p=>`<tr><td style="padding:6px;font-weight:700">${escHtml(p)}</td>${days.map(d=>{const x=tmDay(p,d),st=tmStatus(x,d);
+    return `<td style="padding:6px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;border-left:1px solid var(--border)" title="${st.t}"><span style="color:${st.c}">${x.contacted}/${x.closes}</span></td>`;}).join('')}</tr>`).join('');
+  const table=`<div class="section-title">LAST 7 DAYS <span style="font-weight:400;color:var(--muted)">(contacted / closed)</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th></th>${th}</tr>${rows}</table></div>`;
+  // funnel (14 days)
+  let fc=0,fm=0,fcons=0,fcl=0;
+  people.forEach(p=>{for(let i=0;i<14;i++){const x=tmDay(p,tmShiftKey(key,-i));fc+=x.contacted;fm+=x.msgs+x.calls;fcons+=x.cons;fcl+=x.closes;}});
+  const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+  const funnel=`<div class="section-title">14-DAY FUNNEL</div><div style="display:flex;gap:10px;flex-wrap:wrap">
+    ${[['Businesses contacted',fc,''],['Messages + calls',fm,''],['Consultations booked',fcons,pct(fcons,fc)+' of contacts'],['Deals closed',fcl,pct(fcl,fc)+' of contacts']].map(a=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px"><div style="font-size:10px;color:var(--muted);font-weight:800">${a[0].toUpperCase()}</div><div style="font-size:22px;font-weight:800">${a[1]}</div><div style="font-size:10px;color:var(--muted)">${a[2]}</div></div>`).join('')}</div>`;
+  // coaching
+  const tips=[];
+  people.forEach(p=>{let sum=0,cl=0,n=0;for(let i=1;i<=7;i++){const k=tmShiftKey(key,-i);if(tmIsRest(k))continue;const x=tmDay(p,k);sum+=x.contacted;cl+=x.closes;n++;}
+    if(!n)return;const avg=sum/n,cavg=cl/n;
+    if(avg<T.cMin)tips.push(`${p} averages ${avg.toFixed(1)} contacts/day (target ${T.cMin}). Share the priority list and agree a pace per hour.`);
+    else if(cavg<T.dMin)tips.push(`${p} reaches the contact target but closes ${cavg.toFixed(1)}/day (target ${T.dMin}). Focus on consultations and follow-ups, not more cold messages.`);});
+  const coach=tips.length?`<div class="section-title">COACHING</div>${tips.map(t=>`<div style="padding:8px 12px;background:var(--surface);border-left:3px solid var(--gold);margin-bottom:6px;font-size:12px">${escHtml(t)}</div>`).join('')}`:'';
+  // feed
+  const feed=tmFeed(key,TEAM.who);
+  const filt=`<select onchange="TEAM.who=this.value;renderTeam()" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><option value="ALL">Everyone</option>${people.map(p=>`<option${p===TEAM.who?' selected':''}>${escHtml(p)}</option>`).join('')}</select>`;
+  const ft=feed.slice(0,200).map(f=>`<div style="display:grid;grid-template-columns:54px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);${f.close?'background:rgba(212,175,55,.08)':''}">
+    <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${new Date(f.t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+    <span style="font-size:12px"><strong>${escHtml(f.by)}</strong> ${f.icon} ${escHtml(f.what)}${f.where?` <span style="color:var(--muted)">📍 ${escHtml(f.where)}</span>`:''}<br><span style="font-size:11px;color:var(--muted)">How: ${escHtml(f.how||'—')}</span></span></div>`).join('')||'<div style="color:var(--muted);padding:10px">No activity logged for this day.</div>';
+  const feedHtml=`<div class="section-title">WHO · WHAT · WHERE · WHEN · HOW ${filt}</div>${ft}`;
+  host.innerHTML=`<div class="section-title">👥 TEAM — ${tmKeyToDate(key).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>${nav}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>${table}<div style="height:14px"></div>${funnel}<div style="height:14px"></div>${coach}${tmAssignHtml()}${tmDupHtml()}${feedHtml}`;
+}
+function tmGo(n){TEAM.day=tmShiftKey(TEAM.day||tmTodayKey(),n);renderTeam();}
+
+// ---------- assignment ----------
+function tmUnassigned(){return (state.contacts||[]).filter(c=>c.Business&&!c.Assigned_To&&!((c.WA_Label||'').includes('✅')));}
+function tmAssignHtml(){
+  const btos=(TEAM.users||[]).filter(u=>u.role==='bto'&&u.active).map(u=>u.name);
+  const counts=btos.map(n=>({n,c:(state.contacts||[]).filter(x=>(x.Assigned_To||'').toLowerCase()===n.toLowerCase()).length}));
+  const un=tmUnassigned().length;
+  return `<div class="section-title">👥 CONTACT ASSIGNMENT</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px">
+    ${counts.map(x=>`<span style="margin-right:14px"><strong>${escHtml(x.n)}</strong>: ${x.c} contacts</span>`).join('')||'No active officers.'}
+    <span style="color:var(--muted)">· Unassigned pool: <strong>${un}</strong> (every officer can work these)</span>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="copy-btn" onclick="tmAssign('inbound','AUTO')">SHARE NEW INBOUND LEADS EVENLY</button>
+      <button class="copy-btn" onclick="tmAssign('all','AUTO')">SHARE ALL UNASSIGNED EVENLY</button>
+      ${btos.map(n=>`<button class="copy-btn" onclick="tmAssign('all','${escJs(n)}')">ALL UNASSIGNED → ${escHtml(n.toUpperCase())}</button>`).join('')}
+    </div><div style="margin-top:6px;color:var(--muted);font-size:11px">Contacts that already have an owner are never moved. New landing-page and audit leads are auto-assigned to whoever holds the fewest.</div></div>`;
+}
+async function tmAssign(mode,assignee){
+  try{
+    const base=API_URL+'?action=assignContacts&mode='+mode+'&assignee='+encodeURIComponent(assignee);
+    const d0=await (await fetch(base+'&dry=1&t='+Date.now())).json();
+    if(!d0||!d0.success){showToast((d0&&d0.error)||'Could not assign');return;}
+    if(!d0.count){showToast('Nothing to assign');return;}
+    if(!confirm('Assign '+d0.count+' unassigned contacts ('+mode+') to '+(assignee==='AUTO'?'all officers evenly':assignee)+'?'))return;
+    const d=await (await fetch(base+'&t='+Date.now())).json();
+    showToast(d&&d.success?('Assigned '+d.count+' contacts'):((d&&d.error)||'Failed'));
+    await loadDataBase();tmHideOthers();renderTeam();
+  }catch(e){showToast('Assign failed: '+e.message);}
+}
+async function tmAssignOne(business,assignee){
+  try{const d=await (await fetch(API_URL+'?action=assignContacts&mode=business&business='+encodeURIComponent(business)+'&assignee='+encodeURIComponent(assignee)+'&t='+Date.now())).json();
+    showToast(d&&d.success?'Assigned':((d&&d.error)||'Failed'));}catch(e){showToast('Failed');}
+}
+
+// ---------- duplicates ----------
+function tmDups(){
+  const by={};
+  (state.contacts||[]).forEach(c=>{const n=(c.Number||'').toString().replace(/\D/g,'').slice(-9);if(n.length<7)return;(by[n]=by[n]||[]).push(c);});
+  return Object.values(by).filter(g=>g.length>1);
+}
+function tmDupHtml(){
+  const g=tmDups();if(!g.length)return '';
+  return `<div class="section-title">⚠ POSSIBLE DUPLICATES (${g.length})</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:16px;font-size:12px">
+  ${g.slice(0,15).map(x=>`<div style="padding:4px 0;border-bottom:1px solid var(--border)">${escHtml(x[0].Number||'')} — ${x.map(c=>escHtml(c.Business)+' <span style="color:var(--muted)">('+escHtml(ownerOf(c)||'—')+')</span>').join(' · ')}</div>`).join('')}</div>`;
+}
+
+// ---------- targets modal ----------
+function openTeamTargets(){
+  let m=document.getElementById('teamTargetsModal');
+  if(!m){m=document.createElement('div');m.id='teamTargetsModal';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;align-items:center;justify-content:center';document.body.appendChild(m);}
+  const f=(id,l,v)=>`<label style="font-size:11px;color:var(--muted);display:block;margin-top:8px">${l}</label><input id="${id}" type="number" value="${v}" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px">`;
+  m.innerHTML=`<div style="background:var(--card,#111);border:1px solid var(--border);border-radius:12px;padding:20px;width:min(360px,92vw)"><div class="section-title">TEAM DAILY TARGETS</div>
+   ${f('ttCMin','Contacts per day — minimum',TEAM_T.cMin)}${f('ttCGoal','Contacts per day — goal',TEAM_T.cGoal)}${f('ttDMin','Closes per day — minimum',TEAM_T.dMin)}${f('ttDGoal','Closes per day — goal',TEAM_T.dGoal)}${f('ttFull','Hours in a full working day (targets scale to hours clocked)',TEAM_T.full)}
+   <div style="display:flex;gap:8px;margin-top:14px"><button class="copy-btn" style="background:var(--green);color:var(--black);font-weight:800;flex:1" onclick="saveTeamTargets()">SAVE</button><button class="copy-btn" onclick="document.getElementById('teamTargetsModal').style.display='none'">CANCEL</button></div></div>`;
+  m.style.display='flex';
+}
+async function saveTeamTargets(){
+  const g=id=>parseInt(document.getElementById(id).value);
+  const v={cMin:g('ttCMin'),cGoal:g('ttCGoal'),dMin:g('ttDMin'),dGoal:g('ttDGoal'),full:g('ttFull')};
+  if(Object.values(v).some(isNaN)||v.cGoal<v.cMin||v.dGoal<v.dMin||!(v.full>0)){showToast('Check the numbers — goals must be ≥ minimums');return;}
+  Object.assign(TEAM_T,v);
+  try{await fetch(API_URL+`?action=saveSettings&bto_contact_min=${v.cMin}&bto_contact_goal=${v.cGoal}&bto_close_min=${v.dMin}&bto_close_goal=${v.dGoal}&bto_full_day_hours=${v.full}&t=`+Date.now());showToast('Team targets saved');}catch(e){showToast('Saved on screen only — server unreachable');}
+  document.getElementById('teamTargetsModal').style.display='none';renderTeam();try{renderTeamStrip();}catch(e){}
+}
+
+// ---------- master Today: compact team strip ----------
+function renderTeamStrip(){
+  if(IS_BTO())return;
+  const t=document.getElementById('tab-today');if(!t)return;
+  let box=document.getElementById('teamStrip');
+  if(!box){box=document.createElement('div');box.id='teamStrip';const tm=document.getElementById('topMetrics');t.insertBefore(box,tm);}
+  const key=tmTodayKey(),people=tmPeople();
+  if(!TEAM.loaded||!people.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="section-title" style="cursor:pointer" onclick="activateTab('team')">👥 TEAM TODAY <span style="font-weight:400;color:var(--muted)">— tap for who / what / where / how</span></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">${people.map(p=>{const x=tmDay(p,key),st=tmStatus(x,key);
+   return `<div onclick="TEAM.who='${escJs(p)}';activateTab('team')" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;min-width:170px"><div style="font-weight:700;font-size:12px">${escHtml(p)} <span style="color:${st.c};font-size:11px">${st.t}</span></div><div style="font-family:'Space Mono',monospace;font-size:12px">${x.contacted}/${TEAM_T.cMin} contacted · ${x.closes}/${TEAM_T.dMin} closed</div></div>`;}).join('')}</div>`;
+}
+const _renderTodayV32=renderToday;
+renderToday=function(){_renderTodayV32();try{renderTeamStrip();}catch(e){}try{renderMyDay();}catch(e){}try{renderPendingCard();}catch(e){}};
+
+// ---------- Pending (sold, first payment not received) ----------
+function renderPendingCard(){
+  const t=document.getElementById('targetBar');if(!t)return;
+  let box=document.getElementById('pendingCard');
+  const rows=[];
+  (state.clients||[]).forEach(c=>{if((c.Status||'').toLowerCase()==='pending')rows.push({b:c.Business,a:(parseFloat(c.Amount)||0)+(parseFloat(c.OneTimeAmount)||0),k:'client',by:c.Added_By});});
+  (state.smeMembers||[]).forEach(m=>{if((m.Status||'').toLowerCase()==='pending')rows.push({b:m.Business,a:parseFloat(m.Amount)||0,k:'sme',by:m.Added_By});});
+  if(!rows.length){if(box)box.remove();return;}
+  if(!box){box=document.createElement('div');box.id='pendingCard';t.parentNode.insertBefore(box,t.nextSibling);}
+  box.innerHTML=`<div class="section-title">⏳ SOLD — AWAITING FIRST PAYMENT (${rows.length})</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:14px;font-size:12px">
+  ${rows.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)"><span><strong>${escHtml(r.b)}</strong> <span style="color:var(--muted)">${r.k==='sme'?'SME · ':''}${fmtMoney(r.a)}${r.by?' · closed by '+escHtml(r.by):''}</span></span>${IS_BTO()?'<span style="color:var(--muted)">BYINFORGH confirms</span>':`<button class="copy-btn" style="background:var(--green);color:var(--black);font-weight:800" onclick="openRenewModal('${escJs(r.b)}')">PAYMENT RECEIVED</button>`}</div>`).join('')}
+  <div style="color:var(--muted);margin-top:6px">Not counted as income until the payment is confirmed.</div></div>`;
+}
+
+
+// =====================================================
+// v34.0 — SHIFTS: START / LUNCH / BUSINESS VISIT / OFF SHIFT
+// A day only counts if the officer clocked in. Targets scale to hours worked.
+// =====================================================
+const SHIFT={rows:[],loaded:false,at:0,err:''};
+const SH_LABEL={ON:['🟢','On shift'],LUNCH:['🍽️','Lunch'],VISIT:['🚗','Business visit'],OFF:['⚪','Off shift']};
+function shRowsFor(person){const lp=person.toLowerCase();return SHIFT.rows.filter(r=>r[1].toLowerCase()===lp).sort((a,b)=>a[0]-b[0]);}
+function shFmtDur(ms){const m=Math.max(0,Math.round(ms/60000));return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'m';}
+function shFmtTime(ms){return new Date(ms).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+function shNow(){return Date.now();}
+
+// segments for one person: {state,start,end,note,open}
+function shSegments(person){
+  const rows=shRowsFor(person),segs=[];
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i],nx=rows[i+1];
+    if(r[2]==='OFF')continue;
+    let end,open=false;
+    if(nx)end=nx[0];else{end=shNow();open=true;if(tmLocalKey(r[0])!==tmTodayKey()){end=r[0];open=false;}}
+    segs.push({state:r[2],start:r[0],end:Math.max(end,r[0]),note:r[3],open,unclosed:!nx&&tmLocalKey(r[0])!==tmTodayKey()});
+  }
+  return segs;
+}
+// per person / day shift summary
+function shDay(person,key){
+  const segs=shSegments(person).filter(s=>tmLocalKey(s.start)===key);
+  const o={clocked:false,worked:0,lunch:0,visit:0,visits:[],first:0,last:0,open:false,unclosed:false,state:'OFF',segs:segs};
+  segs.forEach(s=>{
+    const d=s.end-s.start;
+    if(s.state==='ON'||s.state==='VISIT'){o.clocked=true;o.worked+=d;}
+    if(s.state==='VISIT'){o.visit+=d;o.visits.push(s.note||'');}
+    if(s.state==='LUNCH')o.lunch+=d;
+    if(!o.first||s.start<o.first)o.first=s.start;
+    if(s.end>o.last)o.last=s.end;
+    if(s.open){o.open=true;o.state=s.state;}
+    if(s.unclosed)o.unclosed=true;
+  });
+  return o;
+}
+function shCurrent(person){
+  const rows=shRowsFor(person);if(!rows.length)return {state:'OFF',since:0};
+  const r=rows[rows.length-1];
+  if(r[2]!=='OFF'&&tmLocalKey(r[0])!==tmTodayKey())return {state:'OFF',since:r[0],stale:true};
+  return {state:r[2],since:r[0],note:r[3]};
+}
+function shInWork(person,t){return shSegments(person).some(s=>(s.state==='ON'||s.state==='VISIT')&&t>=s.start&&t<=s.end);}
+
+async function loadShifts(force){
+  if(!force&&Date.now()-SHIFT.at<20000)return;
+  SHIFT.at=Date.now();
+  try{
+    const d=await (await fetch(API_URL+'?action=getShiftData&days=60&t='+Date.now())).json();
+    if(!d||!d.success)throw new Error((d&&d.error)||'Shift data unavailable — deploy the v34 script');
+    SHIFT.rows=d.rows||[];SHIFT.loaded=true;SHIFT.err='';
+  }catch(e){SHIFT.err=e.message||String(e);}
+}
+const _loadTeamV33=loadTeam;
+loadTeam=async function(force){await _loadTeamV33(force);await loadShifts(force);};
+
+// ---------- scaled targets ----------
+function shScaled(hrs){
+  const T=TEAM_T,f=Math.min(1,hrs/Math.max(1,T.full||8));
+  return {f,cMin:Math.max(1,Math.ceil(T.cMin*f)),cGoal:Math.max(1,Math.ceil(T.cGoal*f)),dMin:Math.max(f>0?1:0,Math.ceil(T.dMin*f)),dGoal:Math.max(f>0?1:0,Math.ceil(T.dGoal*f))};
+}
+// activity outside a clocked-in period (does not count)
+function shOutside(person,key){
+  const lp=person.toLowerCase();let n=0;
+  TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()===lp&&tmLocalKey(o[0])===key&&!shInWork(person,o[0]))n++;});
+  TEAM.calls.forEach(c=>{if(c[3].toLowerCase()===lp&&tmLocalKey(c[0])===key&&!shInWork(person,c[0]))n++;});
+  return n;
+}
+// share of 15-minute blocks inside worked time that contain at least one action
+function shActivePct(person,key){
+  const d=shDay(person,key);if(d.worked<15*60000)return null;
+  const blocks={},lp=person.toLowerCase();
+  const add=t=>{if(tmLocalKey(t)===key&&shInWork(person,t))blocks[Math.floor(t/900000)]=1;};
+  TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()===lp)add(o[0]);});
+  TEAM.calls.forEach(c=>{if(c[3].toLowerCase()===lp)add(c[0]);});
+  return Math.min(100,Math.round(Object.keys(blocks).length*15*60000/d.worked*100));
+}
+
+// ---------- day stats now know about shifts ----------
+const _tmDayV33=tmDay;
+tmDay=function(person,key){
+  const x=_tmDayV33(person,key);
+  x.sh=shDay(person,key);x.outside=shOutside(person,key);
+  x.hrs=x.sh.worked/3600000;x.sc=shScaled(x.hrs);
+  x.perHr=x.hrs>=0.25?(x.contacted/x.hrs):null;x.closePerHr=x.hrs>=0.25?(x.closes/x.hrs):null;
+  return x;
+};
+tmStatus=function(x,key){
+  const sh=x.sh||{clocked:false};
+  if(!sh.clocked){
+    const raw=x.contacted||x.closes;
+    if(key===tmTodayKey())return {t:raw?'Not clocked in — not counted':'Not clocked in',c:'var(--muted)'};
+    return {t:raw?'Not counted (no clock-in)':'Off',c:'var(--muted)'};
+  }
+  const s=x.sc;
+  if(x.contacted>=Math.max(s.cGoal,1)&&x.closes>=s.dGoal&&s.f>=0.99)return {t:'Goal hit',c:'var(--gold)'};
+  if(x.contacted>=s.cMin&&x.closes>=s.dMin)return {t:'Target met',c:'var(--green)'};
+  if(sh.open){
+    if(x.hrs<0.25)return {t:'Just started',c:'var(--muted)'};
+    const f=Math.min(1,x.hrs/Math.max(1,TEAM_T.full||8));
+    if(x.contacted>=Math.floor(TEAM_T.cMin*f*0.9)&&x.closes>=Math.floor(TEAM_T.dMin*f*0.8))return {t:'On pace',c:'var(--green)'};
+    return {t:'Behind',c:'var(--red)'};
+  }
+  if(x.hrs<0.5)return {t:'Short shift',c:'var(--muted)'};
+  return {t:'Missed',c:'var(--red)'};
+};
+
+// ---------- BTO: shift controls + My Day ----------
+async function shSet(state,note){
+  const me=MY_NAME();
+  if(state==='VISIT'&&note===undefined){
+    const w=prompt('Where are you visiting? (business name or area)','');
+    if(w===null)return;note=w;
+  }
+  if(state==='OFF'&&!confirm('End your shift now?'))return;
+  try{
+    const url=API_URL+'?action=setShift&state='+state+'&note='+encodeURIComponent(note||'')+'&t='+Date.now();
+    const d=await (await fetch(url)).json();
+    if(!d||!d.success){showToast((d&&d.error)||'Could not update your shift');return;}
+    if(!d.unchanged)SHIFT.rows.push([d.t,me,state,note||'','']);
+    showToast(({ON:'Shift started — good luck today',LUNCH:'Enjoy your lunch',VISIT:'Business visit logged',OFF:'Shift ended — well done'})[state]);
+    try{renderMyDay();renderTeamStrip();}catch(e){}
+    loadShifts(true).then(()=>{try{renderMyDay();}catch(e){}});
+  }catch(e){showToast('No connection — shift not saved');}
+}
+function shBarHtml(person){
+  const cur=shCurrent(person),d=shDay(person,tmTodayKey()),lab=SH_LABEL[cur.state];
+  const btn=(st,txt,bg,fg)=>`<button class="copy-btn" style="background:${bg};color:${fg||'#fff'};font-weight:800;padding:10px 14px;font-size:12px;flex:1;min-width:120px" onclick="shSet('${st}')">${txt}</button>`;
+  let btns;
+  if(cur.state==='OFF')btns=btn('ON','▶ START SHIFT','var(--green)','var(--black)');
+  else if(cur.state==='ON')btns=btn('LUNCH','🍽️ LUNCH','#8a6d1f')+btn('VISIT','🚗 BUSINESS VISIT','#2b6cb0')+btn('OFF','⏹ OFF SHIFT','var(--red)');
+  else btns=btn('ON','↩ BACK ON SHIFT','var(--green)','var(--black)')+btn('OFF','⏹ OFF SHIFT','var(--red)');
+  const sub=cur.state==='OFF'
+    ?(d.clocked?`Shift ended · worked ${shFmtDur(d.worked)} today`:'Start your shift to begin — activity is not counted until you do.')
+    :`Since ${shFmtTime(cur.since)}${cur.note?' · '+escHtml(cur.note):''} · worked today ${shFmtDur(d.worked)}${d.lunch?' · lunch '+shFmtDur(d.lunch):''}${d.visit?' · visits '+shFmtDur(d.visit):''}`;
+  return `<div id="shiftBar" style="background:var(--card,var(--surface));border:2px solid ${cur.state==='OFF'?'var(--border)':'var(--green)'};border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:800;font-size:15px">${lab[0]} ${lab[1]}</span><span style="font-size:11px;color:var(--muted)">${sub}</span></div>
+    ${cur.stale?'<div style="font-size:11px;color:var(--red);margin-bottom:6px">Your last shift was never closed. Start a new one to continue.</div>':''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${btns}</div></div>`;
+}
+renderMyDay=function(){
+  if(!IS_BTO())return;
+  const t=document.getElementById('tab-today');if(!t)return;
+  let box=document.getElementById('myDay');
+  if(!box){box=document.createElement('div');box.id='myDay';t.insertBefore(box,t.firstChild);}
+  const me=MY_NAME(),key=tmTodayKey(),x=tmDay(me,key),st=tmStatus(x,key),s=x.sc,sh=x.sh;
+  const q=tmQueue();
+  const qh=q.slice(0,8).map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openNotesModal('${escJs(r.c.Business)}')"><span><strong>${escHtml(r.c.Business)}</strong><br><span style="font-size:10px;color:var(--muted)">${r.why}</span></span><span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">${escHtml(r.c.Number||'')}</span></div>`).join('')||'<div style="color:var(--muted);font-size:12px;padding:8px 0">Nothing urgent. Work the call list or add new businesses.</div>';
+  let body;
+  if(!sh.clocked){
+    body=`<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Targets appear once your shift starts. Everything you do before that is recorded but <strong>not counted</strong> towards today.</div>`;
+  }else{
+    const T=TEAM_T,needC=Math.max(0,s.cMin-x.contacted),needD=Math.max(0,s.dMin-x.closes);
+    let coach;
+    if(x.contacted>=s.cGoal&&x.closes>=s.dGoal&&s.f>=0.99)coach='Goal hit — outstanding.';
+    else if(needC===0&&needD===0)coach='Target met for your hours — keep going for the goal.';
+    else if(needC===0)coach=`Contact target done. Now ${needD} more close${needD>1?'s':''}: book consultations with warm leads.`;
+    else coach=`${needC} more contact${needC>1?'s':''} to reach your target for ${x.hrs.toFixed(1)}h worked (full day = ${T.cMin}–${T.cGoal} contacts, ${T.dMin}–${T.dGoal} closes; targets grow as your hours grow).`;
+    body=`<div style="display:flex;justify-content:space-between"><span style="font-weight:800;color:${st.c}">${st.t}</span><span style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls${x.perHr!=null?' · '+x.perHr.toFixed(1)+' contacts/hour':''}</span></div>
+    ${tmBar(x.contacted,s.cMin,s.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,s.dMin,s.dGoal,'DEALS CLOSED')}
+    <div style="font-size:12px;margin:8px 0 10px">${coach}</div>`;
+  }
+  box.innerHTML=`<div class="section-title">🎯 MY DAY — ${escHtml(me)}</div>${shBarHtml(me)}
+    <div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;${sh.clocked?'':'opacity:.85'}">${body}
+    <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:2px">NEXT UP (${q.length})</div>${qh}</div>`;
+};
+setInterval(()=>{try{if(IS_BTO()&&document.getElementById('shiftBar')&&shCurrent(MY_NAME()).state!=='OFF')renderMyDay();}catch(e){}},60000);
+
+// ---------- master: team strip with live state ----------
+renderTeamStrip=function(){
+  if(IS_BTO())return;
+  const t=document.getElementById('tab-today');if(!t)return;
+  let box=document.getElementById('teamStrip');
+  if(!box){box=document.createElement('div');box.id='teamStrip';t.insertBefore(box,document.getElementById('topMetrics'));}
+  const key=tmTodayKey(),people=tmPeople();
+  if(!TEAM.loaded||!people.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="section-title" style="cursor:pointer" onclick="activateTab('team')">👥 TEAM TODAY <span style="font-weight:400;color:var(--muted)">— tap for who / what / where / how</span></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">${people.map(p=>{const x=tmDay(p,key),st=tmStatus(x,key),cur=shCurrent(p),lab=SH_LABEL[cur.state];
+   return `<div onclick="TEAM.who='${escJs(p)}';activateTab('team')" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;min-width:190px"><div style="font-weight:700;font-size:12px">${escHtml(p)} <span style="font-size:11px">${lab[0]} ${lab[1]}${cur.state==='VISIT'&&cur.note?' · '+escHtml(cur.note):''}</span></div>
+   <div style="font-family:'Space Mono',monospace;font-size:12px">${x.sh.clocked?x.contacted+'/'+x.sc.cMin+' contacted · '+x.closes+'/'+x.sc.dMin+' closed':'<span style="color:var(--muted)">not clocked in</span>'}</div>
+   <div style="font-size:10px;color:${st.c}">${st.t}${x.sh.clocked?' · '+shFmtDur(x.sh.worked):''}</div></div>`;}).join('')}</div>`;
+};
+
+// ---------- feed: shift events ----------
+const _tmFeedV33=tmFeed;
+tmFeed=function(key,who){
+  const out=_tmFeedV33(key,who);const lw=who==='ALL'?null:who.toLowerCase();
+  const byP={};SHIFT.rows.forEach(r=>{(byP[r[1]]=byP[r[1]]||[]).push(r);});
+  Object.keys(byP).forEach(p=>{
+    if(lw&&p.toLowerCase()!==lw)return;
+    const rows=byP[p].sort((a,b)=>a[0]-b[0]);
+    rows.forEach((r,i)=>{
+      if(tmLocalKey(r[0])!==key)return;
+      const prev=i?rows[i-1][2]:'OFF';
+      const txt=({ON:prev==='LUNCH'?'Back from lunch':(prev==='VISIT'?'Back from business visit':'Started shift'),LUNCH:'Went to lunch',VISIT:'Business visit'+(r[3]?' — '+r[3]:''),OFF:'Ended shift'})[r[2]];
+      out.push({t:r[0],icon:SH_LABEL[r[2]][0],by:p,what:txt,how:r[4]?('Shift '+r[4].toLowerCase()):'Shift',where:r[2]==='VISIT'?(r[3]||''):''});
+    });
+  });
+  return out.sort((a,b)=>b.t-a.t);
+};
+
+// ---------- master: fix a forgotten clock-out ----------
+async function shFix(person,key,state){
+  const tm=prompt('What time did '+person+' actually finish on '+key+'? (HH:MM, 24-hour)','17:00');
+  if(!tm||!/^\d{1,2}:\d{2}$/.test(tm))return;
+  const at=key+' '+(tm.length===4?'0'+tm:tm);
+  try{const d=await (await fetch(API_URL+'?action=fixShift&person='+encodeURIComponent(person)+'&state='+state+'&at='+encodeURIComponent(at)+'&note='+encodeURIComponent('Corrected by BYINFORGH')+'&t='+Date.now())).json();
+    showToast(d&&d.success?'Shift corrected':((d&&d.error)||'Failed'));await loadShifts(true);renderTeam();}catch(e){showToast('Failed');}
+}
+
+// ---------- master: Team tab with attendance ----------
+renderTeam=function(){
+  ensureTeamTab();
+  const host=document.getElementById('tab-team');if(!host)return;
+  if(!TEAM.day)TEAM.day=tmTodayKey();
+  const key=TEAM.day,T=TEAM_T,people=tmPeople();
+  if(TEAM.err){host.innerHTML=`<div class="section-title">👥 TEAM</div><div style="color:var(--red);padding:14px">${escHtml(TEAM.err)}</div>`;return;}
+  const warn=SHIFT.err?`<div style="color:var(--red);font-size:12px;margin-bottom:8px">${escHtml(SHIFT.err)}</div>`:'';
+  const nav=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <button class="copy-btn" onclick="tmGo(-1)">◀</button>
+    <input type="date" value="${key}" onchange="TEAM.day=this.value||TEAM.day;renderTeam()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px">
+    <button class="copy-btn" onclick="tmGo(1)">▶</button><button class="copy-btn" onclick="TEAM.day=tmTodayKey();renderTeam()">TODAY</button>
+    <span style="font-size:11px;color:var(--muted)">Full-day targets: ${T.cMin}–${T.cGoal} contacts · ${T.dMin}–${T.dGoal} closes · scaled to hours clocked (full day = ${T.full}h)</span>
+    <button class="copy-btn" style="margin-left:auto" onclick="openTeamTargets()">⚙ TARGETS</button></div>`;
+  const cards=people.map(p=>{
+    const x=tmDay(p,key),st=tmStatus(x,key),sh=x.sh,s=x.sc,cur=key===tmTodayKey()?shCurrent(p):null,ap=shActivePct(p,key);
+    const state=cur?`<span style="font-size:11px">${SH_LABEL[cur.state][0]} ${SH_LABEL[cur.state][1]}${cur.state==='VISIT'&&cur.note?' · '+escHtml(cur.note):''}</span>`:'';
+    const hours=sh.clocked?`<div style="font-size:11px;margin:4px 0;color:var(--text)">⏱ <strong>${shFmtDur(sh.worked)}</strong> worked · in ${shFmtTime(sh.first)}${sh.open?'':' · out '+shFmtTime(sh.last)}${sh.lunch?' · lunch '+shFmtDur(sh.lunch):''}${sh.visits.length?' · '+sh.visits.length+' visit'+(sh.visits.length>1?'s':'')+(sh.visits.filter(Boolean).length?' ('+escHtml(sh.visits.filter(Boolean).join(', '))+')':''):''}</div>`
+      :`<div style="font-size:11px;margin:4px 0;color:var(--muted)">Did not clock in — day not counted</div>`;
+    const fix=sh.unclosed?`<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ No clock-out recorded. <a style="text-decoration:underline;cursor:pointer" onclick="shFix('${escJs(p)}','${key}','OFF')">Set finish time</a></div>`:'';
+    const outside=x.outside?`<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ ${x.outside} action${x.outside>1?'s':''} logged outside a clocked-in period (not counted)</div>`:'';
+    const bars=sh.clocked?tmBar(x.contacted,s.cMin,s.cGoal,'CONTACTED')+tmBar(x.closes,s.dMin,s.dGoal,'CLOSED'):'';
+    const rate=sh.clocked&&x.perHr!=null?`<div style="font-size:11px;color:var(--muted)">${x.perHr.toFixed(1)} contacts/hour · ${x.closePerHr.toFixed(2)} closes/hour${ap!=null?' · active '+ap+'% of shift':''}</div>`:'';
+    return `<div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;min-width:260px;flex:1">
+      <div style="display:flex;justify-content:space-between"><strong>${escHtml(p)}</strong><span style="font-weight:800;color:${st.c};font-size:12px">${st.t}</span></div>${state}${hours}${bars}
+      <div style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls · ${x.cons} consultations booked</div>${rate}${fix}${outside}
+      <button class="copy-btn" style="margin-top:8px;font-size:10px" onclick="TEAM.who='${escJs(p)}';renderTeam()">SEE ONLY ${escHtml(p.split(' ')[0].toUpperCase())}</button></div>`;
+  }).join('')||'<div style="color:var(--muted);padding:12px">No Business Trust Officers yet.</div>';
+
+  // attendance — last 7 days
+  const days=[];for(let i=6;i>=0;i--)days.push(tmShiftKey(key,-i));
+  const th=days.map(d=>`<th style="padding:6px;font-size:10px;color:var(--muted)">${tmKeyToDate(d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric'})}</th>`).join('')+'<th style="padding:6px;font-size:10px;color:var(--muted)">TOTAL</th>';
+  const rows=people.map(p=>{let tot=0,tc=0,tcl=0;
+    const tds=days.map(d=>{const x=tmDay(p,d),st=tmStatus(x,d);
+      if(x.sh.clocked){tot+=x.sh.worked;tc+=x.contacted;tcl+=x.closes;}
+      return x.sh.clocked
+        ?`<td style="padding:6px;text-align:center;border-left:1px solid var(--border);font-family:'Space Mono',monospace;font-size:11px" title="${st.t}"><span style="color:${st.c}">${x.contacted}/${x.closes}</span><br><span style="color:var(--muted);font-size:10px">${(x.sh.worked/3600000).toFixed(1)}h${x.sh.unclosed?' ⚠':''}</span></td>`
+        :`<td style="padding:6px;text-align:center;border-left:1px solid var(--border);font-size:10px;color:var(--muted)" title="${st.t}">${x.contacted||x.closes?'not counted':'off'}</td>`;}).join('');
+    return `<tr><td style="padding:6px;font-weight:700">${escHtml(p)}</td>${tds}<td style="padding:6px;text-align:center;border-left:1px solid var(--border);font-family:'Space Mono',monospace;font-size:11px"><strong>${(tot/3600000).toFixed(1)}h</strong><br><span style="color:var(--muted);font-size:10px">${tc}/${tcl}</span></td></tr>`;}).join('');
+  const table=`<div class="section-title">ATTENDANCE — LAST 7 DAYS <span style="font-weight:400;color:var(--muted)">(contacted / closed, hours clocked)</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th></th>${th}</tr>${rows}</table></div>`;
+
+  // 30-day benchmark per person (hours-normalised, so part-timers compare fairly)
+  const bench=people.map(p=>{let h=0,c=0,cl=0,dd=0,vis=0;for(let i=0;i<30;i++){const x=tmDay(p,tmShiftKey(key,-i));if(!x.sh.clocked)continue;dd++;h+=x.hrs;c+=x.contacted;cl+=x.closes;vis+=x.sh.visits.length;}
+    return `<tr><td style="padding:6px;font-weight:700">${escHtml(p)}</td><td style="padding:6px;text-align:center">${dd}</td><td style="padding:6px;text-align:center">${h.toFixed(1)}h</td><td style="padding:6px;text-align:center">${dd?(h/dd).toFixed(1)+'h':'—'}</td><td style="padding:6px;text-align:center">${h?(c/h).toFixed(1):'—'}</td><td style="padding:6px;text-align:center">${h?(cl/h).toFixed(2):'—'}</td><td style="padding:6px;text-align:center">${c?Math.round(cl/c*100)+'%':'—'}</td><td style="padding:6px;text-align:center">${vis}</td></tr>`;}).join('');
+  const benchHtml=`<div class="section-title">30-DAY PERFORMANCE PER HOUR <span style="font-weight:400;color:var(--muted)">(clocked days only — use as the training benchmark)</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--muted);font-size:10px"><th></th><th>DAYS</th><th>HOURS</th><th>AVG SHIFT</th><th>CONTACTS/H</th><th>CLOSES/H</th><th>CLOSE RATE</th><th>VISITS</th></tr>${bench}</table></div>`;
+
+  // best hours: when clocked-in work actually happens
+  const hr={};let hrMax=0;
+  people.forEach(p=>{const add=t=>{if(shInWork(p,t)){const h=new Date(t).getHours();hr[h]=(hr[h]||0)+1;hrMax=Math.max(hrMax,hr[h]);}};
+    TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()===p.toLowerCase())add(o[0]);});TEAM.calls.forEach(c=>{if(c[3].toLowerCase()===p.toLowerCase())add(c[0]);});});
+  const hrs=[];for(let h=6;h<=20;h++)hrs.push(h);
+  const best=hrMax?`<div class="section-title">WHEN THE WORK GETS DONE <span style="font-weight:400;color:var(--muted)">(actions by hour, last 60 days)</span></div><div style="display:flex;gap:3px;align-items:flex-end;height:70px;margin-bottom:4px">${hrs.map(h=>`<div title="${h}:00 — ${hr[h]||0} actions" style="flex:1;background:var(--green);height:${Math.max(2,Math.round((hr[h]||0)/hrMax*100))}%;border-radius:2px 2px 0 0"></div>`).join('')}</div><div style="display:flex;gap:3px;font-size:9px;color:var(--muted)">${hrs.map(h=>`<div style="flex:1;text-align:center">${h}</div>`).join('')}</div><div style="height:14px"></div>`:'';
+
+  // funnel (14 days, clocked days only)
+  let fc=0,fm=0,fcons=0,fcl=0;
+  people.forEach(p=>{for(let i=0;i<14;i++){const x=tmDay(p,tmShiftKey(key,-i));if(!x.sh.clocked)continue;fc+=x.contacted;fm+=x.msgs+x.calls;fcons+=x.cons;fcl+=x.closes;}});
+  const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+  const funnel=`<div class="section-title">14-DAY FUNNEL <span style="font-weight:400;color:var(--muted)">(clocked days only)</span></div><div style="display:flex;gap:10px;flex-wrap:wrap">
+    ${[['Businesses contacted',fc,''],['Messages + calls',fm,''],['Consultations booked',fcons,pct(fcons,fc)+' of contacts'],['Deals closed',fcl,pct(fcl,fc)+' of contacts']].map(a=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:140px"><div style="font-size:10px;color:var(--muted);font-weight:800">${a[0].toUpperCase()}</div><div style="font-size:22px;font-weight:800">${a[1]}</div><div style="font-size:10px;color:var(--muted)">${a[2]}</div></div>`).join('')}</div>`;
+
+  // coaching from per-hour numbers
+  const tips=[];
+  people.forEach(p=>{let h=0,c=0,cl=0,d=0,idle=0,idleN=0;for(let i=1;i<=14;i++){const k=tmShiftKey(key,-i),x=tmDay(p,k);if(!x.sh.clocked)continue;d++;h+=x.hrs;c+=x.contacted;cl+=x.closes;const ap=shActivePct(p,k);if(ap!=null){idle+=ap;idleN++;}}
+    if(!d||h<1)return;const perH=c/h,full=T.cMin/Math.max(1,T.full);
+    if(perH<full*0.8)tips.push(`${p} averages ${perH.toFixed(1)} contacts per clocked hour; a full day at target needs about ${full.toFixed(1)}. Check what fills the clocked time.`);
+    else if(cl/c<T.dMin/Math.max(1,T.cGoal))tips.push(`${p} keeps a good contact rate but only ${Math.round(cl/c*100)}% of contacts close. Focus on consultations and follow-ups, not more cold messages.`);
+    if(idleN&&idle/idleN<50)tips.push(`${p} is active in only ${Math.round(idle/idleN)}% of clocked 15-minute blocks. Look for long gaps in the feed below.`);});
+  const coach=tips.length?`<div class="section-title">COACHING</div>${tips.map(t=>`<div style="padding:8px 12px;background:var(--surface);border-left:3px solid var(--gold);margin-bottom:6px;font-size:12px">${escHtml(t)}</div>`).join('')}`:'';
+
+  const feed=tmFeed(key,TEAM.who);
+  const filt=`<select onchange="TEAM.who=this.value;renderTeam()" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><option value="ALL">Everyone</option>${people.map(p=>`<option${p===TEAM.who?' selected':''}>${escHtml(p)}</option>`).join('')}</select>`;
+  const ft=feed.slice(0,250).map(f=>`<div style="display:grid;grid-template-columns:54px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);${f.close?'background:rgba(212,175,55,.08)':''}">
+    <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${shFmtTime(f.t)}</span>
+    <span style="font-size:12px"><strong>${escHtml(f.by)}</strong> ${f.icon} ${escHtml(f.what)}${f.where?` <span style="color:var(--muted)">📍 ${escHtml(f.where)}</span>`:''}<br><span style="font-size:11px;color:var(--muted)">How: ${escHtml(f.how||'—')}</span></span></div>`).join('')||'<div style="color:var(--muted);padding:10px">No activity logged for this day.</div>';
+  const feedHtml=`<div class="section-title">WHO · WHAT · WHERE · WHEN · HOW ${filt}</div>${ft}`;
+  host.innerHTML=`<div class="section-title">👥 TEAM — ${tmKeyToDate(key).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>${warn}${nav}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>${table}<div style="height:14px"></div>${benchHtml}<div style="height:14px"></div>${best}${funnel}<div style="height:14px"></div>${coach}${tmAssignHtml()}${tmDupHtml()}${feedHtml}`;
+};
+// reload shifts when the Team tab opens or data refreshes
+const _loadDataV33=loadData;
+loadData=async function(){await _loadDataV33();try{await loadShifts(false);}catch(e){}try{renderMyDay();renderTeamStrip();}catch(e){}};
 
 </script>
 </body>
