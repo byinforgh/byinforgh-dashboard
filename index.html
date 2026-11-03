@@ -275,7 +275,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="masterBanner">MASTER VIEW &mdash; signed in as <span id="masterBannerName"></span><button onclick="masterLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v34.1</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v34.2</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -6491,6 +6491,80 @@ loadData=async function(){
   await _loadDataV34();
   try{if(state.raw&&state.raw.role==='bto'&&MASTER_TOKEN){goToBtoPage(MASTER_TOKEN,MASTER_DISPLAY_NAME);}}catch(e){}
 };
+
+
+// =====================================================
+// v34.2 — BTO ACCOUNTS: add / reset password / switch off, from the Team tab
+// =====================================================
+function acctLink(){return location.href.replace(/[?#].*$/,'').replace(/[^/]*$/,'')+'bto.html';}
+function acctPanelHtml(){
+  const bt=(TEAM.users||[]).filter(u=>u.role==='bto');
+  const rows=bt.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+    <span><strong>${escHtml(u.name)}</strong> <span style="color:var(--muted);font-size:11px">${escHtml(u.username||'')}</span> <span style="font-size:11px;color:${u.active?'var(--green)':'var(--red)'}">${u.active?'● active':'● switched off'}</span></span>
+    <span style="display:flex;gap:6px"><button class="copy-btn" style="font-size:10px" onclick="acctReset('${escJs(u.username)}','${escJs(u.name)}')">RESET PASSWORD</button>
+    <button class="copy-btn" style="font-size:10px" onclick="acctActive('${escJs(u.username)}','${escJs(u.name)}',${u.active?0:1})">${u.active?'SWITCH OFF':'SWITCH ON'}</button></span></div>`).join('')||'<div style="color:var(--muted);padding:8px 0">No Business Trust Officers yet.</div>';
+  return `<details ${TEAM.acctOpen?'open':''} ontoggle="TEAM.acctOpen=this.open" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px">
+    <summary style="cursor:pointer;font-weight:800;font-size:12px;letter-spacing:1px">👤 BTO ACCOUNTS (${bt.filter(u=>u.active).length} active) — add · reset password · switch off</summary>
+    <div style="margin-top:8px;font-size:12px">${rows}
+    <div style="margin-top:10px"><button class="copy-btn" style="background:var(--green);color:var(--black);font-weight:800" onclick="acctAdd()">+ ADD BTO</button>
+    <span style="color:var(--muted);font-size:11px;margin-left:8px">Their page: ${escHtml(acctLink())}</span></div></div></details>`;
+}
+const _renderTeamV34=renderTeam;
+renderTeam=function(){
+  _renderTeamV34();
+  try{const host=document.getElementById('tab-team');const t=host&&host.querySelector('.section-title');
+    if(t&&!TEAM.err)t.insertAdjacentHTML('afterend',acctPanelHtml());}catch(e){}
+};
+function acctGen(){const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';let p='';const a=new Uint32Array(10);crypto.getRandomValues(a);a.forEach(n=>p+=c[n%c.length]);return p;}
+async function acctCall(q){
+  const d=await (await fetch(API_URL+'?action=manageUser&'+q+'&t='+Date.now())).json();
+  if(!d||!d.success)throw new Error((d&&d.error)||'Failed');return d;
+}
+function acctModal(html){
+  let m=document.getElementById('acctModal');
+  if(!m){m=document.createElement('div');m.id='acctModal';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:700;align-items:center;justify-content:center';document.body.appendChild(m);}
+  m.innerHTML=`<div style="background:var(--card,#fff);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:20px;width:min(400px,92vw);max-height:90vh;overflow:auto">${html}</div>`;m.style.display='flex';
+}
+function acctClose(){const m=document.getElementById('acctModal');if(m)m.style.display='none';}
+const _acctIn='width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px';
+function acctAdd(){
+  acctModal(`<div class="section-title">ADD A BUSINESS TRUST OFFICER</div>
+   <label style="font-size:11px;color:var(--muted)">Display name (shown on everything they do — must be unique)</label><input id="acName" style="${_acctIn}" placeholder="e.g. Ama Mensah">
+   <label style="font-size:11px;color:var(--muted);display:block;margin-top:8px">Username (they sign in with this)</label><input id="acUser" style="${_acctIn}" placeholder="e.g. ama@byinforgh" autocapitalize="off">
+   <label style="font-size:11px;color:var(--muted);display:block;margin-top:8px">Password (min 8 characters)</label><div style="display:flex;gap:6px"><input id="acPass" style="${_acctIn}" value="${acctGen()}"><button class="copy-btn" onclick="document.getElementById('acPass').value=acctGen()">NEW</button></div>
+   <div id="acMsg" style="font-size:12px;color:var(--red);margin-top:8px"></div>
+   <div style="display:flex;gap:8px;margin-top:12px"><button class="copy-btn" style="background:var(--green);color:var(--black);font-weight:800;flex:1" onclick="acctCreate()">CREATE ACCOUNT</button><button class="copy-btn" onclick="acctClose()">CANCEL</button></div>`);
+  const n=document.getElementById('acName'),u=document.getElementById('acUser');
+  n.oninput=()=>{if(!u.dataset.touched)u.value=n.value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'')+(n.value.trim()?'@byinforgh':'');};
+  u.oninput=()=>{u.dataset.touched='1';};
+}
+async function acctCreate(){
+  const g=id=>document.getElementById(id).value.trim(),msg=document.getElementById('acMsg');
+  const name=g('acName'),user=g('acUser'),pass=document.getElementById('acPass').value;
+  if(!name||!user||pass.length<8){msg.textContent='Fill in the name, username and a password of 8+ characters.';return;}
+  msg.style.color='var(--muted)';msg.textContent='Creating…';
+  try{
+    await acctCall('op=create&username='+encodeURIComponent(user)+'&password='+encodeURIComponent(pass)+'&displayName='+encodeURIComponent(name));
+    const text=`Hi ${name}, here is your BYINFORGH login.\nPage: ${acctLink()}\nUsername: ${user}\nPassword: ${pass}\nTap START SHIFT when you begin work each day.`;
+    acctModal(`<div class="section-title">ACCOUNT CREATED ✓</div><div style="font-size:12px;margin-bottom:8px">Send this to ${escHtml(name)} now — the password is not shown again.</div>
+      <textarea id="acText" readonly style="${_acctIn};height:130px;font-family:'Space Mono',monospace;font-size:11px">${escHtml(text)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="copy-btn" style="background:var(--green);color:var(--black);font-weight:800;flex:1" onclick="navigator.clipboard.writeText(document.getElementById('acText').value).then(()=>showToast('Copied'))">COPY</button><button class="copy-btn" onclick="acctClose()">DONE</button></div>`);
+    await loadTeam(true);renderTeam();
+  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
+}
+async function acctReset(user,name){
+  const p=acctGen();
+  if(!confirm('Reset the password for '+name+'? They will be signed out.'))return;
+  try{await acctCall('op=resetPassword&username='+encodeURIComponent(user)+'&password='+encodeURIComponent(p));
+    acctModal(`<div class="section-title">PASSWORD RESET ✓</div><div style="font-size:12px;margin-bottom:8px">New password for ${escHtml(name)} (${escHtml(user)}):</div>
+      <input id="acText" readonly value="${escHtml(p)}" style="${_acctIn};font-family:'Space Mono',monospace;font-size:14px">
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="copy-btn" style="background:var(--green);color:var(--black);font-weight:800;flex:1" onclick="navigator.clipboard.writeText(document.getElementById('acText').value).then(()=>showToast('Copied'))">COPY</button><button class="copy-btn" onclick="acctClose()">DONE</button></div>`);
+  }catch(e){showToast(e.message);}
+}
+async function acctActive(user,name,on){
+  if(!on&&!confirm('Switch off '+name+'? They are signed out and cannot log in. Their history is kept.'))return;
+  try{await acctCall('op=setActive&username='+encodeURIComponent(user)+'&active='+on);showToast(on?name+' switched on':name+' switched off');await loadTeam(true);renderTeam();}catch(e){showToast(e.message);}
+}
 
 </script>
 </body>
