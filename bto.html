@@ -4318,7 +4318,7 @@ async function sendAI(){
   const local=getSmartLocalReply(question);
   if(local){loading.remove();aiHistory.push({role:'user',content:question},{role:'assistant',content:local});addAIMessage('assistant',local);return;}
   const mrr=getMRR();
-  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\n${BYINFORGH_KNOWLEDGE}\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000). Lead with problem not product. Be brief and specific.`;
+  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000). Lead with problem not product. Be brief and specific.`;
   aiHistory.push({role:'user',content:question});
   try{
     const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),15000);
@@ -4378,8 +4378,6 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx,t
   try{const rr=await fetch(API_URL+'?action=getContactMessages&business='+encodeURIComponent(business)+'&t='+Date.now());const dd=await rr.json();if(dd&&dd.success){sentBefore=(dd.messages||[]).filter(x=>x.message).slice(0,4).map((x,i)=>'#'+(i+1)+' ('+(x.date||'')+'): '+x.message.substring(0,300)).join('\n---\n');}}catch(e){}
   const context=`Business: ${business}\nMESSAGES ALREADY SENT TO THEM (newest first — do NOT repeat or re-offer anything in these):\n${sentBefore||(msgCount>0?'(text not saved, but '+msgCount+' message(s) were already sent)':'None yet')}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nAUDIT RESULT (use this if present — this is the real, specific leak to reference instead of a generic pitch):\n${auditLine}\nFull notes: ${fullNotes.substring(0,1500)||'No notes'}\nRecent history:\n${history}`;
   const sp=`You are writing the exact next WhatsApp message for a BYINFORGH sales contact in Ghana, based ONLY on the real facts given below.
-BACKGROUND ON BYINFORGH (for accuracy only; do not pitch from it unless the contact stage and notes justify it):
-${BYINFORGH_KNOWLEDGE}
 CRITICAL RULES — violating any of these makes the message unusable:
 - If any message has already been sent (see MESSAGES ALREADY SENT), do NOT offer, pitch, price or push any package, listing or service again. Check in, ask one honest question, or answer what they said. Only mention an offer if the notes show THEY asked about it.\n- Never invent, assume, or fabricate any event or claim (no "someone searched for you", no "a business near you just went live", no made-up numbers or dates).
 - Never name a location other than the one explicitly given above. If no location is given, do not mention any place at all.
@@ -4450,7 +4448,7 @@ async function sendConvReview(){
   if(!summary){showToast('Add a conversation summary first');return;}
   resultDiv.innerHTML='<div class="loading">Analysing</div>';
   const pkgCtx=pkg?`\nPackage: ${pkg}${amount?' (GHS '+amount+')':''}`:'' ;
-  const sp=`You are a sales coach for BYINFORGH Ghana.\n${BYINFORGH_KNOWLEDGE}\nEcosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
+  const sp=`You are a sales coach for BYINFORGH Ghana. Ecosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
   const question=`Business: ${business||'unnamed'}\nOutcome: ${outcome}${pkgCtx}\nSummary: ${summary}`;
   try{
     const r=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(question)+'&context='+encodeURIComponent(sp)+'&t='+Date.now());
