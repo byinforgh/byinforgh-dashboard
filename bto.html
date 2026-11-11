@@ -283,7 +283,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="btoBanner">BUSINESS TRUST OFFICER VIEW &mdash; signed in as <span id="btoBannerName"></span><button onclick="btoLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v34.3</span></div>
+  <div class="logo">BYINFORGH <span>BUSINESS TRUST OFFICER v34.4</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -486,6 +486,9 @@ html,body{max-width:100%;overflow-x:clip;}
       <button class="ver-btn active" id="depPresence" onclick="setDeployment('Presence',this)">Presence (Free)</button>
       <button class="ver-btn" id="depVerified" onclick="setDeployment('Verified',this)">Verified (GHS 180)</button>
       <button class="ver-btn" id="depSME" onclick="setDeployment('SME Systems',this)">SME Systems</button>
+      <button class="ver-btn" id="depShop" onclick="setDeployment('Digital Shopfront',this)">Digital Shopfront</button>
+      <button class="ver-btn" id="depTecx" onclick="setDeployment('TecXFRA',this)">TecXFRA</button>
+      <button class="ver-btn" id="depConsult" onclick="setDeployment('Business Consulting',this)">Consulting</button>
       <button class="ver-btn" id="depNone" onclick="setDeployment('',this)">No Target</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
@@ -542,6 +545,7 @@ html,body{max-width:100%;overflow-x:clip;}
   <div style="background:#FBEAE8;border:1px solid var(--red);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.7">
     <strong style="color:var(--red)">&#128222; CALL LIST — 🔴 1 TICK CONTACTS</strong> · WhatsApp message delivered but not reaching them. Must call directly. Set the outcome, add notes/follow-up, then tap LOG. Logging an outcome moves the contact off this list — it will not reappear or get double-logged.
   </div>
+  <div id="callStatsBox"></div>
   <div class="section-title">DAILY CALL TARGETS</div>
   <div id="callBlockList"></div>
   <div class="section-title" style="margin-top:24px">LOG A CALL CONVERSATION MANUALLY</div>
@@ -686,7 +690,13 @@ html,body{max-width:100%;overflow-x:clip;}
         <option value="TecXFRA Enterprise">TecXFRA Enterprise — GHS 1500/mo</option>
         <option value="TecXFRA Prestige">TecXFRA Prestige — GHS 4500/mo</option>
         </optgroup>
-        <optgroup label="TRANSFORM IT — Consulting">
+        <optgroup label="LEARN IT — Shopfront &amp; Masterclass">
+<option value="Digital Shopfront">Digital Shopfront — GHS 250 one-time</option>
+<option value="Masterclass Standard">Masterclass Standard — GHS 50/mo</option>
+<option value="Masterclass VIP">Masterclass VIP — GHS 350/mo</option>
+<option value="Masterclass 1-2-1 Session">Masterclass 1-2-1 — GHS 1,200</option>
+</optgroup>
+<optgroup label="TRANSFORM IT — Consulting">
         <option value="Business Snapshot">Business Snapshot — GHS 600</option>
         <option value="Quick Audit">Quick Audit — GHS 1800</option>
         <option value="Full Audit">Full Audit — GHS 3200</option>
@@ -773,6 +783,11 @@ html,body{max-width:100%;overflow-x:clip;}
     <button class="filter-btn" onclick="setMsgCategory('objection',this)">OBJECTIONS</button>
     <button class="filter-btn" onclick="setMsgCategory('conversation',this)">CONVERSATION</button>
     <button class="filter-btn" onclick="setMsgCategory('sme',this)">SME SYSTEMS</button>
+    <button class="filter-btn" onclick="setMsgCategory('about',this)">WHO WE ARE</button>
+    <button class="filter-btn" onclick="setMsgCategory('shopfront',this)">DIGITAL SHOPFRONT</button>
+    <button class="filter-btn" onclick="setMsgCategory('tecxfra',this)">TECXFRA</button>
+    <button class="filter-btn" onclick="setMsgCategory('consulting',this)">CONSULTING</button>
+    <button class="filter-btn" onclick="setMsgCategory('disarm',this)">DISARMING OPENERS</button>
   </div>
   <div id="msgLibrary"></div>
 </div>
@@ -876,7 +891,13 @@ html,body{max-width:100%;overflow-x:clip;}
         <option value="TecXFRA Enterprise">TecXFRA Enterprise — GHS 1500/mo</option>
         <option value="TecXFRA Prestige">TecXFRA Prestige — GHS 4500/mo</option>
         </optgroup>
-        <optgroup label="TRANSFORM IT — Consulting">
+        <optgroup label="LEARN IT — Shopfront &amp; Masterclass">
+<option value="Digital Shopfront">Digital Shopfront — GHS 250 one-time</option>
+<option value="Masterclass Standard">Masterclass Standard — GHS 50/mo</option>
+<option value="Masterclass VIP">Masterclass VIP — GHS 350/mo</option>
+<option value="Masterclass 1-2-1 Session">Masterclass 1-2-1 — GHS 1,200</option>
+</optgroup>
+<optgroup label="TRANSFORM IT — Consulting">
         <option value="Business Snapshot">Business Snapshot — GHS 600</option>
         <option value="Quick Audit">Quick Audit — GHS 1800</option>
         <option value="Full Audit">Full Audit — GHS 3200</option>
@@ -1037,7 +1058,13 @@ html,body{max-width:100%;overflow-x:clip;}
       <option value="TecXFRA Enterprise">TecXFRA Enterprise — GHS 1500/mo</option>
       <option value="TecXFRA Prestige">TecXFRA Prestige — GHS 4500/mo</option>
       </optgroup>
-      <optgroup label="TRANSFORM IT — Consulting">
+      <optgroup label="LEARN IT — Shopfront &amp; Masterclass">
+<option value="Digital Shopfront">Digital Shopfront — GHS 250 one-time</option>
+<option value="Masterclass Standard">Masterclass Standard — GHS 50/mo</option>
+<option value="Masterclass VIP">Masterclass VIP — GHS 350/mo</option>
+<option value="Masterclass 1-2-1 Session">Masterclass 1-2-1 — GHS 1,200</option>
+</optgroup>
+<optgroup label="TRANSFORM IT — Consulting">
       <option value="Business Snapshot">Business Snapshot — GHS 600</option>
       <option value="Quick Audit">Quick Audit — GHS 1800</option>
       <option value="Full Audit">Full Audit — GHS 3200</option>
@@ -2252,7 +2279,7 @@ function renderFollowUps(){
     followupAllContacts=[];
     return;
   }
-  refreshNewTodayBadge();let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business));
+  refreshNewTodayBadge();let contacts=state.contacts.filter(c=>c.Business&&!c.WA_Label.includes('⬛')&&!c.WA_Label.includes('✅')&&!sessionResolvedContacts.has(c.Business)&&!c.DoneToday);
   const today=new Date();today.setHours(0,0,0,0);
   if(currentFilter==='__NEW__')contacts=contacts.filter(isPendingNew);
   else if(currentFilter==='monthly')contacts=contacts.filter(c=>c.Stage&&c.Stage.toLowerCase().includes('monthly'));
@@ -2296,7 +2323,7 @@ function renderFollowUps(){
     // v21.0: pass currentMsgVersion through so contextual messages vary by
     // version too, not just the generic templates.
     const contextualMsg=buildContextualFollowup(c,msgCount,currentMsgVersion)||(msgCount>=1?buildNoOfferFollowup(c,msgCount,currentMsgVersion):null);
-    const tmpl=contextualMsg?null:(isFirstTouch?(OPENER_VERSIONS[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||''));
+    const tmpl=contextualMsg?null:(isFirstTouch?((PRODUCT_OPENERS[currentDeployment]||OPENER_VERSIONS)[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||''));
     const msg=contextualMsg||tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
     const fd=parseFollowUpDate(c.Next_Follow_Up);
     const daysOv=fd?Math.floor((today-fd)/(1000*60*60*24)):0;
@@ -2325,7 +2352,7 @@ function renderFollowUps(){
     return `<div class="followup-item" style="${daysOv>0?'border-color:#2a1500;border-left:3px solid var(--red)':''}">
       <div class="followup-header"><div style="flex:1">
         <div class="followup-name"><span id="bizname-${bizSafe}"><span style="cursor:pointer" onclick="showFullNotes('${sb}','${sn}','${ss}','${c.Number||''}','${c.Category||''}')">${emoji} ${c.Business}</span> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button>${ovTag}${dtTag}${freqBadge}${depInfo}${sourceTag}${newTag}${byChipHtml(c)}</span></div>
-        <div class="followup-meta">${c.Number||'—'} · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgLinkHtml(c.Business,msgCount)}</div>
+        <div class="followup-meta">${c.Number||'—'} <button class="edit-name-btn" title="Correct this number" onclick="editNumber('${sb}','${src}')">&#9998;</button> · ${c.Town||'—'} · ${c.Category||'—'} · Due: ${cleanDate(c.Next_Follow_Up)} · Msgs: ${msgLinkHtml(c.Business,msgCount)}</div>
         <textarea
           data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}"
           oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')"
@@ -2756,7 +2783,7 @@ function renderPipeline(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-p'+pIdx;
-    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}${byChipHtml(c)}${consultBtnHtml(c)}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgLinkHtml(c.Business,msgCount)}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
+    return`<tr><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td><span id="bizname-${bizSafe}"><strong>${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqBadge}${byChipHtml(c)}${consultBtnHtml(c)}<br><span style="color:var(--text-dim);font-size:10px">${c.Number} <button class="edit-name-btn" title="Correct this number" onclick="editNumber('${sb}','${src}')">&#9998;</button> · ${c.Town||'—'} · ${c.Category||'—'}</span></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:150px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:14px;cursor:pointer;max-width:56px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgLinkHtml(c.Business,msgCount)}</td><td style="font-size:11px;white-space:nowrap">${cleanDate(c.Last_Contact)}</td><td><input type="date" data-orig="${sheetDateToInputFormat(c.Next_Follow_Up)}" value="${sheetDateToInputFormat(c.Next_Follow_Up)}" onclick="this.showPicker&&this.showPicker()" onchange="updateContactField('${sb}','Next_Follow_Up',dateInputToSheetFormat(this.value),this,'${src}')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;outline:none;width:120px"></td><td style="font-size:11px;max-width:180px"><textarea data-orig="${(c.Notes||'').replace(/"/g,'&quot;')}" oninput="debouncedUpdateContactField('${sb}','Notes',this.value,this,2200,'${src}')" style="width:150px;min-height:32px;background:#FFFFFF;border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px;border-radius:4px;resize:vertical" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">${(c.Notes||'').replace(/</g,'&lt;')}</textarea></td></tr>`;
   }).join('');
 }
 function openPipelineStage(key,name,noScroll){
@@ -2925,7 +2952,7 @@ function renderCallTab(){
     const lastCall=getLastCallNote(c.Notes).replace(/</g,'&lt;');
     return `<div class="call-item" id="callrow-${key}">
       <div class="call-item-row">
-        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number}</div><div style="margin-top:6px">${callLinkHtml(c.Number)}</div>${lastCall?`<div style="font-size:10px;color:var(--gold);margin-top:5px;font-style:italic;line-height:1.4">&#128220; Last: ${lastCall.substring(0,140)}</div>`:''}</div>
+        <div style="flex:0 0 auto;min-width:140px"><div class="call-name">${i+1}. ${c.Business}</div><div class="call-sub">${c.Town||'—'} · ${c.Category||'—'}</div><div class="call-number" style="margin-top:4px">${c.Number} <button class="edit-name-btn" title="Correct this number" onclick="editNumber('${escJs(c.Business)}','${escJs(c.Sheet_Source||'Master CRM')}')">&#9998;</button></div><div style="margin-top:6px">${callLinkHtml(c.Number)}</div>${lastCall?`<div style="font-size:10px;color:var(--gold);margin-top:5px;font-style:italic;line-height:1.4">&#128220; Last: ${lastCall.substring(0,140)}</div>`:''}</div>
         <div class="call-mid">
           <select onchange="callInlineUpdate('${key}','outcome',this.value)">${callOutcomeOptionsHtml('')}</select>
           <div class="call-mid-row">
@@ -3281,7 +3308,7 @@ function renderSME(){
         <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--teal);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${m.Amount||0}" value="${m.Amount||0}" onchange="updateSMEField('${sb}','Amount',this.value,this)">
       </div>
       <select data-orig="${m.Status||''}" onchange="updateSMEField('${sb}','Status',this.value,this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;width:auto">${statusOpts}</select>
-      <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace">${m.Number||'—'}</div>
+      <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace">${m.Number||'—'} <button class="edit-name-btn" title="Correct this number" onclick="editNumber('${sb}','SME Systems Members')">&#9998;</button></div>
       ${IS_BTO()?'':`<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;color:var(--muted);font-weight:700;width:52px;text-align:right">NEXT DUE</span><input type="date" style="background:var(--surface);border:1px solid ${(smeRenewalInfo(m).days<0&&isAct)?'var(--red)':'var(--border)'};color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:'Space Mono',monospace;width:130px" value="${dateToInputValue(m.Renewal)}" onchange="updateSMEField('${sb}','Renewal',dateInputToSheetFormat(this.value),this)"><button class="copy-btn" style="background:var(--green);color:var(--black);padding:4px 10px;font-size:10px;font-weight:800" onclick="openRenewModal('${sb}')">&#8635; RENEW</button></div>`}
     </div></div>`;
   }).join('');
@@ -3740,7 +3767,7 @@ function renderClients(){
     const statusOpts=CLIENT_STATUS_OPTIONS.map(o=>`<option value="${o}"${o.toLowerCase()===stat?' selected':''}>${o}</option>`).join('');
     const overdueCard=info.due&&info.days<0&&stat==='active';
     const dueTxt=info.due?('Next renewal: '+fmtDMY(info.due)):'';
-    return`<div class="client-item ${stat==='churned'||overdueCard?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Started ${c.Joined||'—'}</div><div style="margin-top:6px">${renewalBadgeHtml(info)} <span style="font-size:10px;color:var(--text-dim);margin-left:6px">${dueTxt}</span></div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+    return`<div class="client-item ${stat==='churned'||overdueCard?'overdue':''}"><div style="flex:1"><div class="client-name">${c.Business}</div><div class="client-pkg">${c.Package} · Started ${c.Joined||'—'} · ${c.Number||'no number'} <button class="edit-name-btn" title="Correct this number" onclick="editNumber('${sb}','Clients')">&#9998;</button></div><div style="margin-top:6px">${renewalBadgeHtml(info)} <span style="font-size:10px;color:var(--text-dim);margin-left:6px">${dueTxt}</span></div><div class="client-pkg" style="margin-top:4px;color:var(--text-dim)">${c.Notes||'—'}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
       <div style="display:flex;gap:6px;align-items:center">
         <span style="font-size:9px;color:var(--gold);font-weight:700">MONTHLY GHS</span>
         <input type="number" style="background:var(--surface);border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:3px 6px;font-size:11px;font-family:'Space Mono',monospace;width:70px;font-weight:700" data-orig="${c.Amount||0}" value="${c.Amount||0}" onchange="updateClientField('${sb}','Amount',this.value,this)">
@@ -4130,7 +4157,7 @@ function filterContacts(){
     const sb=escJs(c.Business);
     const src=escJs(c.Sheet_Source||'Master CRM');
     const bizSafe=c.Business.replace(/[^a-zA-Z0-9]/g,'_')+'-ac'+fi;
-    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}${byChipHtml(c)}${consultBtnHtml(c)}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td><div class="clip" title="${(c.Town||'').replace(/"/g,'&quot;')}">${c.Town||'—'}</div></td><td><div class="clip" title="${(c.Category||'').replace(/"/g,'&quot;')}">${c.Category||'—'}</div></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgLinkHtml(c.Business,msgCount)}</td><td style="min-width:170px">
+    return`<tr><td><input type="checkbox" class="contact-select-cb" data-biz="${sb}" ${selectedContactsSet.has(c.Business)?'checked':''} onchange="toggleContactSelect('${sb}',this.checked)"></td><td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${c.ID}</td><td style="min-width:140px"><span id="bizname-${bizSafe}"><strong style="font-size:12px">${c.Business}</strong> <button class="edit-name-btn" title="Edit business name" onclick="startEditBusinessName('${sb}','${src}','bizname-${bizSafe}')">&#9998;</button> <button class="edit-name-btn" title="Convert to client / set package" onclick="openConvertToClient('${sb}','${src}')">&#127942;</button></span>${freqTag}${byChipHtml(c)}${consultBtnHtml(c)}<br><span style="color:var(--gold);font-size:10px;font-family:'Space Mono',monospace">${c.Number||''}</span> <button class="edit-name-btn" title="Correct this number" onclick="editNumber('${sb}','${src}')">&#9998;</button> ${callLinkHtml(c.Number,'padding:2px 6px;font-size:8px;margin-left:2px')}</td><td><div class="clip" title="${(c.Town||'').replace(/"/g,'&quot;')}">${c.Town||'—'}</div></td><td><div class="clip" title="${(c.Category||'').replace(/"/g,'&quot;')}">${c.Category||'—'}</div></td><td><select data-orig="${c.Stage||''}" onchange="updateFollowupStage('${sb}','Stage',this.value,this,'${src}',null)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;max-width:140px;outline:none">${buildStageOptionsHtml(c.Stage||'')}</select></td><td><select data-orig="${c.WA_Label||''}" onchange="confirmWaLabelChange(this,()=>updateContactField('${sb}','WA_Label',this.value,this,'${src}'))" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 4px;font-size:14px;cursor:pointer;max-width:50px;outline:none">${buildWaLabelOptionsHtml(c.WA_Label||'',true)}</select></td><td style="text-align:center">${getClientPackageBadge(c)}</td><td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:center">${msgLinkHtml(c.Business,msgCount)}</td><td style="min-width:170px">
       <select id="actionpick-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:10px;font-family:Syne,sans-serif;cursor:pointer;width:100%;margin-bottom:3px">${ALL_CONTACTS_ACTION_OPTIONS.map(o=>`<option value="${o}">${o||'— what was done? —'}</option>`).join('')}</select>
       <div style="display:flex;gap:4px;align-items:center">
         <input type="date" id="actiondate-${bizSafe}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 4px;font-size:9px;font-family:'Space Mono',monospace;width:100px" value="${(function(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()}">
@@ -4291,7 +4318,7 @@ async function sendAI(){
   const local=getSmartLocalReply(question);
   if(local){loading.remove();aiHistory.push({role:'user',content:question},{role:'assistant',content:local});addAIMessage('assistant',local);return;}
   const mrr=getMRR();
-  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000). Lead with problem not product. Be brief and specific.`;
+  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\n${BYINFORGH_KNOWLEDGE}\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000). Lead with problem not product. Be brief and specific.`;
   aiHistory.push({role:'user',content:question});
   try{
     const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),15000);
@@ -4351,6 +4378,8 @@ async function generatePersonalMsg(business,notes,category,emoji,stage,btn,idx,t
   try{const rr=await fetch(API_URL+'?action=getContactMessages&business='+encodeURIComponent(business)+'&t='+Date.now());const dd=await rr.json();if(dd&&dd.success){sentBefore=(dd.messages||[]).filter(x=>x.message).slice(0,4).map((x,i)=>'#'+(i+1)+' ('+(x.date||'')+'): '+x.message.substring(0,300)).join('\n---\n');}}catch(e){}
   const context=`Business: ${business}\nMESSAGES ALREADY SENT TO THEM (newest first — do NOT repeat or re-offer anything in these):\n${sentBefore||(msgCount>0?'(text not saved, but '+msgCount+' message(s) were already sent)':'None yet')}\nLocation (use ONLY this — never mention any other place): ${realTown||'Not specified — do not name any location'}\nCategory: ${category||'—'}\nCurrent stage: ${stage||'—'}\nWA label: ${emoji}\nMessages already sent: ${msgCount}\nAUDIT RESULT (use this if present — this is the real, specific leak to reference instead of a generic pitch):\n${auditLine}\nFull notes: ${fullNotes.substring(0,1500)||'No notes'}\nRecent history:\n${history}`;
   const sp=`You are writing the exact next WhatsApp message for a BYINFORGH sales contact in Ghana, based ONLY on the real facts given below.
+BACKGROUND ON BYINFORGH (for accuracy only; do not pitch from it unless the contact stage and notes justify it):
+${BYINFORGH_KNOWLEDGE}
 CRITICAL RULES — violating any of these makes the message unusable:
 - If any message has already been sent (see MESSAGES ALREADY SENT), do NOT offer, pitch, price or push any package, listing or service again. Check in, ask one honest question, or answer what they said. Only mention an offer if the notes show THEY asked about it.\n- Never invent, assume, or fabricate any event or claim (no "someone searched for you", no "a business near you just went live", no made-up numbers or dates).
 - Never name a location other than the one explicitly given above. If no location is given, do not mention any place at all.
@@ -4421,7 +4450,7 @@ async function sendConvReview(){
   if(!summary){showToast('Add a conversation summary first');return;}
   resultDiv.innerHTML='<div class="loading">Analysing</div>';
   const pkgCtx=pkg?`\nPackage: ${pkg}${amount?' (GHS '+amount+')':''}`:'' ;
-  const sp=`You are a sales coach for BYINFORGH Ghana. Ecosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
+  const sp=`You are a sales coach for BYINFORGH Ghana.\n${BYINFORGH_KNOWLEDGE}\nEcosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
   const question=`Business: ${business||'unnamed'}\nOutcome: ${outcome}${pkgCtx}\nSummary: ${summary}`;
   try{
     const r=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(question)+'&context='+encodeURIComponent(sp)+'&t='+Date.now());
@@ -5899,15 +5928,15 @@ function tmPeople(){
 }
 // per person / day: unique businesses contacted, unique closes, counts
 function tmDay(person,key){
-  const lc=person.toLowerCase();const con={},cls={};let msgs=0,calls=0,cons=0,conv=0;
-  TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()!==lc||tmLocalKey(o[0])!==key)return;msgs++;con[o[1].toLowerCase()]=1;});
+  const lc=person.toLowerCase();const con={},cls={};let msgs=0,calls=0,cons=0,conv=0,visits=0;
+  TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()!==lc||tmLocalKey(o[0])!==key)return;if(tmIsCallType(o[2]))calls++;else if(tmIsVisitType(o[2]))visits++;else msgs++;con[o[1].toLowerCase()]=1;});
   TEAM.calls.forEach(c=>{if(c[3].toLowerCase()!==lc||tmLocalKey(c[0])!==key)return;calls++;con[c[1].toLowerCase()]=1;});
   TEAM.events.forEach(e=>{if(e[3].toLowerCase()!==lc||tmLocalKey(e[0])!==key)return;
     if(e[1]==='contact_action')con[e[2].toLowerCase()]=1;
     if(TEAM_CLOSE[e[1]])cls[e[2].toLowerCase()]=1;
     if(e[1]==='consultation_change'&&/yes/i.test(e[5]))cons++;});
   const contacted=Object.keys(con).length,closes=Object.keys(cls).length;
-  return {contacted,closes,msgs,calls,cons};
+  return {contacted,closes,msgs,calls,cons,visits};
 }
 function tmStatus(x,key){
   if(tmIsRest(key)&&!x.contacted&&!x.closes)return {t:'Rest day',c:'var(--muted)'};
@@ -6038,7 +6067,7 @@ function tmFeed(key,who){
   const town=b=>{const c=(state.contacts||[]).find(x=>x.Business&&x.Business.toLowerCase()===b.toLowerCase());return c?(c.Town||c.City||c.Location||''):'';};
   const ok=by=>!(TEAM_SYS[(by||'').toLowerCase()])&&(!lw||(by||'').toLowerCase()===lw);
   TEAM.outreach.forEach(o=>{if(tmLocalKey(o[0])!==key||!ok(o[3]))return;
-    out.push({t:o[0],icon:'💬',by:o[3],what:'Messaged '+o[1],how:(o[2]||'Message')+(o[4]?' · '+o[4]:'')+(o[5]?' — “'+o[5]+'”':''),where:town(o[1])});});
+    out.push({t:o[0],icon:tmIsCallType(o[2])?'📞':(tmIsVisitType(o[2])?'🚗':'💬'),by:o[3],what:(tmIsCallType(o[2])?'Called ':(tmIsVisitType(o[2])?'Visited ':'Messaged '))+o[1],how:(o[2]||'Message')+(o[4]?' · '+o[4]:'')+(o[5]?' — “'+o[5]+'”':''),where:town(o[1])});});
   TEAM.calls.forEach(c=>{if(tmLocalKey(c[0])!==key||!ok(c[3]))return;
     out.push({t:c[0],icon:'📞',by:c[3],what:'Called '+c[1],how:'Phone call'+(c[2]?' · '+c[2]:'')+(c[4]?' — '+c[4]:''),where:town(c[1])});});
   TEAM.events.forEach(e=>{if(tmLocalKey(e[0])!==key||!ok(e[3]))return;
@@ -6354,7 +6383,7 @@ renderMyDay=function(){
     else if(needC===0&&needD===0)coach='Target met for your hours — keep going for the goal.';
     else if(needC===0)coach=`Contact target done. Now ${needD} more close${needD>1?'s':''}: book consultations with warm leads.`;
     else coach=`${needC} more contact${needC>1?'s':''} to reach your target for ${x.hrs.toFixed(1)}h worked (full day = ${T.cMin}–${T.cGoal} contacts, ${T.dMin}–${T.dGoal} closes; targets grow as your hours grow).`;
-    body=`<div style="display:flex;justify-content:space-between"><span style="font-weight:800;color:${st.c}">${st.t}</span><span style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls${x.perHr!=null?' · '+x.perHr.toFixed(1)+' contacts/hour':''}</span></div>
+    body=`<div style="display:flex;justify-content:space-between"><span style="font-weight:800;color:${st.c}">${st.t}</span><span style="font-size:11px;color:var(--muted)">${tmCountsLine(me,key,x)}${x.perHr!=null?' · '+x.perHr.toFixed(1)+' contacts/hour':''}</span></div>
     ${tmBar(x.contacted,s.cMin,s.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,s.dMin,s.dGoal,'DEALS CLOSED')}
     <div style="font-size:12px;margin:8px 0 10px">${coach}</div>`;
   }
@@ -6431,7 +6460,7 @@ renderTeam=function(){
     const rate=sh.clocked&&x.perHr!=null?`<div style="font-size:11px;color:var(--muted)">${x.perHr.toFixed(1)} contacts/hour · ${x.closePerHr.toFixed(2)} closes/hour${ap!=null?' · active '+ap+'% of shift':''}</div>`:'';
     return `<div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;min-width:260px;flex:1">
       <div style="display:flex;justify-content:space-between"><strong>${escHtml(p)}</strong><span style="font-weight:800;color:${st.c};font-size:12px">${st.t}</span></div>${state}${hours}${bars}
-      <div style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls · ${x.cons} consultations booked</div>${rate}${fix}${outside}
+      <div style="font-size:11px;color:var(--muted)">${tmCountsLine(p,key,x)} · ${x.cons} consultations booked</div>${rate}${fix}${outside}
       <button class="copy-btn" style="margin-top:8px;font-size:10px" onclick="TEAM.who='${escJs(p)}';renderTeam()">SEE ONLY ${escHtml(p.split(' ')[0].toUpperCase())}</button></div>`;
   }).join('')||'<div style="color:var(--muted);padding:12px">No Business Trust Officers yet.</div>';
 
@@ -6457,7 +6486,7 @@ renderTeam=function(){
   people.forEach(p=>{const add=t=>{if(shInWork(p,t)){const h=new Date(t).getHours();hr[h]=(hr[h]||0)+1;hrMax=Math.max(hrMax,hr[h]);}};
     TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()===p.toLowerCase())add(o[0]);});TEAM.calls.forEach(c=>{if(c[3].toLowerCase()===p.toLowerCase())add(c[0]);});});
   const hrs=[];for(let h=6;h<=20;h++)hrs.push(h);
-  const best=hrMax?`<div class="section-title">WHEN THE WORK GETS DONE <span style="font-weight:400;color:var(--muted)">(actions by hour, last 60 days)</span></div><div style="display:flex;gap:3px;align-items:flex-end;height:70px;margin-bottom:4px">${hrs.map(h=>`<div title="${h}:00 — ${hr[h]||0} actions" style="flex:1;background:var(--green);height:${Math.max(2,Math.round((hr[h]||0)/hrMax*100))}%;border-radius:2px 2px 0 0"></div>`).join('')}</div><div style="display:flex;gap:3px;font-size:9px;color:var(--muted)">${hrs.map(h=>`<div style="flex:1;text-align:center">${h}</div>`).join('')}</div><div style="height:14px"></div>`:'';
+  const best=tmBestHours(people);
 
   // funnel (14 days, clocked days only)
   let fc=0,fm=0,fcons=0,fcl=0;
@@ -6477,9 +6506,7 @@ renderTeam=function(){
 
   const feed=tmFeed(key,TEAM.who);
   const filt=`<select onchange="TEAM.who=this.value;renderTeam()" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><option value="ALL">Everyone</option>${people.map(p=>`<option${p===TEAM.who?' selected':''}>${escHtml(p)}</option>`).join('')}</select>`;
-  const ft=feed.slice(0,250).map(f=>`<div style="display:grid;grid-template-columns:54px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);${f.close?'background:rgba(212,175,55,.08)':''}">
-    <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${shFmtTime(f.t)}</span>
-    <span style="font-size:12px"><strong>${escHtml(f.by)}</strong> ${f.icon} ${escHtml(f.what)}${f.where?` <span style="color:var(--muted)">📍 ${escHtml(f.where)}</span>`:''}<br><span style="font-size:11px;color:var(--muted)">How: ${escHtml(f.how||'—')}</span></span></div>`).join('')||'<div style="color:var(--muted);padding:10px">No activity logged for this day.</div>';
+  const ft=tmFeedBox(feed);
   const feedHtml=`<div class="section-title">WHO · WHAT · WHERE · WHEN · HOW ${filt}</div>${ft}`;
   host.innerHTML=`<div class="section-title">👥 TEAM — ${tmKeyToDate(key).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>${warn}${nav}
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>${table}<div style="height:14px"></div>${benchHtml}<div style="height:14px"></div>${best}${funnel}<div style="height:14px"></div>${coach}${tmAssignHtml()}${tmDupHtml()}${feedHtml}`;
@@ -6570,6 +6597,380 @@ setInterval(()=>syncCheck(false),8000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCheck(true);});
 window.addEventListener('focus',()=>syncCheck(true));
 window.addEventListener('online',()=>syncCheck(true));
+
+
+// =====================================================
+// v34.4 — drill-downs, hourly stats, feed scroll, phone edit, call stats,
+// product messaging, AI knowledge, sync fixes
+// =====================================================
+function tmIsCallType(t){return /call/i.test((t||'').toString());}
+function tmIsVisitType(t){return /visit/i.test((t||'').toString());}
+
+// My Day queue rows call this; it did not exist before.
+function openNotesModal(business){
+  const c=(state.contacts||[]).find(x=>x.Business===business);
+  if(c)showFullNotes(business,c.Notes||'',c.Stage||'',c.Number||'',c.Category||'');
+  else showToast('Contact not found');
+}
+
+// ---------- re-render whichever tab is open after a sync ----------
+function rerenderActiveTab(){
+  const act=document.querySelector('.tab-content.active');if(!act)return;
+  const id=act.id.replace('tab-','');
+  const map={
+    followup:()=>renderFollowUps(),contacts:()=>renderAllContacts(),pipeline:()=>renderPipeline(),
+    clients:()=>renderClients(),sme:()=>renderSME(),koforidua:()=>renderKoforidua(),kumasi:()=>renderKumasi(),
+    accra:()=>renderAccra(),calendar:()=>renderCalendar(),analytics:()=>renderAnalytics(),revenue:()=>renderRevenue(),
+    calls:()=>{if(!Object.keys(callInlineState).length)renderCallTab();}
+  };
+  if(map[id]){try{map[id]();}catch(e){console.log('rerender',id,e.message);}}
+}
+const _syncRefreshV344=syncRefresh;
+syncRefresh=async function(){await _syncRefreshV344();rerenderActiveTab();};
+
+// things BTO already completed today must not show on anyone's list
+const _isPendingNewV344=isPendingNew;
+isPendingNew=function(c){return !(c&&c.DoneToday)&&_isPendingNewV344(c);};
+const _renderFollowUpsV344=renderFollowUps;
+renderFollowUps=function(){
+  _renderFollowUpsV344();
+  try{
+    const n=(state.contacts||[]).filter(c=>c.DoneToday).length;
+    const b=document.getElementById('followupBanner');
+    if(b&&n)b.innerHTML+=' <strong>'+n+' contact'+(n===1?'':'s')+' already marked DONE today (by anyone) are hidden.</strong>';
+  }catch(e){}
+};
+
+// team targets were never loaded from the server before
+const _loadTeamV344=loadTeam;
+loadTeam=async function(force){
+  if(!TEAM_T._at||Date.now()-TEAM_T._at>300000){TEAM_T._at=Date.now();try{await loadTeamTargets();}catch(e){}}
+  await _loadTeamV344(force);
+};
+
+// ---------- phone number correction ----------
+async function editNumber(business,sheetSource){
+  sheetSource=sheetSource||'Master CRM';
+  const isCl=sheetSource==='Clients',isSme=sheetSource==='SME Systems Members';
+  const list=isCl?(state.clients||[]):(isSme?(state.smeMembers||[]):(state.contacts||[]));
+  const c=list.find(x=>x.Business===business);
+  const cur=c?(c.Number||''):'';
+  const v=prompt('Correct phone / WhatsApp number for '+business+':',cur);
+  if(v===null)return;
+  const n=normalizePhoneClient(v);
+  if(!/^0\d{9}$/.test(n)){showToast('Number should be 10 digits starting with 0 (e.g. 0241234567)');return;}
+  if(n===normalizePhoneClient(cur)){showToast('Number unchanged');return;}
+  const dup=(state.contacts||[]).find(x=>x.Business!==business&&normalizePhoneClient(x.Number||'')===n);
+  if(dup&&!confirm('This number is already used by "'+dup.Business+'". Save it anyway?'))return;
+  const data=await updateContactField(business,'Number',n,null,sheetSource);
+  if(data&&data.success){
+    if(c)c.Number=n;
+    [state.koforidua,state.kumasi,state.accra,state.crmContacts].forEach(arr=>(arr||[]).forEach(x=>{if(x.Business===business)x.Number=n;}));
+    rerenderActiveTab();
+  }
+}
+
+// ---------- drill-down: who contacted whom, messages, calls ----------
+function tmItems(person,key){
+  const lp=person.toLowerCase(),items=[];
+  TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()!==lp||tmLocalKey(o[0])!==key)return;
+    items.push({t:o[0],biz:o[1],type:tmIsCallType(o[2])?'call':(tmIsVisitType(o[2])?'visit':'msg'),label:o[2]||'Message',text:o[5]||''});});
+  TEAM.calls.forEach(c=>{if(c[3].toLowerCase()!==lp||tmLocalKey(c[0])!==key)return;
+    items.push({t:c[0],biz:c[1],type:'call',label:c[2]||'Call',text:c[4]||''});});
+  TEAM.events.forEach(e=>{if(e[3].toLowerCase()!==lp||tmLocalKey(e[0])!==key)return;
+    if(e[1]==='contact_action')items.push({t:e[0],biz:e[2],type:'contact',label:'Contacted',text:e[5]||''});
+    else if(TEAM_CLOSE[e[1]])items.push({t:e[0],biz:e[2],type:'close',label:'Closed',text:e[5]||''});});
+  return items.sort((a,b)=>b.t-a.t);
+}
+function tmModal(html){
+  let m=document.getElementById('tmDrillModal');
+  if(!m){m=document.createElement('div');m.id='tmDrillModal';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:650;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto';
+    m.onclick=function(e){if(e.target===m)m.style.display='none';};document.body.appendChild(m);}
+  m.innerHTML='<div style="background:#fff;border-radius:10px;max-width:620px;width:100%;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)">'+html+'</div>';
+  m.style.display='flex';
+}
+function tmCountsLine(p,key,x){
+  const a=(k,n,l)=>'<a class="msg-link" style="font-family:inherit" onclick="tmDrill(\''+escJs(p)+'\',\''+key+'\',\''+k+'\')">'+n+' '+l+'</a>';
+  const parts=[a('contacted',x.contacted,'businesses contacted'),a('messages',x.msgs,'messages'),a('calls',x.calls,'calls')];
+  if(x.visits)parts.push(a('visits',x.visits,'visits'));
+  parts.push(a('closes',x.closes,'closed'));
+  return parts.join(' · ');
+}
+function tmDrill(person,key,kind){
+  const all=tmItems(person,key);
+  const titles={contacted:'Businesses contacted',messages:'Messages sent',calls:'Calls made',visits:'Visits',closes:'Deals closed'};
+  const dateLbl=tmKeyToDate(key).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  let body='';
+  const head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div><div class="section-title" style="margin:0">'+titles[kind]+' — '+escHtml(person)+'</div><div style="font-size:11px;color:var(--muted)">'+dateLbl+'</div></div><button onclick="document.getElementById(\'tmDrillModal\').style.display=\'none\'" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:11px">CLOSE &#x2715;</button></div>';
+  if(kind==='contacted'){
+    const g={};
+    all.filter(i=>i.type!=='close').forEach(i=>{const k=(i.biz||'').toLowerCase();const o=g[k]||(g[k]={biz:i.biz,m:0,c:0,v:0,o:0,last:0,text:''});
+      if(i.type==='msg')o.m++;else if(i.type==='call')o.c++;else if(i.type==='visit')o.v++;else o.o++;
+      if(i.t>o.last){o.last=i.t;o.text=i.text;}});
+    const rows=Object.values(g).sort((a,b)=>b.last-a.last);
+    body=rows.length?rows.map(r=>'<div style="padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="tmBizConv(\''+escJs(person)+'\',\''+key+'\',\''+escJs(r.biz)+'\')"><div style="display:flex;justify-content:space-between;gap:8px"><strong>'+escHtml(r.biz)+'</strong><span style="font-size:11px;color:var(--muted)">'+r.m+' msg · '+r.c+' call'+(r.v?' · '+r.v+' visit':'')+(r.o?' · '+r.o+' other':'')+' · last '+shFmtTime(r.last)+'</span></div>'+(r.text?'<div style="font-size:11px;color:var(--text-dim);margin-top:2px">'+escHtml(r.text.substring(0,120))+'</div>':'')+'<div style="font-size:10px;color:var(--teal);margin-top:2px">Tap to read the conversation</div></div>').join(''):'<div class="empty">Nothing logged</div>';
+  }else{
+    const type={messages:'msg',calls:'call',visits:'visit',closes:'close'}[kind];
+    const rows=all.filter(i=>i.type===type);
+    body=rows.length?rows.map(i=>'<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:8px"><strong style="cursor:pointer;text-decoration:underline" onclick="tmBizConv(\''+escJs(person)+'\',\''+key+'\',\''+escJs(i.biz)+'\')">'+escHtml(i.biz)+'</strong><span style="font-size:11px;color:var(--muted)">'+shFmtTime(i.t)+' · '+escHtml(i.label)+'</span></div>'+(i.text?'<div style="font-size:12px;white-space:pre-wrap;margin-top:3px">'+escHtml(i.text)+'</div>':'<div style="font-size:11px;color:var(--muted);font-style:italic">No text saved</div>')+'</div>').join(''):'<div class="empty">Nothing logged</div>';
+  }
+  tmModal(head+'<div style="max-height:65vh;overflow-y:auto">'+body+'</div>');
+}
+function tmBizConv(person,key,biz){
+  const lb=(biz||'').toLowerCase();
+  const rows=tmItems(person,key).filter(i=>(i.biz||'').toLowerCase()===lb).sort((a,b)=>a.t-b.t);
+  const head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px"><div class="section-title" style="margin:0">'+escHtml(biz)+' — '+escHtml(person)+'</div><span><button class="copy-btn" onclick="tmDrill(\''+escJs(person)+'\',\''+key+'\',\'contacted\')">&#8592; BACK</button> <button class="copy-btn" onclick="document.getElementById(\'tmDrillModal\').style.display=\'none\'">CLOSE</button></span></div>';
+  const body=rows.map(i=>'<div style="margin-bottom:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface)"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px">'+({msg:'💬',call:'📞',visit:'🚗',contact:'📱',close:'🏆'}[i.type]||'')+' '+shFmtTime(i.t)+' · '+escHtml(i.label)+'</div>'+(i.text?'<div style="font-size:12px;white-space:pre-wrap">'+escHtml(i.text)+'</div>':'<div style="font-size:11px;color:var(--muted);font-style:italic">No text saved</div>')+'</div>').join('')||'<div class="empty">Nothing logged</div>';
+  tmModal(head+'<div style="max-height:60vh;overflow-y:auto">'+body+'</div><div style="margin-top:10px"><button class="copy-btn" style="background:var(--gold);color:#fff" onclick="openSentMessages(\''+escJs(biz)+'\')">&#9993; FULL MESSAGE HISTORY WITH THIS BUSINESS</button></div>');
+}
+
+// ---------- team feed: infinite scroll ----------
+function tmFeedRow(f){
+  return '<div style="display:grid;grid-template-columns:54px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);'+(f.close?'background:rgba(212,175,55,.08)':'')+'"><span style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--muted)">'+shFmtTime(f.t)+'</span><span style="font-size:12px"><strong>'+escHtml(f.by)+'</strong> '+f.icon+' '+escHtml(f.what)+(f.where?' <span style="color:var(--muted)">📍 '+escHtml(f.where)+'</span>':'')+'<br><span style="font-size:11px;color:var(--muted)">How: '+escHtml(f.how||'—')+'</span></span></div>';
+}
+function tmFeedBox(feed){
+  TEAM._feed=feed;TEAM._feedN=Math.min(TEAM._feedKeep||30,feed.length);
+  const msgs=feed.filter(f=>f.icon==='💬').length,calls=feed.filter(f=>f.icon==='📞').length;
+  return '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">'+feed.length+' entries · '+msgs+' messages · '+calls+' calls'+(feed.length>30?' — scroll for more':'')+'</div><div id="tmFeedBox" onscroll="tmFeedScroll(this)" style="max-height:60vh;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:0 10px">'+(feed.length?feed.slice(0,TEAM._feedN).map(tmFeedRow).join(''):'<div style="color:var(--muted);padding:10px">No activity logged for this day.</div>')+'</div>';
+}
+function tmFeedScroll(el){
+  if(!TEAM._feed||TEAM._feedN>=TEAM._feed.length)return;
+  if(el.scrollTop+el.clientHeight>=el.scrollHeight-60){
+    const next=TEAM._feed.slice(TEAM._feedN,TEAM._feedN+30);
+    TEAM._feedN+=next.length;TEAM._feedKeep=TEAM._feedN;
+    el.insertAdjacentHTML('beforeend',next.map(tmFeedRow).join(''));
+  }
+}
+function tmDedupeCalls(){
+  try{
+    TEAM.outreach=(TEAM.outreach||[]).filter(o=>{
+      if(!tmIsCallType(o[2]))return true;
+      return !(TEAM.calls||[]).some(c=>c[3]===o[3]&&(c[1]||'').toLowerCase()===(o[1]||'').toLowerCase()&&Math.abs(c[0]-o[0])<600000);
+    });
+  }catch(e){console.log('tmDedupeCalls',e.message);}
+}
+const _renderTeamV344=renderTeam;
+renderTeam=function(){
+  tmDedupeCalls();
+  const old=document.getElementById('tmFeedBox');
+  const st=old?old.scrollTop:0;
+  _renderTeamV344();
+  const box=document.getElementById('tmFeedBox');
+  if(box&&st){box.scrollTop=st;}
+};
+
+// ---------- when the work gets done: per hour ----------
+function tmBestHours(people){
+  const cnt={},cov={};let any=false;
+  people.forEach(p=>{
+    const segs=shSegments(p).filter(s=>s.state==='ON'||s.state==='VISIT');
+    segs.forEach(s=>{
+      const st=new Date(s.start),en=new Date(s.end);
+      for(let t=new Date(st.getFullYear(),st.getMonth(),st.getDate(),st.getHours());t<en;t=new Date(t.getTime()+3600000)){
+        const h=t.getHours();(cov[h]=cov[h]||{})[p+'|'+tmLocalKey(t.getTime())]=1;
+      }
+    });
+    const inW=t=>segs.some(s=>t>=s.start&&t<=s.end);
+    const lp=p.toLowerCase();
+    const add=(t,call)=>{if(!inW(t))return;const h=new Date(t).getHours();const o=cnt[h]||(cnt[h]={m:0,c:0});if(call)o.c++;else o.m++;any=true;};
+    TEAM.outreach.forEach(o=>{if(o[3].toLowerCase()===lp&&!tmIsVisitType(o[2]))add(o[0],tmIsCallType(o[2]));});
+    TEAM.calls.forEach(c=>{if(c[3].toLowerCase()===lp)add(c[0],true);});
+  });
+  if(!any)return '';
+  const hrs=[];for(let h=6;h<=20;h++)hrs.push(h);
+  const stat=hrs.map(h=>{const o=cnt[h]||{m:0,c:0},d=Object.keys(cov[h]||{}).length,n=o.m+o.c;return {h,m:o.m,c:o.c,n,d,avg:d?n/d:0};});
+  const mx=Math.max(0.01,...stat.map(s=>s.avg));
+  const best=stat.reduce((a,b)=>b.avg>a.avg?b:a,stat[0]);
+  return '<div class="section-title">WHEN THE WORK GETS DONE <span style="font-weight:400;color:var(--muted)">(actions per hour, averaged over the days worked — last 60 days)</span></div>'
+   +'<div style="display:flex;gap:3px;align-items:flex-end;height:96px;margin-bottom:2px">'+stat.map(s=>'<div title="'+s.h+':00 — '+s.m+' messages, '+s.c+' calls over '+s.d+' day(s) worked" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%"><span style="font-size:9px;font-family:\'Space Mono\',monospace;color:var(--text)">'+(s.avg?s.avg.toFixed(1):'')+'</span><div style="width:100%;background:var(--green);height:'+Math.max(2,Math.round(s.avg/mx*70))+'px;border-radius:2px 2px 0 0"></div></div>').join('')+'</div>'
+   +'<div style="display:flex;gap:3px;font-size:9px;color:var(--muted)">'+stat.map(s=>'<div style="flex:1;text-align:center">'+s.h+'</div>').join('')+'</div>'
+   +'<div style="display:flex;gap:3px;font-size:8px;color:var(--muted)">'+stat.map(s=>'<div style="flex:1;text-align:center" title="messages / calls">'+(s.n?s.m+'/'+s.c:'')+'</div>').join('')+'</div>'
+   +'<div style="font-size:11px;color:var(--text-dim);margin:6px 0 14px">Number above each bar = average actions in that hour per day worked. Small line under the hour = total messages/calls. Busiest hour: <strong>'+best.h+':00</strong> ('+best.avg.toFixed(1)+' per day worked).</div>';
+}
+
+// ---------- call stats: counters, calendar, calculator ----------
+function getAllCalls(){
+  const out=[];
+  (trackerData.callLogs||[]).forEach(l=>{const d=parseAnyDate(l.timestamp)||parseAnyDate(l.date);if(d)out.push({d,business:l.business||'',outcome:l.stage||'',notes:l.notes||'',by:l.by||''});});
+  const near=(d,b)=>out.some(x=>x.business.toLowerCase()===b.toLowerCase()&&Math.abs(x.d-d)<600000);
+  (trackerData.outreachLog||[]).forEach(o=>{if(!tmIsCallType(o.type))return;const d=parseAnyDate(o.timestamp)||parseAnyDate(o.date);if(d&&!near(d,o.business||''))out.push({d,business:o.business||'',outcome:o.type||'Phone Call',notes:'',by:o.by||''});});
+  return out;
+}
+const CALST={y:new Date().getFullYear(),m:new Date().getMonth(),sel:null,from:'',to:''};
+function isoOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function callStNav(n){CALST.m+=n;if(CALST.m<0){CALST.m=11;CALST.y--;}if(CALST.m>11){CALST.m=0;CALST.y++;}CALST.sel=null;renderCallStats();}
+function callStToday(){const n=new Date();CALST.y=n.getFullYear();CALST.m=n.getMonth();CALST.sel=dk(n);renderCallStats();}
+function callStPick(k){CALST.sel=(CALST.sel===k)?null:k;renderCallStats();}
+function callStSet(f,v){CALST[f]=v;renderCallStats();}
+function callStQuick(kind){
+  const n=new Date();let a,b;
+  if(kind==='today'){a=b=sDay0(n);}
+  else if(kind==='week'){const w=weekSunRange(n);a=w.start;b=sDay0(n);}
+  else if(kind==='month'){a=new Date(n.getFullYear(),n.getMonth(),1);b=sDay0(n);}
+  else{a=new Date(n.getFullYear(),0,1);b=sDay0(n);}
+  CALST.from=isoOf(a);CALST.to=isoOf(b);renderCallStats();
+}
+function renderCallStats(){
+  const box=document.getElementById('callStatsBox');if(!box)return;
+  if(!window._trackerOk&&!CALST.tried){CALST.tried=true;box.innerHTML='<div class="loading">Loading call data</div>';loadTrackerData().catch(()=>{}).then(()=>renderCallStats());return;}
+  const calls=getAllCalls(),now=new Date(),T=sDay0(now),wk=weekSunRange(now);
+  const mo={start:new Date(now.getFullYear(),now.getMonth(),1),end:sEnd(new Date(now.getFullYear(),now.getMonth()+1,0))};
+  const cnt=r=>calls.filter(c=>inR(c.d,r)).length;
+  const today=calls.filter(c=>inR(c.d,{start:T,end:sEnd(T)}));
+  const uniq=a=>new Set(a.map(c=>c.business.toLowerCase())).size;
+  const card=(cls,l,v,s)=>'<div class="metric-card '+cls+'"><div class="metric-label">'+l+'</div><div class="metric-value" style="font-size:26px">'+v+'</div><div class="metric-sub">'+s+'</div></div>';
+  let h='<div class="section-title">&#128222; CALL COUNTER</div><div class="metrics-grid">'
+    +card('red','CALLS TODAY',today.length,uniq(today)+' different businesses')
+    +card('orange','THIS WEEK',cnt({start:wk.start,end:wk.end}),'Sunday to Saturday')
+    +card('blue','THIS MONTH',cnt(mo),SUM_MONTHS_FULL[now.getMonth()])
+    +card('purple','ALL TIME',calls.length,'every call logged')+'</div>';
+  if(!IS_BTO()){
+    const by={};today.forEach(c=>{const k=c.by||'(unnamed)';by[k]=(by[k]||0)+1;});
+    const names=Object.keys(by);
+    if(names.length)h+='<div style="font-size:12px;margin:-10px 0 14px">Today by person: '+names.map(n=>'<strong>'+escHtml(n)+'</strong> '+by[n]).join(' · ')+'</div>';
+  }
+  // calendar
+  const y=CALST.y,m=CALST.m,first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),perDay={};
+  calls.forEach(c=>{if(c.d.getFullYear()===y&&c.d.getMonth()===m){const k=dk(c.d);perDay[k]=(perDay[k]||0)+1;}});
+  const monthTotal=Object.values(perDay).reduce((a,b)=>a+b,0);
+  h+='<div class="card"><div class="cal-header"><div class="cal-nav"><button class="cal-nav-btn" onclick="callStNav(-1)">&#8249;</button><div class="cal-month-label">'+SUM_MONTHS_FULL[m]+' '+y+'</div><button class="cal-nav-btn" onclick="callStNav(1)">&#8250;</button></div><span style="font-size:12px"><strong>'+monthTotal+'</strong> calls this month</span><button class="cal-today-btn" onclick="callStToday()">TODAY</button></div><div class="cal-grid">'+SUM_DAYS.map(d=>'<div class="cal-dow">'+d+'</div>').join('');
+  for(let i=0;i<first.getDay();i++)h+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=dim;d++){
+    const dt=new Date(y,m,d),k=dk(dt),n=perDay[k]||0;
+    h+='<div class="cal-cell'+(k===dk(now)?' today':'')+(CALST.sel===k?' sel':'')+'" style="cursor:pointer;min-height:56px'+(CALST.sel===k?';background:#F2E8CF':'')+'" onclick="callStPick(\''+k+'\')"><div class="cal-daynum">'+d+'</div>'+(n?'<div style="font-size:15px;font-weight:800;font-family:\'Space Mono\',monospace;color:var(--red)">'+n+'</div><div class="sum-mini">call'+(n===1?'':'s')+'</div>':'')+'</div>';
+  }
+  h+='</div>';
+  if(CALST.sel){
+    const day=calls.filter(c=>dk(c.d)===CALST.sel);
+    h+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:4px">CALLS ON THIS DAY ('+day.length+')</div>'+(day.length?day.map(c=>'<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><strong style="cursor:pointer;text-decoration:underline" onclick="openNotesModal(\''+escJs(c.business)+'\')">'+escHtml(c.business||'—')+'</strong> <span style="color:var(--muted)">· '+escHtml(c.outcome)+(c.by?' · '+escHtml(c.by):'')+'</span>'+(c.notes?'<div style="font-size:11px;color:var(--text-dim);white-space:pre-wrap">'+escHtml(c.notes)+'</div>':'')+'</div>').join(''):'<div class="empty">No calls on this day</div>')+'</div>';
+  }
+  h+='</div>';
+  // calculator
+  h+='<div class="card"><div class="card-title">CALL CALCULATOR — pick any dates</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><input type="date" value="'+CALST.from+'" onchange="callStSet(\'from\',this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:6px 8px"><span>to</span><input type="date" value="'+CALST.to+'" onchange="callStSet(\'to\',this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:6px 8px"><button class="filter-btn" onclick="callStQuick(\'today\')">TODAY</button><button class="filter-btn" onclick="callStQuick(\'week\')">THIS WEEK</button><button class="filter-btn" onclick="callStQuick(\'month\')">THIS MONTH</button><button class="filter-btn" onclick="callStQuick(\'year\')">THIS YEAR</button></div>';
+  if(CALST.from&&CALST.to){
+    const a=new Date(CALST.from+'T00:00:00'),b=new Date(CALST.to+'T00:00:00');
+    if(isNaN(a)||isNaN(b)||b<a)h+='<div class="empty">Pick a valid range (end date after start date).</div>';
+    else{
+      const r={start:sDay0(a),end:sEnd(b)},sel=calls.filter(c=>inR(c.d,r));
+      const days=Math.round((sDay0(b)-sDay0(a))/86400000)+1;let work=0;for(let i=0;i<days;i++){if(addDays(a,i).getDay()!==6)work++;}
+      const oc={},pp={};sel.forEach(c=>{const o=c.outcome||'(none)';oc[o]=(oc[o]||0)+1;const p=c.by||'(unnamed)';pp[p]=(pp[p]||0)+1;});
+      const list=o=>Object.keys(o).sort((x,y)=>o[y]-o[x]).map(k=>'<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span>'+escHtml(k)+'</span><strong>'+o[k]+'</strong></div>').join('');
+      h+='<div class="metrics-grid">'+card('red','TOTAL CALLS',sel.length,days+' day'+(days===1?'':'s')+' selected')+card('teal','DIFFERENT BUSINESSES',uniq(sel),'called at least once')+card('green','AVERAGE PER DAY',(sel.length/days).toFixed(1),'all days')+card('blue','PER WORKING DAY',(sel.length/Math.max(1,work)).toFixed(1),work+' working days (no Saturdays)')+'</div><div class="two-col"><div><div class="card-title">BY OUTCOME</div>'+(list(oc)||'<div class="empty">None</div>')+'</div>'+(IS_BTO()?'':'<div><div class="card-title">BY PERSON</div>'+(list(pp)||'<div class="empty">None</div>')+'</div>')+'</div>';
+    }
+  }else h+='<div class="empty">Choose a start and end date, or tap a quick button.</div>';
+  h+='</div>';
+  box.innerHTML=h;
+}
+const _renderCallTabV344=renderCallTab;
+renderCallTab=function(){_renderCallTabV344();try{renderCallStats();}catch(e){console.log('callstats',e.message);}};
+
+// ---------- new packages ----------
+Object.assign(PACKAGE_PRICE_PRESETS,{
+  'Digital Shopfront':{monthly:0,oneTime:250},
+  'Masterclass Standard':{monthly:50,oneTime:0},
+  'Masterclass VIP':{monthly:350,oneTime:0},
+  'Masterclass 1-2-1 Session':{monthly:0,oneTime:1200}
+});
+REVENUE_PACKAGES.splice(REVENUE_PACKAGES.length-1,0,
+  {key:'shopfront',name:'🛍️ Digital Shopfront',color:'var(--teal)',amount:250,match:p=>/shopfront/i.test(p||'')},
+  {key:'masterclass',name:'🎓 Masterclass',color:'var(--purple)',tiers:[
+    {label:'Standard',amount:50,match:p=>/masterclass/i.test(p||'')&&/standard/i.test(p||'')},
+    {label:'VIP',amount:350,match:p=>/masterclass/i.test(p||'')&&/vip/i.test(p||'')},
+    {label:'1-2-1 Session',amount:1200,match:p=>/(masterclass|1-2-1)/i.test(p||'')&&/1-2-1/i.test(p||'')}
+  ]});
+OFFER_OPTIONS.splice(OFFER_OPTIONS.indexOf('Custom Package'),0,
+  'Digital Shopfront — 250 GHS one-time','Masterclass Standard — 50 GHS/month','Masterclass VIP — 350 GHS/month','Masterclass 1-2-1 Session — 1200 GHS');
+ONEOFF_PRESETS.splice(ONEOFF_PRESETS.length-1,0,['Digital Shopfront',250],['Masterclass 1-2-1 Session',1200]);
+
+// ---------- what BYINFORGH is: shared by the AI and the local assistant ----------
+const BYINFORGH_KNOWLEDGE=[
+'COMPANY: BYINFORGH, Koforidua, Eastern Region, Ghana. Tagline: Trusted. Visible. Local. (By Ghana. In Ghana. For Ghana.) Founder: YJ. Contact: solutions@byinforgh.com, 0509 960 980, www.byinforgh.com.',
+'ORIGIN: we asked business owners in our area what their biggest problems were, documented every answer, asked permission to return with a solution, and built around the biggest problem.',
+'FOUR LAYERS: Be Visible (free listing, Verified/Blue Tick, visibility packages) | Learn It (Business Growth Series, Digital Shopfront guide, Masterclass) | Run It (TecXFRA, SME Systems) | Transform It (Business Consulting and Implementation, audits).',
+'PRICES IN GHS (always confirm current price before quoting): Free Listing 0. Verified Business 180 setup + 80/month. Visibility Essentials 250/mo, Visibility Partner 750/mo, Growth Engine 1500/mo, Market Authority 5000/mo. TecXFRA Starter 50/mo, Growth 150/mo, Enterprise 1500/mo, Prestige 4500/mo. SME Systems 50/150/500 per month. Business Snapshot 600, Quick Audit 1800, Full Audit 3200 (one-time). Digital Shopfront guide 250 one-time. Masterclass: Standard 50/mo (monthly group Q&A), VIP 350/mo (max 5 businesses per group, each reviewed individually), 1-2-1 session 1200 (one hour, full business audit plus 3 months accountability). Command Centre 25000/50000/90000.',
+'DIGITAL SHOPFRONT (GHS 250 one-time): step-by-step guide that builds every account a Ghanaian business needs online from zero to live: business Gmail, Facebook Page, Instagram, TikTok, YouTube, Google Business Profile with GPS, WhatsApp Business, a Mobile Money payment plan, product photos, BYINFORGH Trust Profile, securing every account, launch day. 9+ accounts, 16 sections, written for a beginner. Comes as a written guide (checklists, tracker) and an 18-video course (about 104 minutes). Problems it fixes: different names on each app, no dedicated MoMo number, accounts without Two-Step Verification, invisible on Google Maps. Doing it by the hour with a freelancer often costs more (GHS 400-800+) and the owner does not keep the process.',
+'TECXFRA (Run It): business operating system on the owner phone. 3 pillars: 1) centralised client dashboard, 2) automated follow-ups for silent leads, 3) real-time daily revenue tracking. Also POS, inventory with low-stock flags, debtors and invoicing, staff and shifts, daily accountability, AI assistant. We pre-configure the database; setup about 15 minutes; owner builds nothing. Suits businesses with a till, several staff and steady daily sales.',
+'CONSULTING (Transform It): start with the free 15-question Business Audit over 7 areas: Visibility, Trust, Customer Experience, Sales and Conversion, Digital Presence, Operations and Systems, Growth Readiness. Key question: if 10 times more customers arrived tomorrow, what would break first? Paid: Business Snapshot, Quick Audit, Full Audit; multi-outlet or high-value work quoted after a full audit.',
+'METHOD: help first, never chase. C.L.O.S.E.R. = Clarify, Label, Overview pain, Sell the vacation, Explain concerns, Reinforce. 4S meeting = Search (show them what customers see on Google), Score (the audit), Show (max 3 screens tied to leaks they admitted), Set (one dated next step). Disarming opener: call yourself out, ask permission, name one specific believable leak, close low-friction (send a short video). Compassionate interrogation: ask what they tried, why it failed, what they expected to pay and why, what success looks like, what doing nothing costs; store their words and reflect them back. Objections: Hear, Acknowledge, Ask, Answer, Advance. Pricing: anchor to value, say the price once then stay silent, answer push-back in order: value, scope, start small. Never drop the price for free; trade. Follow-up: Day 1, 3, 7, 14, 30, 90 with new value each time.',
+'GHANA REALITIES: WhatsApp is the shop counter; greet first; trust is the real price (fear of MoMo fraud, so be verifiable); decisions are shared with partners/family; haggling is normal; small starting steps close more than big upfront asks; referrals beat adverts.',
+'HONESTY RULES: only promise what we deliver; no invented scarcity, results, testimonials or numbers; use the owner own numbers; quote only approved prices; no pressure after a clear no; do not give clinical, tax or legal advice; never share a prospect details.'
+].join('\n');
+
+function kbReply(q){
+  q=(q||'').toLowerCase();
+  if(/shopfront|setup guide|google business|google my business/.test(q))return 'DIGITAL SHOPFRONT (GHS 250 one-time)\n\nA step-by-step guide that builds every account a business needs online, from zero to live: business Gmail, Facebook Page, Instagram, TikTok, YouTube, Google Business Profile with GPS, WhatsApp Business, a Mobile Money payment plan, product photos, BYINFORGH Trust Profile, security, launch day.\n\nFormat: written guide with checklists and a tracker, plus an 18-video course (about 104 minutes).\n\nFour leaks it fixes: different name on every app, no MoMo number to get paid, no Two-Step Verification, invisible on Google Maps.\n\nOpening question: "If I searched your business on Facebook, Instagram and TikTok, would the name match on all three?"\nNext step after it: Masterclass (Standard GHS 50/mo, VIP GHS 350/mo, 1-2-1 GHS 1,200). See Messages tab > DIGITAL SHOPFRONT.';
+  if(/masterclass|1-2-1|\bvip\b/.test(q))return 'MASTERCLASS\n\nStandard GHS 50/month: monthly group Q&A, open questions, growth, comments and customer service tips.\nVIP GHS 350/month: max 5 businesses per group, each reviewed individually.\n1-2-1 Session GHS 1,200: one full hour with YJ, a complete business audit and 3 months of accountability.\n\nBest sold after the Digital Shopfront is built: "now it needs to work".';
+  if(/tecxfra|operating system/.test(q))return 'TECXFRA (Run It)\n\n3 pillars: central client dashboard on the phone, automated follow-ups for silent leads, real-time daily revenue tracking.\nPlans: Starter GHS 50/mo, Growth 150/mo, Enterprise 1,500/mo, Prestige 4,500/mo (confirm current price first).\nWe pre-configure the database; setup is about 15 minutes.\n\nSell it only after the audit shows 2+ operating leaks (no tracking of daily enquiries, no follow-up, messy payment/stock).\nPilot: 14 days with a written success test (sales logged daily, low-stock flag triggers a restock, follow-up queue cleared each morning, owner opens Today each morning).';
+  if(/consult|snapshot|audit|business health/.test(q))return 'BUSINESS CONSULTING (Transform It)\n\nStart free: the 15-question Business Audit over 7 areas (Visibility, Trust, Customer Experience, Sales and Conversion, Digital Presence, Operations and Systems, Growth Readiness).\nPaid: Business Snapshot GHS 600, Quick Audit GHS 1,800, Full Audit GHS 3,200. Multi-outlet / high-value work is quoted after a full audit.\n\nBridge question: "If 10 times more customers arrived tomorrow, what would break first?"\nUse the owner-estimated leak worksheet, never a generic leakage percentage.';
+  if(/\bprices?\b|pricing|how much|packages?/.test(q))return 'PRICE LIST (GHS, confirm before quoting)\n\nFree Listing 0 | Verified 180 setup + 80/mo\nVisibility Essentials 250/mo | Partner 750/mo | Growth Engine 1,500/mo | Market Authority 5,000/mo\nTecXFRA Starter 50 | Growth 150 | Enterprise 1,500 | Prestige 4,500 (per month)\nSME Systems 50 / 150 / 500 per month\nDigital Shopfront 250 one-time\nMasterclass Standard 50/mo | VIP 350/mo | 1-2-1 1,200\nBusiness Snapshot 600 | Quick Audit 1,800 | Full Audit 3,200\nCommand Centre 25,000 / 50,000 / 90,000\n\nNote: the Closer manual still mentions GBP 100 / GHS 2,000 for TecXFRA. Management must confirm the official price.';
+  if(/who are we|about byinforgh|what do we sell|what do we do|company/.test(q))return 'WHO WE ARE\n\nBYINFORGH, Koforidua, Eastern Region. Trusted. Visible. Local. Built from real problems: we asked owners what hurt most, documented it, and built around the biggest problems.\n\nFour layers: Be Visible (listing, Blue Tick) > Learn It (Business Growth Series, Digital Shopfront, Masterclass) > Run It (TecXFRA, SME Systems) > Transform It (Consulting). Lead with the owner problem, then bring only the layer that fixes it.';
+  if(/objection|too expensive|think about it|last price|haggle|negotiat/.test(q))return 'OBJECTIONS: Hear, Acknowledge, Ask, Answer, Advance.\n\n"Too expensive": ask "compared to what?", recap what the problem costs them in their own numbers, then offer a smaller first step. Never drop the price for free: trade scope, payment terms or start small.\n"Let me think": ask which part: the result, the cost or the timing.\n"Ask my partner": offer a 15-minute call or a one-page summary to share.\n"Last price?": normal haggling. Ask their budget, adjust what is included or split payment.\n"I was cheated before": acknowledge, then be verifiable (website, phone, receipts, written terms, payment in parts).';
+  if(/closer|4s|disarm|discovery|compassionate|framework|method/.test(q))return 'OUR METHODS\n\nC.L.O.S.E.R.: Clarify, Label, Overview pain, Sell the vacation, Explain concerns, Reinforce.\n4S meeting: Search, Score, Show, Set (one dated next step).\nDisarming opener: call yourself out, ask permission, name one specific leak, ask to send a short video.\nCompassionate interrogation: what did you try, why did it fail, what did you expect it to cost, what does success look like, what does doing nothing cost. Reflect their words at the close.\nFollow up: Day 1, 3, 7, 14, 30, 90, with value each time.';
+  return null;
+}
+const _getSmartLocalReplyV344=getSmartLocalReply;
+getSmartLocalReply=function(question){return kbReply(question)||_getSmartLocalReplyV344(question);};
+
+// ---------- product openers + message library ----------
+const PRODUCT_OPENERS={
+ 'Digital Shopfront':{
+  A:"Hey [NAME], quick question: if I searched for your business on Facebook, Instagram and TikTok right now, would the name be the same on all three?",
+  B:"Hey [NAME], I looked at how [CATEGORY] businesses show up online. Can a ready buyer find one clear Mobile Money number to pay you? If not, I can show you a simple fix.",
+  C:"Hey [NAME], quick one: are your Facebook Page and WhatsApp protected with Two-Step Verification? A hacked page is often gone for good.",
+  D:"Hey [NAME], when someone nearby searches Google Maps for [CATEGORY], does your business come up?"},
+ 'TecXFRA':{
+  A:"Hey [NAME], quick question: when a customer messages while you are busy, how do you make sure that enquiry is not forgotten?",
+  B:"Hey [NAME], at the end of the day, how do you know what you sold and what is left, without asking your staff?",
+  C:"Hey [NAME], how many customers who showed interest last month have you not followed up with since? Most owners cannot say.",
+  D:"Hey [NAME], if you want to check today's sales from your phone right now, can you?"},
+ 'Business Consulting':{
+  A:"Hey [NAME], if 10 times more customers arrived tomorrow, what would break first in your business?",
+  B:"Hey [NAME], we do a free 15-question business check. It shows where a business is losing customers before they reach you. May I run it on yours? About 10 minutes.",
+  C:"Hey [NAME], when you search your business on Google, what do you think a new customer sees? Shall we look at it together?",
+  D:"Hey [NAME], what is the one part of the business that depends entirely on you being there?"}
+};
+
+Object.assign(MSG_LIBRARY,{
+about:[
+ {title:'AB1 — Who we are (first introduction)',msg:"Good day [NAME], my name is [YOUR NAME] from BYINFORGH, based in Koforidua, Eastern Region. We help Ghanaian business owners be found, trusted, organised and grown. Trusted. Visible. Local.\n\nMay I ask how customers find your business today?"},
+ {title:'AB2 — Our story (builds trust)',msg:"Hey [NAME], BYINFORGH started simply. We asked business owners in our area what their biggest problems were, wrote down every answer, and built solutions around the biggest ones.\n\nThat is why I am asking you first: what is the one thing that slows your business down most?"},
+ {title:'AB3 — Verify us (when they doubt)',msg:"Fair to check who we are, [NAME]. Website: www.byinforgh.com. Email: solutions@byinforgh.com. Phone: 0509 960 980. You are welcome to call us.\n\nFor any payment we send a receipt, and you can confirm the Mobile Money merchant name on your screen before you pay."},
+ {title:'AB4 — What do you do? (only when asked)',msg:"We work at four levels, [NAME]:\n1) Be Visible: free listing and Verified (Blue Tick)\n2) Learn It: Business Growth Series and the Digital Shopfront guide\n3) Run It: TecXFRA, your business on one phone\n4) Transform It: consulting\n\nWe start with whatever fixes your biggest problem first. What is yours?"},
+ {title:'AB5 — Honest fit check',msg:"[NAME], I will be honest: from what you have told me, [PRODUCT] may not be the right fit for you right now. What I would suggest instead is [HONEST SUGGESTION]. If things change, message me anytime."}
+],
+shopfront:[
+ {title:'SF1 — Different names on every app',msg:"Hey [NAME], quick question: if I searched [BUSINESS] on Facebook, Instagram and TikTok, would the name be the same on all three?\n\nA lot of shops I check use a different name on each app, and customers think they are three different businesses."},
+ {title:'SF2 — No way to get paid',msg:"Hey [NAME], I looked at your pages. People can see what you sell, but I could not find one clear Mobile Money number to pay.\n\nDoes a ready buyer know where to send the money? I can show you a simple payment setup."},
+ {title:'SF3 — Security gap',msg:"Hey [NAME], are your Facebook Page, WhatsApp and Gmail protected with Two-Step Verification?\n\nIf a page is hacked or a WhatsApp number is lost, it is often gone for good. Setting it up takes about ten minutes. Want me to show you how?"},
+ {title:'SF4 — Google Maps',msg:"Hey [NAME], when someone nearby searches Google Maps for [CATEGORY], does your business come up?\n\nIf not, I can show you the exact steps to fix it, free to start."},
+ {title:'SF5 — The offer (GHS 250)',msg:"Hey [NAME], we built a step-by-step guide that sets up every account your business needs online, from zero to live: Gmail, Facebook, Instagram, TikTok, YouTube, Google Business Profile, WhatsApp Business, a Mobile Money payment plan and security.\n\nIt is GHS 250, one time. You get the written guide and a follow-along video course. Shall I send you the outline?"},
+ {title:'SF6 — Price push-back',msg:"I understand, [NAME]. GHS 250 is one time. Having someone do it by the hour can cost GHS 400 to 800 or more once the time adds up, and you still do not own the process.\n\nWith the guide you keep it and can rebuild from it for any future business. Would you like to start this week?"},
+ {title:'SF7 — After the shopfront: Masterclass',msg:"Hey [NAME], your shopfront is built, so now it needs to work. Yj helps directly at three levels:\n- Standard GHS 50/month: monthly group Q&A\n- VIP GHS 350/month: small group of max 5, each business reviewed individually\n- 1-2-1 GHS 1,200: one full hour plus a full business audit and 3 months of accountability\n\nWhich sounds closest to what you need?"}
+],
+tecxfra:[
+ {title:'TX1 — WhatsApp chaos opener',msg:"Hey [NAME], when customers message while you are busy, how do you make sure none of those enquiries is forgotten?\n\nMost owners tell me they scroll back through chats. That is exactly what TecXFRA replaces."},
+ {title:'TX2 — The 3 pillars',msg:"Hey [NAME], TecXFRA gives you three things on your phone:\n1) every client and enquiry in one dashboard\n2) automatic follow-ups for customers who went quiet\n3) live daily revenue, so you see the numbers from anywhere\n\nWe set up the database for you. Setup takes about 15 minutes. You build nothing."},
+ {title:'TX3 — Silent leads',msg:"Hey [NAME], quick question: how many people showed interest last month and were never followed up?\n\nThose are warm leads sitting in your chats. TecXFRA brings each one back on the day they are due, with one tap to WhatsApp."},
+ {title:'TX4 — Price (use THEIR numbers)',msg:"Fair question, [NAME]. You told me you miss about [THEIR NUMBER] enquiries a week and an average sale is about GHS [THEIR NUMBER]. That is roughly GHS [CALCULATED] a month.\n\nTecXFRA starts from GHS 50 a month (Starter). If it stops even part of that leak, it pays for itself. Shall we test it for 14 days?"},
+ {title:'TX5 — 14-day pilot invitation',msg:"Let us test it on your own business, [NAME]. For 14 days: log sales daily, let the low-stock flag trigger a restock, clear the follow-up list each morning, and open the Today screen each day.\n\nIf we find and fix at least one leak, you keep going. Which day should we start?"},
+ {title:'TX6 — Owner abroad / diaspora',msg:"Hello [NAME], managing a Ghanaian business from a distance usually means no visibility of what is really happening. TecXFRA gives you every sale, stock level and follow-up on your phone, live, from anywhere.\n\nWould a 5-minute screen share this week help?"}
+],
+consulting:[
+ {title:'BC1 — Free audit invitation',msg:"Hey [NAME], we run a free 15-question business check that shows where a business is losing customers before they reach it. It takes about 10 minutes and there is no obligation.\n\nMay I run it on yours this week?"},
+ {title:'BC2 — The 10x question',msg:"[NAME], if 10 times more customers arrived tomorrow, what would break first: your stock, your staff, your replies, or your records?\n\nThe answer usually shows exactly what to fix first."},
+ {title:'BC3 — Business Snapshot (GHS 600)',msg:"Based on your answers, [NAME], I suggest a Business Snapshot (GHS 600). It gives you a clear picture of where you are losing money and the top fixes, in plain language.\n\nIf we do not uncover leaks worth more than the fee, tell me and we will discuss it (confirm current guarantee terms before sending)."},
+ {title:'BC4 — Quick Audit / Full Audit',msg:"[NAME], for a business your size I recommend the [Quick Audit GHS 1,800 / Full Audit GHS 3,200]. It covers visibility, trust, customer experience, sales, digital presence, operations and growth readiness, with a written plan.\n\nWould you like to start this week or next?"},
+ {title:'BC5 — Owner leak worksheet',msg:"[NAME], three quick numbers please:\n1) How many sales a week are not written down anywhere?\n2) What is a typical sale worth?\n3) How much is owed to you today?\n\nThat is your number, not mine. Which one would matter most if we fixed it?"},
+ {title:'BC6 — Multi-outlet / bigger business',msg:"Good day [NAME], for businesses with several outlets or departments we start with a full audit, then design and build the fix with you. Quote comes after the audit, never before.\n\nCan we book 30 minutes with you and whoever else decides?"}
+],
+disarm:[
+ {title:'DS1 — Call opener (any niche)',msg:"Boss, you want to hang up now, or can I get 30 seconds to tell you why I called your shop?\n\n[After they agree] We do quick digital checks for businesses around here, and I noticed [SPECIFIC LEAK YOU SAW]. Instead of taking more of your time, is this the right WhatsApp number to send a 60-second video showing the 3 gaps and how we fix them?"},
+ {title:'DS2 — Voice note script (15-20s)',msg:"Boss, before you delete this 15 seconds: I checked your business online today and found 3 spots where you may be losing customers before they reach you. Reply VIDEO and I will send the audit."},
+ {title:'DS3 — WhatsApp text',msg:"Good afternoon [NAME]. Quick one: I ran a free check on your business online presence and found 3 gaps that may be costing you customers. Want me to send the 60-second video breakdown?"},
+ {title:'DS4 — DM (Instagram / Facebook)',msg:"Hi [NAME], saw your page. I noticed a couple of things that may be costing you walk-ins or orders. Mind if I send a quick video showing what I found?"},
+ {title:'DS5 — Restaurant / chop bar',msg:"Auntie/Chief, quick 15 seconds: I checked how [BUSINESS] takes orders online and saw a gap that may be sending customers to your competitor. Reply and I will send the 1-minute video.\n\n(Only name a leak you actually saw: Maps pin, menu prices, WhatsApp reply speed.)"}
+]
+});
 
 </script>
 </body>
