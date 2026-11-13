@@ -2324,7 +2324,7 @@ function renderFollowUps(){
     // version too, not just the generic templates.
     const contextualMsg=buildContextualFollowup(c,msgCount,currentMsgVersion)||(msgCount>=1?buildNoOfferFollowup(c,msgCount,currentMsgVersion):null);
     const tmpl=contextualMsg?null:(isFirstTouch?((PRODUCT_OPENERS[currentDeployment]||OPENER_VERSIONS)[currentMsgVersion]||OPENER_VERSIONS.A):((MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])[currentMsgVersion]||(MSG_VERSIONS[emoji]||MSG_VERSIONS['🟡'])['A']||''));
-    const msg=contextualMsg||tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
+    const msg=targetMsg(c,msgCount,currentMsgVersion,isFirstTouch)||contextualMsg||tmpl.replace(/\[NAME\]/g,c.Business.split(' ')[0]).replace(/\[BUSINESS\]/g,c.Business).replace(/\[CATEGORY\]/g,c.Category||'business');
     const fd=parseFollowUpDate(c.Next_Follow_Up);
     const daysOv=fd?Math.floor((today-fd)/(1000*60*60*24)):0;
     const ovTag=daysOv>0?`<span style="color:var(--red);font-size:10px;font-weight:700;margin-left:8px">⚠ ${daysOv}d overdue</span>`:'';
@@ -5273,9 +5273,9 @@ function sumIncome(map,r){
     +sumCard('green','NEW CLIENTS',a.clients,sDelta(a.clients,pa.clients),"sumDrill('clients')")
     +sumCard('blue','AVG PAYMENT',sMoney(a.payN?a.rev/a.payN:0),renewals+' renewal'+(renewals===1?'':'s')+' in period',"sumDrill('rev')")
     +sumCard('teal','MRR RIGHT NOW',sMoney(getMRR()),'Vis '+sMoney(getVisMRR())+' · SME '+sMoney(getSmeMRR()),"drillRevenue('mrr')")
-    +sumCard('red','EXPENSES',sMoney(a.exp),'logged in period')
-    +sumCard(a.rev-a.exp>=0?'green':'red','NET',sMoney(a.rev-a.exp),'revenue − expenses')
-    +sumCard('orange','vs TARGET',pct+'%',sMoney(a.rev)+' of '+sMoney(target)+' prorated')
+    +sumCard('red','EXPENSES',sMoney(a.exp),'logged in period — tap to view / add',"sumDrill('exp')")
+    +sumCard(a.rev-a.exp>=0?'green':'red','NET',sMoney(a.rev-a.exp),'revenue − expenses · tap for breakdown',"sumDrill('net')")
+    +sumCard('orange','vs TARGET',pct+'%',sMoney(a.rev)+' of '+sMoney(target)+' prorated · tap for breakdown',"sumDrill('target')")
     +`</div>`;
   const stat=pct>=100?['ON / ABOVE TARGET','var(--green)']:pct>=70?['CLOSE TO TARGET','var(--gold)']:['BELOW TARGET','var(--red)'];
   h+=`<div class="target-bar-wrap"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><div style="font-size:12px;font-weight:700;letter-spacing:2px;color:var(--muted)">${r.label.toUpperCase()}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">target = monthly target ÷ working days × days elapsed</div></div><div style="text-align:right"><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:${stat[1]}">${stat[0]}</div></div></div><div class="progress-track"><div class="progress-fill" style="width:${Math.min(100,pct)}%"></div></div></div>`;
@@ -6038,7 +6038,7 @@ function renderMyDay(){
   box.innerHTML=`<div class="section-title">🎯 MY DAY — ${escHtml(MY_NAME())}</div>
   <div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
     <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:800;color:${st.c}">${st.t}</span><span style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls</span></div>
-    ${tmBar(x.contacted,T.cMin,T.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,T.dMin,T.dGoal,'DEALS CLOSED')}
+    ${tmBar(x.contacted,T.cMin,T.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,T.dMin,T.dGoal,'DEALS CLOSED')}${tmConvRowHtml(MY_NAME())}
     <div style="font-size:12px;margin:8px 0 10px;color:var(--text)">${coach}</div>
     <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-bottom:2px">NEXT UP (${q.length})</div>${qh}
   </div>`;
@@ -6092,7 +6092,7 @@ function renderTeam(){
       <div style="display:flex;justify-content:space-between"><strong>${escHtml(p)}</strong><span style="font-weight:800;color:${st.c}">${st.t}</span></div>
       ${tmBar(x.contacted,T.cMin,T.cGoal,'CONTACTED')}${tmBar(x.closes,T.dMin,T.dGoal,'CLOSED')}
       <div style="font-size:11px;color:var(--muted)">${x.msgs} messages · ${x.calls} calls · ${x.cons} consultations booked</div>
-      <div style="font-size:11px;margin-top:4px">Conversion: <strong>${x.contacted?Math.round(x.closes/x.contacted*100):0}%</strong> of contacts closed</div>
+      <div style="font-size:11px;margin-top:4px">Conversion: <strong>${x.contacted?Math.round(x.closes/x.contacted*100):0}%</strong> of contacts closed</div>${tmConvRowHtml(p)}
       <button class="copy-btn" style="margin-top:8px;font-size:10px" onclick="TEAM.who='${escJs(p)}';renderTeam()">SEE ONLY ${escHtml(p.split(' ')[0].toUpperCase())}</button></div>`;
   }).join('')||'<div style="color:var(--muted);padding:12px">No Business Trust Officers with activity yet. Create accounts with setupUser_BTO_Template in the script.</div>';
   // last 7 days table
@@ -6382,7 +6382,7 @@ renderMyDay=function(){
     else if(needC===0)coach=`Contact target done. Now ${needD} more close${needD>1?'s':''}: book consultations with warm leads.`;
     else coach=`${needC} more contact${needC>1?'s':''} to reach your target for ${x.hrs.toFixed(1)}h worked (full day = ${T.cMin}–${T.cGoal} contacts, ${T.dMin}–${T.dGoal} closes; targets grow as your hours grow).`;
     body=`<div style="display:flex;justify-content:space-between"><span style="font-weight:800;color:${st.c}">${st.t}</span><span style="font-size:11px;color:var(--muted)">${tmCountsLine(me,key,x)}${x.perHr!=null?' · '+x.perHr.toFixed(1)+' contacts/hour':''}</span></div>
-    ${tmBar(x.contacted,s.cMin,s.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,s.dMin,s.dGoal,'DEALS CLOSED')}
+    ${tmBar(x.contacted,s.cMin,s.cGoal,'BUSINESSES CONTACTED')}${tmBar(x.closes,s.dMin,s.dGoal,'DEALS CLOSED')}${tmConvRowHtml(MY_NAME())}
     <div style="font-size:12px;margin:8px 0 10px">${coach}</div>`;
   }
   box.innerHTML=`<div class="section-title">🎯 MY DAY — ${escHtml(me)}</div>${shBarHtml(me)}
@@ -6458,7 +6458,7 @@ renderTeam=function(){
     const rate=sh.clocked&&x.perHr!=null?`<div style="font-size:11px;color:var(--muted)">${x.perHr.toFixed(1)} contacts/hour · ${x.closePerHr.toFixed(2)} closes/hour${ap!=null?' · active '+ap+'% of shift':''}</div>`:'';
     return `<div style="background:var(--card,var(--surface));border:1px solid var(--border);border-radius:10px;padding:14px;min-width:260px;flex:1">
       <div style="display:flex;justify-content:space-between"><strong>${escHtml(p)}</strong><span style="font-weight:800;color:${st.c};font-size:12px">${st.t}</span></div>${state}${hours}${bars}
-      <div style="font-size:11px;color:var(--muted)">${tmCountsLine(p,key,x)} · ${x.cons} consultations booked</div>${rate}${fix}${outside}
+      <div style="font-size:11px;color:var(--muted)">${tmCountsLine(p,key,x)} · ${x.cons} consultations booked</div>${rate}${sh.clocked||x.contacted||x.closes?tmConvRowHtml(p):''}${fix}${(cur&&cur.state!=='OFF'&&!IS_BTO())?`<button class="copy-btn" style="margin-top:6px;font-size:10px;color:var(--red);border-color:var(--red)" onclick="shClockOutNow('${escJs(p)}')">⏻ CLOCK OUT NOW</button>`:''}${outside}
       <button class="copy-btn" style="margin-top:8px;font-size:10px" onclick="TEAM.who='${escJs(p)}';renderTeam()">SEE ONLY ${escHtml(p.split(' ')[0].toUpperCase())}</button></div>`;
   }).join('')||'<div style="color:var(--muted);padding:12px">No Business Trust Officers yet.</div>';
 
@@ -6969,6 +6969,341 @@ disarm:[
  {title:'DS5 — Restaurant / chop bar',msg:"Auntie/Chief, quick 15 seconds: I checked how [BUSINESS] takes orders online and saw a gap that may be sending customers to your competitor. Reply and I will send the 1-minute video.\n\n(Only name a leak you actually saw: Maps pin, menu prices, WhatsApp reply speed.)"}
 ]
 });
+
+// ---- v34.5: conversion rate for today / this week / this month (per officer) ----
+function tmConvPeriod(person,fromKey,toKey){
+  let c=0,d=0,k=fromKey,guard=0;
+  while(k<=toKey&&guard++<40){const x=tmDay(person,k);c+=x.contacted;d+=x.closes;k=tmShiftKey(k,1);}
+  return {contacted:c,closes:d,rate:c>0?Math.round(d/c*1000)/10:0};
+}
+function tmConvRowHtml(person){
+  const today=tmTodayKey(),td=tmKeyToDate(today);
+  const dow=(td.getDay()+6)%7;                       // Monday = week start
+  const wk=tmShiftKey(today,-dow),mo=today.slice(0,8)+'01';
+  const P=[['TODAY',tmConvPeriod(person,today,today)],['THIS WEEK',tmConvPeriod(person,wk,today)],['THIS MONTH',tmConvPeriod(person,mo,today)]];
+  return `<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">`+P.map(p=>`<div style="flex:1;min-width:84px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px"><div style="font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1px">${p[0]} CONVERSION</div><div style="font-size:18px;font-weight:800;font-family:'Space Mono',monospace">${p[1].rate}%</div><div style="font-size:10px;color:var(--muted)">${p[1].closes} closed ÷ ${p[1].contacted} contacted</div></div>`).join('')+`</div>`;
+}
+
+
+// =====================================================================
+// v34.5 — money flow, expenses, clock-out, tailored target messages
+// =====================================================================
+(function(){
+const $=id=>document.getElementById(id);
+const isBto=()=>{try{return IS_BTO();}catch(e){return false;}};
+const E=s=>(typeof escHtml==='function'?escHtml(String(s==null?'':s)):String(s==null?'':s));
+const api=async(q)=>{const r=await fetch(API_URL+'?'+q+'&t='+Date.now());return r.json();};
+const q=o=>Object.keys(o).map(k=>k+'='+encodeURIComponent(o[k]==null?'':o[k])).join('&');
+const todayIso=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const isoToDate=v=>{const p=(v||'').split('-');return p.length===3?new Date(+p[0],+p[1]-1,+p[2]):null;};
+const lab=t=>`<div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:8px 0 4px">${t}</div>`;
+const modalShell=(id,title,color,inner)=>{
+  let m=$(id);
+  if(!m){m=document.createElement('div');m.id=id;m.style.cssText='display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:520;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto';document.body.appendChild(m);}
+  m.innerHTML=`<div style="background:var(--card);border:1px solid ${color};border-radius:8px;padding:22px;width:100%;max-width:480px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:${color}">${title}</div><button onclick="document.getElementById('${id}').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:16px">&#x2715;</button></div>${inner}</div>`;
+  m.style.display='flex';return m;
+};
+
+// ---- A. refresh everything money-related, right now ----------------------
+window.refreshMoneyNow=async function(){
+  try{await loadData();}catch(e){}
+  try{await loadTrackerData();}catch(e){}
+  try{incRefreshAll();}catch(e){}
+};
+['submitConvertToClient','submitAddClient','submitAddSMEMember'].forEach(n=>{
+  const f=window[n];if(typeof f!=='function')return;
+  window[n]=async function(){const r=await f.apply(this,arguments);setTimeout(()=>{refreshMoneyNow();},1300);return r;};
+});
+
+// ---- B. first payment of a Pending client / SME member --------------------
+const _orm=window.openRenewModal;
+window.openRenewModal=function(b){
+  const c=(state.clients||[]).find(x=>x.Business===b)||(state.smeMembers||[]).find(x=>x.Business===b);
+  if(c&&(c.Status||'').trim().toLowerCase()==='pending'&&!isBto())return openFirstPayment(b);
+  return _orm.apply(this,arguments);
+};
+window.openFirstPayment=function(b){
+  const cl=(state.clients||[]).find(x=>x.Business===b),sme=cl?null:(state.smeMembers||[]).find(x=>x.Business===b),c=cl||sme;
+  if(!c){showToast('Client not found');return;}
+  const pkg=(c.Package||'').toString();
+  const pre=(typeof PACKAGE_PRICE_PRESETS!=='undefined'&&PACKAGE_PRICE_PRESETS[pkg])||{};
+  const monthly=parseFloat(c.Amount)||pre.monthly||0,one=sme?0:(parseFloat(c.OneTimeAmount)||pre.oneTime||0);
+  modalShell('fpModal','&#128176; CONFIRM FIRST PAYMENT','var(--green)',`
+    <input type="hidden" id="fpBiz" value="${E(b).replace(/"/g,'&quot;')}"><input type="hidden" id="fpKind" value="${sme?'sme':'client'}">
+    <div style="font-size:13px;font-weight:700">${E(b)}</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">${E(pkg||'No package')} · currently PENDING — nothing counts as income until you confirm the money arrived.</div>
+    ${lab('DATE THE CLIENT PAID')}<input type="date" id="fpDate" class="search-input" max="${todayIso()}" value="${todayIso()}" onchange="fpCalc()">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>${lab('MONTHLY FEE (GHS)')}<input id="fpMonthly" type="number" class="search-input" style="margin:0" value="${monthly}" oninput="fpCalc()"></div>
+      <div>${sme?'':lab('SETUP / ONE-TIME (GHS)')}${sme?'':`<input id="fpOne" type="number" class="search-input" style="margin:0" value="${one}" oninput="fpCalc()">`}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>${lab('MONTHS PAID FOR')}<select id="fpCycle" onchange="fpCalc()"><option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></select></div>
+      <div>${lab('TOTAL RECEIVED (GHS)')}<input id="fpTotal" type="number" class="search-input" style="margin:0"></div>
+    </div>
+    <div id="fpPreview" style="font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:9px 12px;margin-top:10px"></div>
+    <button class="refresh-btn" id="fpBtn" onclick="submitFirstPayment()" style="background:var(--green);color:var(--black);width:100%;margin-top:12px;padding:10px;font-weight:800">&#10003; CONFIRM PAYMENT RECEIVED</button>
+    <div id="fpResult" style="margin-top:8px;font-size:12px"></div>`);
+  fpCalc(true);
+};
+window.fpCalc=function(init){
+  const m=parseFloat($('fpMonthly').value)||0,o=$('fpOne')?parseFloat($('fpOne').value)||0:0,n=parseInt($('fpCycle').value)||1;
+  if(init||!$('fpTotal').dataset.edited)$('fpTotal').value=o+m*n;
+  $('fpTotal').oninput=function(){this.dataset.edited='1';};
+  const paid=isoToDate($('fpDate').value);if(!paid)return;
+  const next=m>0?fmtDMY(addMonthsDate(paid,n)):'—';
+  $('fpPreview').innerHTML=`Counted as <strong>new client income of ${fmtMoney($('fpTotal').value)}</strong> on <strong>${fmtDMY(paid)}</strong>. Next renewal due: <strong>${next}</strong>.`;
+};
+window.submitFirstPayment=async function(){
+  const b=$('fpBiz').value,kind=$('fpKind').value,res=$('fpResult'),sheet=kind==='sme'?'SME Systems Members':'Clients';
+  const paid=isoToDate($('fpDate').value);
+  if(!paid){res.innerHTML='<span style="color:var(--red)">Pick the payment date.</span>';return;}
+  if(paid>new Date(Date.now()+86400000)){res.innerHTML='<span style="color:var(--red)">The payment date cannot be in the future.</span>';return;}
+  const m=parseFloat($('fpMonthly').value)||0,o=$('fpOne')?parseFloat($('fpOne').value)||0:0,n=parseInt($('fpCycle').value)||1;
+  const total=parseFloat($('fpTotal').value)||0;
+  if(total<=0){res.innerHTML='<span style="color:var(--red)">Enter the amount received.</span>';return;}
+  const paidStr=fmtDMY(paid),nextStr=m>0?fmtDMY(addMonthsDate(paid,n)):'';
+  const c=(kind==='sme'?state.smeMembers:state.clients).find(x=>x.Business===b)||{};
+  const set=(f,v)=>api('action=updateContactField&'+q({business:b,field:f,value:v,sheetSource:sheet}));
+  $('fpBtn').disabled=true;res.innerHTML='<span style="color:var(--muted)">Saving…</span>';
+  try{
+    const steps=[['Amount',m]];if(kind!=='sme')steps.push(['OneTime',o]);steps.push(['Joined',paidStr]);if(nextStr)steps.push(['Renewal',nextStr]);
+    for(const s of steps){const d=await set(s[0],s[1]);if(!d||d.error||d.success===false){res.innerHTML='<span style="color:var(--red)">Not saved ('+s[0]+') — '+E((d&&d.error)||'server error')+'</span>';$('fpBtn').disabled=false;return;}}
+    const lg=await api('action=logConversion&'+q({business:b,number:c.Number||'',offer:c.Package||'',amount:total,notes:'New client — first payment — paid '+paidStr,date:paidStr}));
+    if(!lg||lg.error||lg.success===false){res.innerHTML='<span style="color:var(--red)">Payment could not be logged — '+E((lg&&lg.error)||'server error')+'. Status left as Pending.</span>';$('fpBtn').disabled=false;return;}
+    const st=await set('Status','Active');
+    res.innerHTML='<span style="color:var(--green);font-weight:700">&#10003; '+E(b)+' confirmed — '+fmtMoney(total)+' collected on '+paidStr+(st&&st.error?' (status not updated — set it Active manually)':'')+'</span>';
+    showToast('Payment confirmed — '+b);
+    await refreshMoneyNow();
+    setTimeout(()=>{$('fpModal').style.display='none';},1100);
+  }catch(e){res.innerHTML='<span style="color:var(--red)">Connection error — check the Clients list before retrying.</span>';$('fpBtn').disabled=false;}
+};
+
+// ---- C. Today: add a PAYING client straight to Clients -------------------
+function injectPayingToggle(){
+  const res=$('addContactResult');if(!res||$('payToggle'))return;
+  const opts=($('addClientPackage')||{}).innerHTML||'<option value="Verified Business">Verified Business</option>';
+  const bto=isBto();
+  res.insertAdjacentHTML('beforebegin',`
+   <label style="display:flex;gap:8px;align-items:center;margin:10px 0 4px;font-size:12px;font-weight:700;cursor:pointer"><input type="checkbox" id="payToggle" onchange="payToggleChange()"> &#128176; This is already a PAYING client — add straight to Clients</label>
+   <div id="payPanel" style="display:none;background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:10px;margin-bottom:8px">
+     ${lab('PACKAGE')}<select id="payPkg" onchange="payPkgChange()">${opts}</select>
+     <input id="payCustom" class="search-input" placeholder="Custom package name" style="display:none;margin-top:6px">
+     ${bto?`<div style="font-size:11px;color:var(--muted);margin-top:6px">It will be saved as <strong>Pending</strong> — BYINFORGH confirms the payment and price before it counts.</div>`:`
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+       <div>${lab('MONTHLY (GHS)')}<input id="payMonthly" type="number" class="search-input" style="margin:0" value="0"></div>
+       <div>${lab('ONE-TIME (GHS)')}<input id="payOne" type="number" class="search-input" style="margin:0" value="0"></div>
+       <div>${lab('PAID / JOINED DATE')}<input id="payJoined" type="date" class="search-input" style="margin:0" max="${todayIso()}" value="${todayIso()}"></div>
+       <div>${lab('STATUS')}<select id="payStatus"><option value="Active">Active — money received</option><option value="Pending">Pending — not yet paid</option></select></div>
+     </div>`}
+   </div>`);
+  payPkgChange();
+}
+window.payToggleChange=function(){const on=$('payToggle').checked;$('payPanel').style.display=on?'block':'none';const b=document.querySelector('#tab-today button[onclick="submitManualContact()"]');if(b)b.dataset.orig=b.dataset.orig||b.textContent,b.textContent=on?'+ ADD PAYING CLIENT':b.dataset.orig;};
+window.payPkgChange=function(){
+  const v=$('payPkg').value;$('payCustom').style.display=v==='Custom Package'?'block':'none';
+  const p=(typeof PACKAGE_PRICE_PRESETS!=='undefined'&&PACKAGE_PRICE_PRESETS[v])||null;
+  if(p&&$('payMonthly')){$('payMonthly').value=p.monthly||0;$('payOne').value=p.oneTime||0;}
+};
+const _smc=window.submitManualContact;
+window.submitManualContact=async function(){
+  if(!$('payToggle')||!$('payToggle').checked)return _smc.apply(this,arguments);
+  const business=$('addContactBusiness').value.trim(),number=normalizePhoneClient($('addContactNumber').value),res=$('addContactResult');
+  if(!business||!number){res.innerHTML='<span style="color:var(--red)">Business name and number are required.</span>';return;}
+  if(!/^0\d{9}$/.test(number)){res.innerHTML='<span style="color:var(--red)">Number looks wrong — 10 digits starting with 0.</span>';return;}
+  const bto=isBto(),pkg=$('payPkg').value,custom=$('payCustom').value.trim();
+  if(pkg==='Custom Package'&&!custom){res.innerHTML='<span style="color:var(--red)">Enter the custom package name.</span>';return;}
+  const monthly=bto?0:(parseFloat($('payMonthly').value)||0),one=bto?0:(parseFloat($('payOne').value)||0);
+  let status=bto?'Pending':$('payStatus').value;
+  const jd=bto?new Date():(isoToDate($('payJoined').value)||new Date());
+  if(jd>new Date(Date.now()+86400000)){res.innerHTML='<span style="color:var(--red)">Date cannot be in the future.</span>';return;}
+  const joined=fmtDMY(jd),renewal=(!bto&&monthly>0&&status==='Active')?fmtDMY(addMonthsDate(jd,1)):'';
+  const notes=$('addContactNotes').value.trim();
+  const existing=(state.contacts||[]).find(x=>(x.Business||'').toLowerCase()===business.toLowerCase());
+  if((state.clients||[]).some(x=>(x.Business||'').toLowerCase()===business.toLowerCase())&&!confirm('"'+business+'" is already in Clients. Add anyway?'))return;
+  res.innerHTML='<span style="color:var(--muted)">Adding…</span>';
+  try{
+    const base={business,package:pkg,customPackageName:custom,monthlyAmount:monthly,oneTimeAmount:one,status,joined,renewal,notes};
+    const d=existing?await api('action=convertToClient&'+q(Object.assign({sheetSource:existing.Sheet_Source||'Master CRM'},base)))
+                    :await api('action=addClient&'+q(Object.assign({number},base)));
+    if(!d||!d.success){res.innerHTML='<span style="color:var(--red)">'+E((d&&d.error)||'Could not add')+'</span>';return;}
+    const okMsg='<span style="color:var(--green);font-weight:700">&#10003; '+E(business)+' added to Clients as '+E(d.package||pkg)+(status==='Pending'?' (Pending — confirm the first payment when it arrives)':'')+'</span>';
+    res.innerHTML=okMsg;showToast('Client added — '+business);
+    ['addContactBusiness','addContactNumber','addContactTown','addContactArea','addContactCategory','addContactName','addContactNotes'].forEach(id=>{const e=$(id);if(e)e.value='';});
+    $('payToggle').checked=false;payToggleChange();
+    await refreshMoneyNow();
+    const rr=$('addContactResult');if(rr)rr.innerHTML=okMsg;
+  }catch(e){res.innerHTML='<span style="color:var(--red)">Connection error — nothing was saved.</span>';}
+};
+setTimeout(injectPayingToggle,0);
+
+// ---- D. expenses (CEO only) -----------------------------------------------
+const EXP_CATS=['Marketing & Ads','Data & Airtime','Transport','Salaries & Commission','Software & Subscriptions','Office & Utilities','Equipment','Training','Other'];
+window.openExpenses=async function(scope){
+  if(isBto())return;
+  const r=(scope==='period'&&typeof selRange==='function')?selRange():null;
+  window._expScope=r;
+  modalShell('expModal','&#129534; EXPENSES','var(--red)',`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>${lab('DATE')}<input type="date" id="expDate" class="search-input" style="margin:0" max="${todayIso()}" value="${todayIso()}"></div>
+      <div>${lab('AMOUNT (GHS)')}<input type="number" id="expAmt" class="search-input" style="margin:0" min="0" step="0.01"></div>
+    </div>
+    ${lab('CATEGORY')}<select id="expCat">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+    ${lab('WHAT WAS IT FOR')}<input id="expDesc" class="search-input" style="margin:0" placeholder="e.g. MTN data bundle for the team">
+    ${lab('NOTES (OPTIONAL)')}<input id="expNotes" class="search-input" style="margin:0">
+    <button class="refresh-btn" id="expBtn" onclick="submitExpense()" style="background:var(--red);color:#fff;width:100%;margin-top:12px;padding:10px;font-weight:800">+ LOG EXPENSE</button>
+    <div id="expResult" style="margin-top:8px;font-size:12px"></div>
+    <div id="expList" style="margin-top:12px;max-height:46vh;overflow-y:auto"></div>`);
+  try{const d=await api('action=getExpenses');if(d&&d.expenses)trackerData.expenses=d.expenses;}catch(e){}
+  renderExpList();
+};
+function renderExpList(){
+  const host=$('expList');if(!host)return;
+  const r=window._expScope;
+  let list=(trackerData.expenses||[]).filter(e=>!r||inRange(e.date||e.timestamp,r));
+  if(!r){const n=new Date();list=list.filter(e=>{const d=parseAnyDate(e.date||e.timestamp);return d&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();});}
+  const total=list.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  host.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:6px"><span>${r?E(r.label):'THIS MONTH'} — ${list.length} item${list.length===1?'':'s'}</span><span style="font-family:'Space Mono',monospace">${fmtMoney(total)}</span></div>`
+   +(list.map(e=>`<div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--border);padding:7px 0;font-size:12px"><div><strong>${E(e.category)}</strong> · ${E(e.description||'—')}<div style="font-size:10px;color:var(--muted)">${E(e.date)} · ${E(e.loggedBy)}${e.notes?' · '+E(e.notes):''}</div></div><div style="text-align:right;white-space:nowrap"><span style="font-family:'Space Mono',monospace;font-weight:700">${fmtMoney(e.amount)}</span><br><a style="color:var(--red);font-size:10px;cursor:pointer;text-decoration:underline" onclick="deleteExpenseUi('${escJs(e.timestamp)}')">delete</a></div></div>`).join('')||'<div style="color:var(--muted);font-size:12px">No expenses logged for this period.</div>');
+}
+window.submitExpense=async function(){
+  const amt=parseFloat($('expAmt').value)||0,d=isoToDate($('expDate').value),res=$('expResult');
+  if(amt<=0){res.innerHTML='<span style="color:var(--red)">Enter an amount above 0.</span>';return;}
+  if(!d){res.innerHTML='<span style="color:var(--red)">Pick a date.</span>';return;}
+  if(!$('expDesc').value.trim()){res.innerHTML='<span style="color:var(--red)">Say what it was for.</span>';return;}
+  $('expBtn').disabled=true;res.innerHTML='<span style="color:var(--muted)">Saving…</span>';
+  try{
+    const out=await api('action=logExpense&'+q({category:$('expCat').value,description:$('expDesc').value.trim(),amount:amt,notes:$('expNotes').value.trim(),date:fmtDMY(d)}));
+    if(!out||!out.success){res.innerHTML='<span style="color:var(--red)">'+E((out&&out.error)||'Not saved')+'</span>';$('expBtn').disabled=false;return;}
+    res.innerHTML='<span style="color:var(--green);font-weight:700">&#10003; '+fmtMoney(amt)+' logged</span>';
+    $('expAmt').value='';$('expDesc').value='';$('expNotes').value='';$('expBtn').disabled=false;
+    const l=await api('action=getExpenses');if(l&&l.expenses)trackerData.expenses=l.expenses;
+    renderExpList();try{incRefreshAll();}catch(e){}
+  }catch(e){res.innerHTML='<span style="color:var(--red)">Connection error — not saved.</span>';$('expBtn').disabled=false;}
+};
+window.deleteExpenseUi=async function(ts){
+  if(!confirm('Delete this expense?'))return;
+  try{const d=await api('action=deleteExpense&'+q({timestamp:ts}));
+    if(!d||!d.success){showToast((d&&d.error)||'Could not delete');return;}
+    const l=await api('action=getExpenses');if(l&&l.expenses)trackerData.expenses=l.expenses;
+    renderExpList();try{incRefreshAll();}catch(e){}
+  }catch(e){showToast('Connection error');}
+};
+if(typeof sumIncome==='function'){
+  const _si=window.sumIncome;
+  window.sumIncome=function(map,r){return `<div style="margin-bottom:10px"><button class="copy-btn" onclick="openExpenses('period')">+ LOG / VIEW EXPENSES</button></div>`+_si.apply(this,arguments);};
+}
+const _rr=window.renderRevenue;
+if(typeof _rr==='function')window.renderRevenue=function(){
+  _rr.apply(this,arguments);
+  if(isBto())return;
+  const host=$('revenueActual');if(host&&host.parentNode&&!$('expBtnRev'))host.insertAdjacentHTML('beforebegin','<div id="expBtnRev" style="margin-bottom:10px"><button class="copy-btn" onclick="openExpenses()">+ LOG / VIEW EXPENSES</button></div>');
+};
+
+// ---- E. Summary: expenses / net / vs target are clickable -----------------
+const _sd=window.sumDrill;
+window.sumDrill=function(kind,key){
+  if(kind==='exp')return openExpenses('period');
+  if(kind!=='net'&&kind!=='target')return _sd.apply(this,arguments);
+  const r=selRange(),map=buildDaily(),a=agg(map,r),now=new Date();
+  if(kind==='net'){
+    const by={};(trackerData.expenses||[]).filter(e=>inRange(e.date||e.timestamp,r)).forEach(e=>{const k=e.category||'Other';by[k]=(by[k]||0)+(parseFloat(e.amount)||0);});
+    const rows=[{a:'Revenue collected',b:a.payN+' payment'+(a.payN===1?'':'s'),c:sMoney(a.rev),m:true},{a:'− Expenses',b:'all categories',c:sMoney(a.exp),m:true},{a:'= NET',b:a.rev-a.exp>=0?'profit for the period':'loss for the period',c:sMoney(a.rev-a.exp),m:true}]
+      .concat(Object.keys(by).sort((x,y)=>by[y]-by[x]).map(k=>({a:'   '+k,b:'expense',c:sMoney(by[k]),m:true})));
+    return openDrill('Net — '+r.label,'revenue minus expenses',rows);
+  }
+  const mt=state.settings?(parseInt(state.settings.monthly_target)||5400):5400,wd=state.settings?(parseInt(state.settings.working_days)||26):26;
+  const days=daysBetween(r.start,r.end<now?r.end:now),target=Math.round(mt/wd*days),pct=target>0?Math.round(a.rev/target*100):0;
+  return openDrill('vs Target — '+r.label,pct+'% of the prorated target',[
+    {a:'Monthly target',b:'Settings',c:sMoney(mt),m:true},{a:'Working days per month',b:'Settings',c:String(wd),m:true},
+    {a:'Daily target',b:'monthly ÷ working days',c:sMoney(mt/wd),m:true},{a:'Days counted in this period',b:'up to today',c:String(days),m:true},
+    {a:'Target for this period',b:'daily × days',c:sMoney(target),m:true},{a:'Collected',b:a.payN+' payments',c:sMoney(a.rev),m:true},
+    {a:a.rev>=target?'Ahead by':'Still to collect',b:'',c:sMoney(Math.abs(target-a.rev)),m:true},{a:'Achieved',b:'',c:pct+'%',m:true}]);
+};
+
+// ---- F. clock a BTO out from the Team tab (CEO only) ----------------------
+window.shClockOutNow=async function(person){
+  if(isBto())return;
+  if(!confirm('Clock '+person+' out now? Their shift ends at the current time.'))return;
+  const n=new Date(),at=n.getUTCFullYear()+'-'+String(n.getUTCMonth()+1).padStart(2,'0')+'-'+String(n.getUTCDate()).padStart(2,'0')+' '+String(n.getUTCHours()).padStart(2,'0')+':'+String(n.getUTCMinutes()).padStart(2,'0');
+  try{const d=await api('action=fixShift&'+q({person,state:'OFF',at,note:'Clocked out by BYINFORGH'}));
+    showToast(d&&d.success?person+' clocked out':((d&&d.error)||'Failed'));
+    await loadShifts(true);renderTeam();}catch(e){showToast('Failed');}
+};
+
+// ---- G. tailored, detailed messages for each TARGET ----------------------
+// Stage 0 = first touch, 1 = after 1–2 messages, 2 = 3+ messages / monthly. Two wordings each (A·C / B·D).
+const TM={
+'Presence':[
+ ["Hello [NAME], good day. I'm reaching out from BYINFORGH here in Koforidua. We're building a trusted online directory of local businesses, and I'd like to list [BUSINESS] on it for free.\n\nWhy it helps: when someone searches for a [CATEGORY] nearby, they see your name, what you do, your number and your location in one place, so they can find you without asking around.\n\nThere is no cost and no catch. I only need to confirm your business name, location and the best WhatsApp number. May I send you the short form?",
+  "Good day [NAME]. Quick question: when a new customer searches for a [CATEGORY] in your area, can they find [BUSINESS] easily?\n\nWe run a free local business listing (BYINFORGH Business Presence): your name, services, location and contact, in one trusted place. It costs nothing. If you'd like it, reply YES and I'll take your details here on WhatsApp in two minutes."],
+ ["Hello [NAME], following up on the free listing for [BUSINESS]. To save you time I can fill everything in myself — I only need your business name, town/location and the number customers should call.\n\nOnce it's live I'll send you the link so you can see exactly what customers will see. Shall I go ahead?",
+  "Hi [NAME], just checking in. Your free BYINFORGH listing for [BUSINESS] is a two-minute job from our side. Being easy to find and easy to trust is the whole point. Would you like me to set it up today?"],
+ ["Good day [NAME]. I don't want to keep disturbing you, so this is my last note on the free listing. If you'd still like [BUSINESS] to appear in our local directory, just reply YES and I'll do the rest. If now isn't the time, no problem at all, and I'll check back in a few months with something useful for [CATEGORY] businesses.",
+  "Hello [NAME], a gentle final check on the free listing for [BUSINESS]. It stays free and open whenever you're ready, so there's no rush. A single word, YES, is all I need to start. Wishing you a good week."]],
+'Verified':[
+ ["Hello [NAME], good day. This is BYINFORGH, Koforidua. Many customers hesitate to pay a new business because of fear of mobile-money fraud. Our Verified Business (Blue Tick) lets them check that [BUSINESS] is real before they pay or visit.\n\nWhat you get: we verify your business, put it on our trusted directory with the Verified badge, and give you a profile page you can share on WhatsApp and social media.\n\nInvestment: GHS 180 one-time setup, then GHS 80 per month. I can show you what your page would look like first. May I?",
+  "Good day [NAME]. One question: if a stranger wants to buy from [BUSINESS], what makes them trust you enough to send money?\n\nBYINFORGH Verified Business answers that: we confirm your business is real and give you a Verified profile customers can check. Setup is GHS 180 once, then GHS 80 a month. Would you like me to send a sample profile so you can judge for yourself?"],
+ ["Hello [NAME], following up on Verified Business for [BUSINESS]. Here is the simple picture: GHS 180 setup + GHS 80 a month. If a verified profile helps you win just one extra customer a month, it has done its job. You can also start small and see how customers respond.\n\nIs there a question I can answer, or a part you're unsure about?",
+  "Hi [NAME], I wanted to share what the Verified badge does in practice: customers can look you up, see that [BUSINESS] is a real, verified local business, and contact you with more confidence. Shall I prepare your profile so you can see it before deciding? No obligation."],
+ ["Good day [NAME]. Last note from me on Verified Business for [BUSINESS]. If you'd like to go ahead, I'll collect your details and have your profile ready; GHS 180 setup and GHS 80/month, and I'll confirm the details with you before you pay anything. If it's not for now, I understand, and I'll keep you in mind for the free listing instead.",
+  "Hello [NAME], I'll leave this with you: Verified Business (GHS 180 + GHS 80/month) is there whenever [BUSINESS] is ready to be more trusted online. Reply VERIFY and I'll start straight away. Thank you for your time."]],
+'SME Systems':[
+ ["Hello [NAME], good day. This is BYINFORGH, Koforidua. A common problem for [CATEGORY] businesses: customers, orders and payments live in notebooks and WhatsApp chats, and things get lost.\n\nOur SME Systems put your customers, sales and follow-ups in one organised place, set up for you, with plans from GHS 50 per month.\n\nMay I ask two quick questions about how [BUSINESS] keeps track of customers today, so I can show you if it would help?",
+  "Good day [NAME]. If a regular customer messaged [BUSINESS] right now, could you see their last purchase and what they still owe, in seconds?\n\nThat's what BYINFORGH SME Systems is for: one simple system for customers, sales and follow-ups, from GHS 50 a month, set up by us. Would a 10-minute walkthrough on WhatsApp or in person be useful?"],
+ ["Hello [NAME], following up on SME Systems for [BUSINESS]. To make it concrete: tell me the one thing that costs you most time each week (chasing payments, remembering follow-ups, tracking sales) and I'll show you how the system handles exactly that. Which one is it?",
+  "Hi [NAME], you can start with just one problem, like follow-ups or debtors, and add more later. Plans start at GHS 50 a month, so you can start small. Shall I show you a quick example built for a [CATEGORY] business?"],
+ ["Good day [NAME]. This is my final note on SME Systems. If tracking customers and sales is something you'd like sorted for [BUSINESS], reply YES and I'll arrange a short walkthrough. If not now, no problem; I'll check in again later.",
+  "Hello [NAME], leaving the door open: whenever [BUSINESS] is ready for one place to run customers, sales and follow-ups (from GHS 50/month), just say the word. Thank you."]],
+'Digital Shopfront':[
+ ["Hello [NAME], good day. This is BYINFORGH, Koforidua. If someone searches for [BUSINESS] online today, what do they find? Many local businesses have different names on different apps, no Google Maps location, or accounts that are easy to lose.\n\nOur Digital Shopfront is a step-by-step guide that builds everything for you: business Gmail, Facebook Page, Instagram, TikTok, YouTube, Google Business Profile with your location, WhatsApp Business and a Mobile Money payment plan, in plain language for a beginner.\n\nIt's GHS 250, one-time, and you keep it. It comes as a written guide with checklists and an 18-video course (about 104 minutes). May I send you a short preview?",
+  "Good day [NAME]. Be honest: is [BUSINESS] easy to find on Google Maps and Facebook right now? Our Digital Shopfront guide walks you through setting up every account a Ghanaian business needs, step by step, so you do it once and do it properly. GHS 250 one-time, with written checklists and an 18-video course. Would you like to see a sample section?"],
+ ["Hello [NAME], following up on the Digital Shopfront guide for [BUSINESS]. It covers 9+ accounts over 16 sections, including securing every account with Two-Step Verification and setting up a dedicated Mobile Money number so customers can pay with confidence.\n\nDoing this piece by piece with a freelancer can cost far more and you don't keep the know-how; the guide is GHS 250 once. What part of your online presence worries you most?",
+  "Hi [NAME], one more thing about Digital Shopfront: it's built for a complete beginner, with checklists and a tracker so you can finish a little each day. Which of these do you already have for [BUSINESS]: Google Business Profile, WhatsApp Business, Facebook Page, Instagram? I'll tell you which sections matter most for you."],
+ ["Good day [NAME]. Last message from me on Digital Shopfront. If you want [BUSINESS] properly set up online (GHS 250 one-time, yours to keep), reply YES and I'll send the details. If it's not the right time, I understand, and I'll check back later.",
+  "Hello [NAME], I'll leave it here: the Digital Shopfront guide is available whenever you're ready to put [BUSINESS] on Google, social media and Mobile Money properly. Just reply SHOPFRONT. Thank you for your time."]],
+'TecXFRA':[
+ ["Hello [NAME], good day. This is BYINFORGH, Koforidua. TecXFRA is a business operating system that runs on your phone: one dashboard for your clients, automated follow-ups for leads that go silent, and daily revenue tracking so you always know how much came in today.\n\nIt also covers sales and POS, stock with low-stock alerts, debtors and invoices, and staff shifts. We set up the database for you; setup takes about 15 minutes and you build nothing yourself. Plans start at GHS 50 per month.\n\nDo you have a till, staff or daily sales at [BUSINESS] that you'd like to track better?",
+  "Good day [NAME]. At the end of the day, can you tell exactly how much [BUSINESS] sold, what's left in stock and who still owes you? TecXFRA does that from your phone: sales, stock, debtors and staff in one system, set up by us in about 15 minutes, from GHS 50 a month. Shall I show you a quick demo?"],
+ ["Hello [NAME], following up on TecXFRA for [BUSINESS]. It suits businesses with a till, several staff and steady daily sales. If that's you, the biggest wins are usually knowing daily revenue without counting by hand, catching low stock before it runs out, and chasing debtors on time.\n\nWhich of those matters most to you? I'll show you that part first.",
+  "Hi [NAME], a quick note on cost: TecXFRA Starter is GHS 50 a month and Growth is GHS 150 a month, so you can begin small. I'll confirm the exact plan for [BUSINESS] before you pay anything. Would a 15-minute demo this week work?"],
+ ["Good day [NAME]. Final note on TecXFRA. If you'd like [BUSINESS] to run on one simple system, reply YES and I'll arrange the setup. If it's not the right time, I'll check back in a few months.",
+  "Hello [NAME], TecXFRA is there whenever you're ready to see your sales, stock, debtors and staff in one place. Reply DEMO and I'll set it up. Thank you."]],
+'Business Consulting':[
+ ["Hello [NAME], good day. This is BYINFORGH, Koforidua. We start every business conversation with a free 15-question Business Audit across 7 areas: visibility, trust, customer experience, sales, digital presence, operations and growth readiness.\n\nIt shows where [BUSINESS] may be losing customers and money, and what to fix first. It takes about 15 minutes and there's no cost.\n\nOne question to think about: if 10 times more customers arrived tomorrow, what would break first? May I send you the audit?",
+  "Good day [NAME]. Most owners know something is leaking in the business but can't say where. Our free Business Audit (15 questions, about 15 minutes) points to it: visibility, trust, customer experience, sales, systems and growth readiness. Shall I send it to you on WhatsApp?"],
+ ["Hello [NAME], following up on the free Business Audit for [BUSINESS]. When you've answered, I'll give you a short written summary of your strongest areas and the first thing worth fixing, with no pressure to buy anything.\n\nIf you'd like a deeper look afterwards we have a Business Snapshot (GHS 600), a Quick Audit (GHS 1,800) and a Full Audit (GHS 3,200), and I'll confirm current pricing before you decide. Shall I resend the audit link?",
+  "Hi [NAME], a quick thought: the audit is built to show you the first fixes worth making. Would you like to do it with me on a call, so I can ask the questions and you simply answer? Fifteen minutes at a time that suits you."],
+ ["Good day [NAME]. This is my last follow-up on the free Business Audit for [BUSINESS]. If you'd like it, reply AUDIT and I'll send it right away. If not now, I understand, and I'll check back later.",
+  "Hello [NAME], the free audit stays open for [BUSINESS] whenever you're ready. Reply AUDIT and we'll start. Thank you for your time."]]
+};
+const TM_INFO={
+ 'Presence':'FREE listing in the BYINFORGH local directory — nothing to pay.',
+ 'Verified':'Verified (Blue Tick): GHS 180 setup + GHS 80 / month.',
+ 'SME Systems':'SME Systems: customers, sales and follow-ups in one system, from GHS 50 / month.',
+ 'Digital Shopfront':'Digital Shopfront guide: GHS 250 one-time, 18-video course + written guide.',
+ 'TecXFRA':'TecXFRA: phone-based business system, Starter GHS 50 / month, Growth GHS 150 / month.',
+ 'Business Consulting':'Free Business Audit first; Snapshot GHS 600, Quick Audit GHS 1,800, Full Audit GHS 3,200.'
+};
+window.targetMsg=function(c,msgCount,ver,isFirst){
+  const dep=window.currentDeployment!==undefined?window.currentDeployment:(typeof currentDeployment!=='undefined'?currentDeployment:'');
+  const set=TM[dep];if(!set)return null;
+  const st=((c.Stage||'')+'').toLowerCase();
+  const stage=(isFirst||msgCount===0)?0:(msgCount>=3||st.includes('monthly')||st.includes('quarterly'))?2:1;
+  const v=(ver==='B'||ver==='D')?1:0;
+  const first=(c.Business||'').split(' ')[0]||'there';
+  return set[stage][v].replace(/\[NAME\]/g,first).replace(/\[BUSINESS\]/g,c.Business||'your business').replace(/\[CATEGORY\]/g,c.Category||'business');
+};
+const _sdep=window.setDeployment;
+window.setDeployment=function(dep,btn){_sdep.apply(this,arguments);try{renderFollowUps();}catch(e){}};
+const _rf=window.renderFollowUps;
+window.renderFollowUps=function(){
+  _rf.apply(this,arguments);
+  const dep=typeof currentDeployment!=='undefined'?currentDeployment:'';
+  const host=$('followupList');if(!host||!dep||!TM_INFO[dep])return;
+  host.insertAdjacentHTML('afterbegin',`<div style="background:var(--surface);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:12px"><strong style="color:var(--gold)">TARGET: ${E(dep)}</strong><br>${E(TM_INFO[dep])}<br><span style="color:var(--muted)">Every message below is written for this target and matches how many times the contact has already been messaged (1st touch · follow-up · final note). Use A/B/C/D for a different wording. Always confirm the current price before you quote it.</span></div>`);
+};
+})();
 
 </script>
 </body>
