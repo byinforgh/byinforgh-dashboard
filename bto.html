@@ -7305,6 +7305,34 @@ window.renderFollowUps=function(){
 };
 })();
 
+
+// ---- v34.5b: a deal closed in the pipeline/Clients counts as a conversion on the day it was closed ----
+(function(){
+  const _gce=window.getConversionEvents;
+  if(typeof _gce!=='function')return;
+  const CLOSE={client_added:1,client_added_from_pipeline:1,converted_to_client:1,sme_member_added:1};
+  window.getConversionEvents=function(){
+    const base=_gce.apply(this,arguments);
+    let evs=[];try{evs=sumEvents();}catch(e){}
+    const first={};
+    evs.forEach(e=>{if(!CLOSE[e[1]])return;const k=(e[2]||'').toLowerCase();if(!k)return;
+      if(!first[k]||e[0]<first[k].t)first[k]={t:e[0],name:e[2]};});
+    const idx={};base.forEach(x=>{idx[(x.business||'').toLowerCase()]=x;});
+    Object.keys(first).forEach(k=>{
+      const d=fmtDMY(new Date(first[k].t));
+      if(idx[k])idx[k].date=d;                       // the close day wins over a typed start date
+      else base.push({date:d,business:first[k].name,amount:0,renewal:false});
+    });
+    return base;
+  };
+  // the same close must not be listed twice in a BTO's "Deals closed" drill-down
+  const _td=window.tmItems;
+  if(typeof _td==='function')window.tmItems=function(person,key){
+    const all=_td.apply(this,arguments),seen={};
+    return all.filter(i=>{if(i.type!=='close')return true;const k=(i.biz||'').toLowerCase();if(seen[k])return false;seen[k]=1;return true;});
+  };
+})();
+
 </script>
 </body>
 
