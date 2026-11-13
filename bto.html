@@ -5531,7 +5531,7 @@ function renderAnalytics(){
   const tabs=(bto?[]:[['income','💰 INCOME']]).concat([['messaging','✉ MESSAGING'],['intake','🔍 AUDITS & CONSULTATIONS'],['outlook','🔮 OUTLOOK']]);
   let h=sumConvStrip(map)+sumControls(map,r);
   h+=`<div class="filter-row" style="margin-top:6px">`+tabs.map(t=>`<button class="filter-btn${S.tab===t[0]?' active':''}" onclick="sumTab('${t[0]}')">${t[1]}</button>`).join('')+`</div>`;
-  if(S.tab!=='outlook')h+=`<div style="font-size:13px;font-weight:800;letter-spacing:1px;margin:4px 0 12px;color:var(--gold)">${r.label.toUpperCase()}</div>`;
+  if(S.tab!=='outlook')h+=sumPeriodBar(r);
   if(S.tab==='income')h+=sumIncome(map,r);
   else if(S.tab==='messaging')h+=sumMessaging(map,r);
   else if(S.tab==='intake')h+=sumIntake(map,r);
@@ -7330,6 +7330,55 @@ window.renderFollowUps=function(){
   if(typeof _td==='function')window.tmItems=function(person,key){
     const all=_td.apply(this,arguments),seen={};
     return all.filter(i=>{if(i.type!=='close')return true;const k=(i.biz||'').toLowerCase();if(seen[k])return false;seen[k]=1;return true;});
+  };
+})();
+
+
+// ---- v34.5c: move between day / week / month / quarter / year right where the figures are,
+//      and conversion rate by quarter and year (with a year switcher) ----
+(function(){
+  const cy=()=>new Date().getFullYear();
+  const clampY=y=>Math.max(2024,Math.min(cy()+3,y));
+  window.sumShift=function(n){
+    if(S.mode==='day'){const d=new Date(S.day.getFullYear(),S.day.getMonth(),S.day.getDate()+n);S.day=d;S.year=clampY(d.getFullYear());S.month=d.getMonth();}
+    else if(S.mode==='week'){let w=(S.week||1)+n;if(w<1){S.year=clampY(S.year-1);w=52;}else if(w>52){S.year=clampY(S.year+1);w=1;}S.week=w;}
+    else if(S.mode==='quarter'){let q=S.quarter+n;if(q<0){S.year=clampY(S.year-1);q=3;}else if(q>3){S.year=clampY(S.year+1);q=0;}S.quarter=q;}
+    else if(S.mode==='year'){S.year=clampY(S.year+n);}
+    else{let m=S.month+n;if(m<0){S.year=clampY(S.year-1);m=11;}else if(m>11){S.year=clampY(S.year+1);m=0;}S.month=m;}
+    sumRender();
+  };
+  window.sumGoNow=function(){
+    const n=new Date();S.year=n.getFullYear();S.month=n.getMonth();S.quarter=Math.floor(n.getMonth()/3);S.day=new Date(n.getFullYear(),n.getMonth(),n.getDate());S.week=weekOfYear(n);sumRender();
+  };
+  window.sumPeriodBar=function(r){
+    const modes=[['day','DAY'],['week','WEEK'],['month','MONTH'],['quarter','QUARTER'],['year','YEAR']];
+    const b='style="padding:6px 12px;font-size:14px;font-weight:800"';
+    return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 12px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+      <button class="cal-nav-btn" ${b} onclick="sumShift(-1)" title="Previous">&#8249;</button>
+      <div style="font-size:13px;font-weight:800;letter-spacing:1px;color:var(--gold);min-width:150px;text-align:center">${r.label.toUpperCase()}</div>
+      <button class="cal-nav-btn" ${b} onclick="sumShift(1)" title="Next">&#8250;</button>
+      <div class="filter-row" style="margin:0 0 0 8px">${modes.map(m=>`<button class="filter-btn${S.mode===m[0]?' active':''}" onclick="sumMode('${m[0]}')">${m[1]}</button>`).join('')}</div>
+      <button class="filter-btn" style="margin-left:auto" onclick="sumYear(-1)">&#8249; ${S.year-1}</button>
+      <button class="filter-btn" onclick="sumYear(1)">${S.year+1} &#8250;</button>
+      <button class="filter-btn" onclick="sumGoNow()">NOW</button></div>`;
+  };
+  // conversion by quarter + year for a chosen year
+  window.CONVY=window.CONVY||{year:cy()};
+  window.convYear=function(n){CONVY.year=clampY(CONVY.year+n);sumRender();};
+  window.convPick=function(mode,q){S.year=CONVY.year;S.mode=mode;if(mode==='quarter')S.quarter=q;sumRender();};
+  const _scs=window.sumConvStrip;
+  window.sumConvStrip=function(map){
+    const base=_scs.apply(this,arguments),y=CONVY.year,now=new Date();
+    const cards=[0,1,2,3].map(q=>({l:'Q'+(q+1),cls:['green','blue','purple','gold'][q],r:quarterRange(y,q),go:`convPick('quarter',${q})`}))
+      .concat([{l:'FULL YEAR',cls:'gold',r:yearRange(y),go:`convPick('year')`}]);
+    const html=cards.map(c=>{
+      const future=c.r.start>now,a=agg(map,c.r),den=Math.max(a.biz.size,a.clients);
+      const sub=future?'not started yet':`${a.clients} client${a.clients===1?'':'s'} ÷ ${den} contact${den===1?'':'s'} reached · ${a.out} msg`;
+      return sumCard(c.cls,'CONVERSION — '+c.l+' '+y,future?'—':sPct(convRate(a)),sub,c.go);
+    }).join('');
+    return base+`<div style="display:flex;align-items:center;gap:10px;margin:14px 0 6px"><div class="section-title" style="margin:0">CONVERSION BY QUARTER &amp; YEAR</div>
+      <button class="cal-nav-btn" onclick="convYear(-1)">&#8249;</button><strong style="font-family:'Space Mono',monospace">${y}</strong><button class="cal-nav-btn" onclick="convYear(1)">&#8250;</button></div>
+      <div class="metrics-grid">${html}</div>`;
   };
 })();
 
