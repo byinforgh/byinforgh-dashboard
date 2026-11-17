@@ -258,6 +258,50 @@ html,body{max-width:100%;overflow-x:clip;}
 .sum-mini{font-size:9px;font-weight:700;color:var(--text-dim);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sum-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
 @media(max-width:768px){.sum-weeks{grid-template-columns:repeat(9,minmax(0,1fr))}.sum-day{min-height:58px}.sum-year-label{font-size:16px;min-width:90px}}
+
+/* ===== v35.0 BUSINESS GROWTH SERIES ===== */
+.gs-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.gs-bar .search-input{margin:0;flex:1;min-width:200px}
+.gs-seg{display:inline-flex;border:1px solid var(--border);border-radius:5px;overflow:hidden}
+.gs-seg button{padding:8px 12px;border:0;background:var(--surface);color:var(--text-dim);font:700 11px 'Syne',sans-serif;letter-spacing:1px;cursor:pointer}
+.gs-seg button.on{background:var(--gold);color:#fff}
+.gs-side-title{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;letter-spacing:2px;color:var(--gold);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-bottom:12px}
+.gs-side-title small{font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:600}
+.gs-group{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase}
+.gs-group.late{color:var(--red)}
+.gs-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px}
+.gs-card.late{border-left-color:var(--red)}.gs-card.today{border-left-color:var(--orange)}.gs-card.soon{border-left-color:var(--green)}
+.gs-name{font-size:14px;font-weight:800;color:var(--text)}
+.gs-sub{font-size:11px;color:var(--text-dim);margin-top:2px;line-height:1.5}
+.gs-help{font-size:12px;color:var(--text-dim);background:var(--surface);border-radius:4px;padding:6px 8px;margin-top:6px;line-height:1.5}
+.gs-next{font-size:11px;color:var(--gold-dim);margin-top:6px;font-weight:700}
+.gs-pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);margin-right:4px}
+.gs-pill.yes{background:#E3F3EA;border-color:var(--green);color:var(--green)}
+.gs-pill.no{background:#FBEAE8;border-color:var(--red);color:var(--red)}
+.gs-pill.due{background:#FBEAE8;border-color:var(--red);color:var(--red)}
+.gs-pill.warn{background:#FBF0E0;border-color:var(--orange);color:var(--orange)}
+.gs-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.gs-btn{padding:6px 11px;border-radius:4px;border:1px solid var(--gold);background:var(--surface);color:var(--gold);font:800 10px 'Syne',sans-serif;letter-spacing:1px;cursor:pointer;text-decoration:none}
+.gs-btn.fill{background:var(--gold);color:#fff}.gs-btn.green{border-color:var(--green);color:var(--green)}.gs-btn.fill.green{background:var(--green);color:#fff}
+.gs-funnel-row{display:grid;grid-template-columns:132px 1fr 38px;gap:8px;align-items:center;padding:6px 8px;border-radius:5px;cursor:pointer;border:1px solid transparent}
+.gs-funnel-row:hover{background:var(--surface)}.gs-funnel-row.sel{border-color:var(--gold);background:var(--surface)}
+.gs-funnel-name{font-size:12px;font-weight:700;color:var(--text)}
+.gs-funnel-track{height:14px;background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.gs-funnel-fill{height:100%;background:var(--gold);border-radius:7px;min-width:2px}
+.gs-funnel-n{font:700 13px 'Space Mono',monospace;text-align:right}
+.gs-conv{font-size:11px;color:var(--text-dim);margin:8px 0 4px;line-height:1.7}
+.gs-hist{margin-top:8px;border-top:1px dashed var(--border);padding-top:6px;font-size:11px;color:var(--text-dim);line-height:1.6}
+#gsModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto}
+#gsModal .gs-box{background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:20px;width:640px;max-width:100%}
+.gs-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+@media(max-width:640px){.gs-form-grid{grid-template-columns:1fr}.gs-funnel-row{grid-template-columns:104px 1fr 34px}}
+.gs-lab{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:4px;text-transform:uppercase}
+.gs-form-grid input,.gs-form-grid select,.gs-form-grid textarea,#gsModal textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:5px;font-size:13px;font-family:inherit}
+#gsModal textarea{min-height:60px;resize:vertical}
+.gs-yn{display:inline-flex;border:1px solid var(--border);border-radius:5px;overflow:hidden;width:100%}
+.gs-yn button{flex:1;padding:8px 0;border:0;background:var(--surface);color:var(--text-dim);font:800 12px 'Syne',sans-serif;cursor:pointer}
+.gs-yn button.yes.on{background:var(--green);color:#fff}.gs-yn button.no.on{background:var(--red);color:#fff}
+.gs-strip{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;cursor:pointer;color:var(--text)}
 </style>
 </head>
 <body>
@@ -275,7 +319,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="masterBanner">MASTER VIEW &mdash; signed in as <span id="masterBannerName"></span><button onclick="masterLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v34.5</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v35.0</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -294,6 +338,7 @@ html,body{max-width:100%;overflow-x:clip;}
   <button class="tab" onclick="switchTab('accra',event)">ACCRA</button>
   <button class="tab" onclick="switchTab('clients',event)">CLIENTS</button>
   <button class="tab" onclick="switchTab('sme',event)">SME SYSTEMS</button>
+  <button class="tab" onclick="switchTab('growth',event)">&#128200; GROWTH SERIES</button>
   <button class="tab" onclick="switchTab('messages',event)">MESSAGES</button>
   <button class="tab" onclick="switchTab('revenue',event)">REVENUE</button>
   <button class="tab" onclick="switchTab('analytics',event)">&#128202; SUMMARY</button>
@@ -306,6 +351,7 @@ html,body{max-width:100%;overflow-x:clip;}
 
 <!-- TODAY -->
 <div class="tab-content active" id="tab-today">
+  <div id="gsTodayStrip"></div>
   <div id="dataDebug" class="debug-bar" style="display:none"></div>
   <div class="metrics-grid" id="topMetrics"><div class="loading">Loading data</div></div>
   <div class="target-bar-wrap" id="targetBar"></div>
@@ -763,6 +809,69 @@ html,body{max-width:100%;overflow-x:clip;}
   <div id="smeMembersList"></div>
 </div>
 
+<!-- BUSINESS GROWTH SERIES -->
+<div class="tab-content" id="tab-growth">
+  <div style="background:#E9F5F7;border:1px solid var(--teal);border-radius:6px;padding:14px 18px;margin-bottom:16px">
+    <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:6px">&#128200; BUSINESS GROWTH SERIES &mdash; MONTHLY CHECK-INS + THE PATH INTO THE SERIES</div>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.7">Left side: the people we check in with every month (business owners, entrepreneurs, people with an idea). Right side: where each one is on the path <strong>offered &rarr; signed up &rarr; profile complete &rarr; learning &rarr; business growing</strong>. Everyone is tracked, in the series or not yet, so we always know who to check in with, who to offer the series, and who to book into a consultation or visibility checklist.</div>
+  </div>
+  <div class="metrics-grid" id="gsMetrics"><div class="loading">Loading data</div></div>
+  <div class="gs-bar">
+    <button class="refresh-btn" style="background:var(--gold);color:#fff;font-weight:800;padding:9px 14px" onclick="gsOpenNew()">&#10133; ADD PERSON / CHECK IN</button>
+    <input id="gsSearch" class="search-input" placeholder="&#128269; Search name, business, idea, location, niche, number..." oninput="gsState.search=this.value;renderGrowth()">
+    <div class="gs-seg" id="gsView"><button data-v="both" class="on" onclick="gsSetView('both')">BOTH</button><button data-v="checkin" onclick="gsSetView('checkin')">CHECK-IN</button><button data-v="series" onclick="gsSetView('series')">SERIES</button></div>
+    <button class="refresh-btn" onclick="gsLoad(true)">&#8635;</button>
+    <button class="refresh-btn" onclick="gsExport()">&#8681; CSV</button>
+  </div>
+  <div id="gsError"></div>
+  <div class="two-col" id="gsCols" style="align-items:start">
+    <div id="gsLeft"></div>
+    <div id="gsRight"></div>
+  </div>
+</div>
+
+<!-- Growth Series person / check-in modal -->
+<div id="gsModal">
+  <div class="gs-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div id="gsModalTitle" style="font-size:14px;font-weight:800;letter-spacing:2px;color:var(--gold)">ADD PERSON</div>
+      <button class="gs-btn" onclick="gsCloseModal()">&#10005; CLOSE</button>
+    </div>
+    <div id="gsLastNote" style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6"></div>
+    <input type="hidden" id="gsId">
+    <div class="gs-form-grid">
+      <div><div class="gs-lab">Name *</div><input id="gsName" placeholder="Full name"></div>
+      <div><div class="gs-lab">WhatsApp number</div><input id="gsNumber" placeholder="0XXXXXXXXX"></div>
+      <div><div class="gs-lab">Business name (optional)</div><input id="gsBusiness" placeholder="Leave empty if no business yet" oninput="gsAutoType()"></div>
+      <div><div class="gs-lab">Business idea (if no business name)</div><input id="gsIdea" placeholder="e.g. mobile food stall, tailoring" oninput="gsAutoType()"></div>
+      <div><div class="gs-lab">Location</div><input id="gsLocation" placeholder="Town / area"></div>
+      <div><div class="gs-lab">Niche / industry of interest (optional)</div><input id="gsNiche" placeholder="e.g. fashion, food, farming"></div>
+      <div><div class="gs-lab">Type</div><select id="gsType"><option>Business owner</option><option>Entrepreneur</option><option>Idea stage</option></select></div>
+      <div><div class="gs-lab">Status</div><select id="gsStatus"><option>Active</option><option>Paused</option><option>Closed</option></select></div>
+    </div>
+    <div class="gs-lab">Thoughts and plans</div>
+    <textarea id="gsThoughts" placeholder="What are they thinking and planning?"></textarea>
+    <div class="gs-form-grid" style="margin-top:10px">
+      <div><div class="gs-lab">What help is needed</div><textarea id="gsHelp" placeholder="Help they asked for or we can see they need"></textarea></div>
+      <div><div class="gs-lab">What improvement is needed</div><textarea id="gsImprove" placeholder="What should change in the business or plan"></textarea></div>
+    </div>
+    <div class="gs-form-grid">
+      <div><div class="gs-lab">Offer Business Growth Series?</div><div class="gs-yn" id="gsOfferedYN"><button class="yes" onclick="gsSetYN('Offered','Yes')">YES</button><button class="no on" onclick="gsSetYN('Offered','No')">NO</button></div></div>
+      <div><div class="gs-lab">Signed up?</div><div class="gs-yn" id="gsSignedYN"><button class="yes" onclick="gsSetYN('Signed','Yes')">YES</button><button class="no on" onclick="gsSetYN('Signed','No')">NO</button></div></div>
+      <div><div class="gs-lab">Profile complete?</div><div class="gs-yn" id="gsProfileYN"><button class="yes" onclick="gsSetYN('Profile','Yes')">YES</button><button class="no on" onclick="gsSetYN('Profile','No')">NO</button></div></div>
+      <div id="gsStageWrap" style="display:none"><div class="gs-lab">Education path</div><select id="gsStage"><option>Profile complete</option><option>Learning</option><option>Business growing</option></select></div>
+      <div><div class="gs-lab">Next step for this person</div><select id="gsNextStep"><option value=""></option><option>Offer Business Growth Series</option><option>Book consultation</option><option>Book visibility checklist</option><option>Consultation booked</option><option>Visibility checklist booked</option><option>Nothing needed</option></select></div>
+    </div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;margin:6px 0 8px"><input type="checkbox" id="gsIsCheckin" checked onchange="gsToggleCheckin()" style="width:auto"> This is a check-in (logs it in the history and sets the next date)</label>
+    <div class="gs-form-grid" id="gsDates">
+      <div id="gsCheckinWrap"><div class="gs-lab">Check-in date</div><input type="date" id="gsCheckinDate" onchange="gsAutoNext()"></div>
+      <div><div class="gs-lab">Next check-in (auto +1 month)</div><input type="date" id="gsNextDate" onchange="gsNextTouched=true"></div>
+    </div>
+    <div id="gsSaveResult" style="font-size:12px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px"><button class="refresh-btn" id="gsSaveBtn" onclick="gsSave()" style="background:var(--gold);color:#fff;flex:1;padding:11px;font-weight:800">SAVE</button><button class="refresh-btn" onclick="gsCloseModal()" style="padding:11px 18px">CANCEL</button></div>
+  </div>
+</div>
+
 <!-- MESSAGES -->
 <div class="tab-content" id="tab-messages">
   <div class="section-title">MESSAGE LIBRARY — BYINFORGH ECOSYSTEM FRAMEWORK</div>
@@ -901,9 +1010,9 @@ html,body{max-width:100%;overflow-x:clip;}
         <option value="SME Systems Authority">SME Systems — Authority GHS 500</option>
         </optgroup>
         <optgroup label="CORPORATE / COMMAND CENTRE">
-        <option value="Command Centre Starter">Command Centre — Starter GHS 25000</option>
-        <option value="Command Centre Growth">Command Centre — Growth GHS 50000</option>
-        <option value="Command Centre Authority">Command Centre — Authority GHS 90000</option>
+        <option value="Command Centre Starter">Command Centre — Starter GHS 25000 one-time</option>
+        <option value="Command Centre Growth">Command Centre — Growth GHS 50000 one-time</option>
+        <option value="Command Centre Authority">Command Centre — Authority GHS 90000 one-time</option>
         </optgroup>
         <option value="Custom Package">Custom Package</option>
       </select>
@@ -1264,7 +1373,7 @@ let versionManuallySet=false;
 
 // Order must match the .tab buttons in the header exactly — used by activateTab()
 // so metric cards / WA board items can jump straight to a tab from code.
-const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','kumasi','accra','clients','sme','messages','revenue','analytics','team','contacts','tracker','archive','bizsolutions'];
+const TAB_ORDER=['today','ai','followup','calendar','pipeline','calls','koforidua','kumasi','accra','clients','sme','growth','messages','revenue','analytics','team','contacts','tracker','archive','bizsolutions'];
 // Daily rotation: changes each calendar day so messages are never the same two days running
 const TODAY_SEED=(()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})();
 
@@ -1301,12 +1410,12 @@ function isTerminalWaLabel(w){return !!w&&(w.includes('✅')||w.includes('⬛'))
 const REVENUE_PACKAGES=[
   {key:'presence',name:'Business Presence',color:'var(--text-dim)',free:true,match:p=>/presence/i.test(p||'')},
   {key:'verified',name:'✅ Verified Business',color:'var(--gold)',amount:180,match:p=>/verified/i.test(p||'')&&!/visibility/i.test(p||'')},
-  {key:'visibility',name:'🔥 Visibility Partner',color:'var(--orange)',tiers:[
-    {label:'Tier 1',amount:250,match:p=>/visibility partner/i.test(p||'')&&/250/.test(p||'')},
-    {label:'Tier 2',amount:750,match:p=>/visibility partner/i.test(p||'')&&/750/.test(p||'')},
-    {label:'Tier 3',amount:1500,match:p=>/visibility partner/i.test(p||'')&&/1500/.test(p||'')}
+  {key:'visibility',name:'🔥 Visibility (Essentials / Partner / Growth Engine)',color:'var(--orange)',tiers:[
+    {label:'Visibility Essentials',amount:250,match:p=>/visibility essentials/i.test(p||'')||(/visibility partner/i.test(p||'')&&/250/.test(p||''))},
+    {label:'Visibility Partner',amount:750,match:p=>/visibility partner/i.test(p||'')&&!/(250|1500)/.test(p||'')},
+    {label:'Growth Engine',amount:1500,match:p=>/growth engine/i.test(p||'')||(/visibility partner/i.test(p||'')&&/1500/.test(p||''))}
   ]},
-  {key:'authority',name:'👑 Business Authority',color:'var(--purple)',amount:5000,match:p=>/business authority/i.test(p||'')},
+  {key:'authority',name:'👑 Market Authority',color:'var(--purple)',amount:5000,match:p=>/(market|business) authority/i.test(p||'')},
   {key:'sme',name:'🔧 SME Systems (BBCS)',color:'var(--teal)',tiers:[
     {label:'Starter',amount:50,match:p=>/(sme|bbcs)/i.test(p||'')&&/starter/i.test(p||'')},
     {label:'Growth',amount:150,match:p=>/(sme|bbcs)/i.test(p||'')&&/growth/i.test(p||'')},
@@ -1347,7 +1456,7 @@ const PACKAGE_PRICE_PRESETS={
   'Visibility Partner 1500':{monthly:1500,oneTime:0},
   'Growth Engine':{monthly:1500,oneTime:0},
   'Market Authority':{monthly:5000,oneTime:0},
-  'Business Authority':{monthly:5000,oneTime:0},
+  'Business Authority':{monthly:5000,oneTime:0}, // older name for Market Authority
   'TecXFRA Starter':{monthly:50,oneTime:0},
   'TecXFRA Growth':{monthly:150,oneTime:0},
   'TecXFRA Enterprise':{monthly:1500,oneTime:0},
@@ -1358,9 +1467,9 @@ const PACKAGE_PRICE_PRESETS={
   'SME Systems Starter':{monthly:50,oneTime:0},
   'SME Systems Growth':{monthly:150,oneTime:0},
   'SME Systems Authority':{monthly:500,oneTime:0},
-  'Command Centre Starter':{monthly:25000,oneTime:0},
-  'Command Centre Growth':{monthly:50000,oneTime:0},
-  'Command Centre Authority':{monthly:90000,oneTime:0}
+  'Command Centre Starter':{monthly:0,oneTime:25000},
+  'Command Centre Growth':{monthly:0,oneTime:50000},
+  'Command Centre Authority':{monthly:0,oneTime:90000}
 };
 
 // v16.0: FIRST-TOUCH OPENERS — used instead of MSG_VERSIONS whenever a
@@ -1984,6 +2093,7 @@ function activateTab(name){
   if(name==='tracker')renderTracker();
   if(name==='calls')renderCallTab();
   if(name==='sme')renderSME();
+  if(name==='growth')renderGrowth();
   if(name==='archive')renderArchive();
   if(name==='calendar')renderCalendar();
   if(name==='bizsolutions')renderBizSolutions();
@@ -2438,6 +2548,9 @@ const OFFER_OPTIONS = [
   'SME Systems — Starter 50',
   'SME Systems — Growth 150',
   'SME Systems — Authority 500',
+  'Command Centre — Starter 25000 GHS one-time',
+  'Command Centre — Growth 50000 GHS one-time',
+  'Command Centre — Authority 90000 GHS one-time',
   'Custom Package',
   'Tip Message',
   'Warm Message'
@@ -4223,7 +4336,7 @@ function renderAI(){
   if(orangeDue.length>3)tips.push(`👁 ${orangeDue.length} read-no-reply due today — Google Maps screenshot. Not the same message.`);
   if(red.length>5)tips.push(`📞 ${red.length} contacts with 1-tick — call them. Calls tab.`);
   if(tips.length===0)tips.push(`🎯 No hot follow-ups due today. Add new contacts or run discovery on cold pipeline.`);
-  tips.push(`🎯 ECOSYSTEM: Business Presence (Free) → Verified (GHS 180) → Visibility Partner → Business Authority → SME Systems → Command Centre.`);
+  tips.push(`🎯 ECOSYSTEM: Business Presence (Free) → Verified (GHS 180) → Visibility Partner → Growth Engine → Market Authority → SME Systems → Command Centre.`);
   document.getElementById('aiConversionTips').innerHTML=tips.map(t=>`<div style="padding:8px 12px;background:var(--surface);border-radius:5px;border-left:3px solid var(--gold);margin-bottom:8px;font-size:12px;line-height:1.6">${t}</div>`).join('');
   const day=new Date().getDay();const dayName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][day];
   const hour=new Date().getHours();
@@ -4311,7 +4424,7 @@ async function sendAI(){
   const local=getSmartLocalReply(question);
   if(local){loading.remove();aiHistory.push({role:'user',content:question},{role:'assistant',content:local});addAIMessage('assistant',local);return;}
   const mrr=getMRR();
-  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000). Lead with problem not product. Be brief and specific.`;
+  const sp=`You are the BYINFORGH business assistant for YJ in Koforidua Ghana.\nLIVE: ${state.contacts.length} contacts GHS ${mrr} MRR ${state.clients.filter(c=>(c.Status||'').trim().toLowerCase()==='active').length} vis clients ${(state.smeMembers||[]).filter(m=>(m.Status||'').toLowerCase()==='active').length} SME members Hot:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🔵')).length} Conv:${state.contacts.filter(c=>c.WA_Label&&c.WA_Label.includes('🟢')).length}\nECOSYSTEM: Business Presence(Free)→Verified(GHS180)→Visibility Essentials(250)→Visibility Partner(750)→Growth Engine(1500)→Market Authority(5000)→SME Systems(50/150/500)→Command Centre(one-time build 25000/50000/90000). Lead with problem not product. Be brief and specific.`;
   aiHistory.push({role:'user',content:question});
   try{
     const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),15000);
@@ -4441,7 +4554,7 @@ async function sendConvReview(){
   if(!summary){showToast('Add a conversation summary first');return;}
   resultDiv.innerHTML='<div class="loading">Analysing</div>';
   const pkgCtx=pkg?`\nPackage: ${pkg}${amount?' (GHS '+amount+')':''}`:'' ;
-  const sp=`You are a sales coach for BYINFORGH Ghana. Ecosystem: Business Presence(Free)→Verified(GHS180)→Visibility Partner(250/750/1500)→Business Authority(5000)→SME Systems(50/150/500)→Command Centre(25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
+  const sp=`You are a sales coach for BYINFORGH Ghana. Ecosystem: Business Presence(Free)→Verified(GHS180)→Visibility Essentials(250)→Visibility Partner(750)→Growth Engine(1500)→Market Authority(5000)→SME Systems(50/150/500)→Command Centre(one-time build 25000/50000/90000).\nFormat EXACTLY:\n✅ WHAT WORKED: [1-2 things]\n❌ WHAT MISSED: [1-2 things]\n📊 SCORE: [X/10]\n🎯 NEXT MESSAGE: [exact message to send]\n💡 KEY LESSON: [one insight]`;
   const question=`Business: ${business||'unnamed'}\nOutcome: ${outcome}${pkgCtx}\nSummary: ${summary}`;
   try{
     const r=await fetch(API_URL+'?action=aiAsk&question='+encodeURIComponent(question)+'&context='+encodeURIComponent(sp)+'&t='+Date.now());
@@ -5723,7 +5836,7 @@ function awaitingDrill(){
 }
 
 // ---------- 6. One-off project payments (snapshots, audits, custom work) ----------
-const ONEOFF_PRESETS=[['Business Snapshot',600],['Quick Audit',1800],['Full Audit',3200],['Verified Business (one-time)',180],['Custom project',0]];
+const ONEOFF_PRESETS=[['Business Snapshot',600],['Quick Audit',1800],['Full Audit',3200],['Verified Business (one-time)',180],['Command Centre Starter (one-time build)',25000],['Command Centre Growth (one-time build)',50000],['Command Centre Authority (one-time build)',90000],['Custom project',0]];
 function ensureOneOffModal(){
   if(document.getElementById('oneOffModal'))return;
   const opts=ONEOFF_PRESETS.map((p,i)=>`<option value="${i}">${p[0]}${p[1]?' — ₵'+p[1]:''}</option>`).join('');
@@ -6963,7 +7076,7 @@ const BYINFORGH_KNOWLEDGE=[
 'COMPANY: BYINFORGH, Koforidua, Eastern Region, Ghana. Tagline: Trusted. Visible. Local. (By Ghana. In Ghana. For Ghana.) Founder: YJ. Contact: solutions@byinforgh.com, 0509 960 980, www.byinforgh.com.',
 'ORIGIN: we asked business owners in our area what their biggest problems were, documented every answer, asked permission to return with a solution, and built around the biggest problem.',
 'FOUR LAYERS: Be Visible (free listing, Verified/Blue Tick, visibility packages) | Learn It (Business Growth Series, Digital Shopfront guide, Masterclass) | Run It (TecXFRA, SME Systems) | Transform It (Business Consulting and Implementation, audits).',
-'PRICES IN GHS (always confirm current price before quoting): Free Listing 0. Verified Business 180 setup + 80/month. Visibility Essentials 250/mo, Visibility Partner 750/mo, Growth Engine 1500/mo, Market Authority 5000/mo. TecXFRA Starter 50/mo, Growth 150/mo, Enterprise 1500/mo, Prestige 4500/mo. SME Systems 50/150/500 per month. Business Snapshot 600, Quick Audit 1800, Full Audit 3200 (one-time). Digital Shopfront guide 250 one-time. Masterclass: Standard 50/mo (monthly group Q&A), VIP 350/mo (max 5 businesses per group, each reviewed individually), 1-2-1 session 1200 (one hour, full business audit plus 3 months accountability). Command Centre 25000/50000/90000.',
+'PRICES IN GHS (always confirm current price before quoting): Free Listing 0. Verified Business 180 setup + 80/month. Visibility Essentials 250/mo, Visibility Partner 750/mo, Growth Engine 1500/mo, Market Authority 5000/mo. TecXFRA Starter 50/mo, Growth 150/mo, Enterprise 1500/mo, Prestige 4500/mo. SME Systems 50/150/500 per month. Business Snapshot 600, Quick Audit 1800, Full Audit 3200 (one-time). Digital Shopfront guide 250 one-time. Masterclass: Standard 50/mo (monthly group Q&A), VIP 350/mo (max 5 businesses per group, each reviewed individually), 1-2-1 session 1200 (one hour, full business audit plus 3 months accountability). Command Centre (one-time build) 25000/50000/90000. BUSINESS GROWTH SERIES: monthly check-ins, advice and education that lead owners and idea-stage people into building a business (price not set here: confirm with management before quoting).',
 'DIGITAL SHOPFRONT (GHS 250 one-time): step-by-step guide that builds every account a Ghanaian business needs online from zero to live: business Gmail, Facebook Page, Instagram, TikTok, YouTube, Google Business Profile with GPS, WhatsApp Business, a Mobile Money payment plan, product photos, BYINFORGH Trust Profile, securing every account, launch day. 9+ accounts, 16 sections, written for a beginner. Comes as a written guide (checklists, tracker) and an 18-video course (about 104 minutes). Problems it fixes: different names on each app, no dedicated MoMo number, accounts without Two-Step Verification, invisible on Google Maps. Doing it by the hour with a freelancer often costs more (GHS 400-800+) and the owner does not keep the process.',
 'TECXFRA (Run It): business operating system on the owner phone. 3 pillars: 1) centralised client dashboard, 2) automated follow-ups for silent leads, 3) real-time daily revenue tracking. Also POS, inventory with low-stock flags, debtors and invoicing, staff and shifts, daily accountability, AI assistant. We pre-configure the database; setup about 15 minutes; owner builds nothing. Suits businesses with a till, several staff and steady daily sales.',
 'CONSULTING (Transform It): start with the free 15-question Business Audit over 7 areas: Visibility, Trust, Customer Experience, Sales and Conversion, Digital Presence, Operations and Systems, Growth Readiness. Key question: if 10 times more customers arrived tomorrow, what would break first? Paid: Business Snapshot, Quick Audit, Full Audit; multi-outlet or high-value work quoted after a full audit.',
@@ -7457,6 +7570,307 @@ window.renderFollowUps=function(){
     return base+`<div style="display:flex;align-items:center;gap:10px;margin:14px 0 6px"><div class="section-title" style="margin:0">CONVERSION BY QUARTER &amp; YEAR</div>
       <button class="cal-nav-btn" onclick="convYear(-1)">&#8249;</button><strong style="font-family:'Space Mono',monospace">${y}</strong><button class="cal-nav-btn" onclick="convYear(1)">&#8250;</button></div>
       <div class="metrics-grid">${html}</div>`;
+  };
+})();
+
+
+// =====================================================================
+// v35.0 — BUSINESS GROWTH SERIES (monthly check-ins + series funnel)
+// Data: backend sheets "Growth Series" (people) and "Growth Check-ins" (history).
+// =====================================================================
+const GS_STAGES=['Not offered','Offered','Signed up','Profile complete','Learning','Business growing'];
+const GS_STAGE_ICON=['🌱','📨','✍️','🪪','📚','🚀'];
+const GS_STAGE_HINT=['Not asked yet','Offer made, waiting','Signed up, profile not done','Profile done, start learning','In the education path','Business launched / growing'];
+let gsState={people:[],checkins:[],loaded:false,loading:false,error:'',view:'both',stage:'notin',search:'',openHist:{},lastLoad:0,autoTried:false};
+let gsNextTouched=false,gsYNState={Offered:'No',Signed:'No',Profile:'No'},gsSaving=false;
+
+function gsParse(s){const m=String(s||'').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?new Date(+m[3],+m[2]-1,+m[1]):null;}
+function gsStartOfToday(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function gsDaysUntil(s){const d=gsParse(s);if(!d)return null;return Math.round((d-gsStartOfToday())/86400000);}
+function gsDaysAgo(s){const d=gsParse(s);if(!d)return null;return Math.round((gsStartOfToday()-d)/86400000);}
+function gsIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function gsFromIso(iso){const m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+'/'+m[2]+'/'+m[1]:'';}
+function gsToIso(ddmmyyyy){const d=gsParse(ddmmyyyy);return d?gsIso(d):'';}
+function gsPlusMonthIso(iso){const m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return'';const y=+m[1],mo=+m[2]-1,da=+m[3];let n=new Date(y,mo+1,da);if(n.getDate()!==da)n=new Date(y,mo+2,0);return gsIso(n);}
+function gsStageIdx(p){const i=GS_STAGES.indexOf(p.Stage);return i<0?0:i;}
+function gsInSeries(p){return gsStageIdx(p)>=2;}
+function gsActive(p){return (p.Status||'Active')==='Active';}
+function gsWaLink(p,text){let n=String(p.Number||'').replace(/\D/g,'');if(!n)return'';if(/^0\d{9}$/.test(n))n='233'+n.substring(1);return'https://wa.me/'+n+'?text='+encodeURIComponent(text||'');}
+function gsCheckinMsg(p){const what=p.Business?p.Business:(p.Idea?'your idea ('+p.Idea+')':'your business plans');return'Hi '+(p.Name||'').split(' ')[0]+', this is your monthly check-in from BYINFORGH. How is '+what+' going this month? What is working, and where do you need help? I am glad to give advice.';}
+function gsOfferMsg(p){const first=(p.Name||'').split(' ')[0];return p.Business
+  ?'Hi '+first+', hope '+p.Business+' is doing well. We run the BYINFORGH Business Growth Series: monthly check-ins, practical advice and education to help owners grow. Would you like me to explain how to join?'
+  :'Hi '+first+', hope you are well. We run the BYINFORGH Business Growth Series: monthly check-ins, practical advice and education that help people turn an idea into a real business. Would you like me to explain how to join?';}
+
+// What should we do with this person next? Works for people inside or outside the series.
+function gsSuggest(p){
+  if(!gsActive(p))return '';
+  const ns=p.NextStep||'';
+  if(/booked/i.test(ns))return '📅 '+ns+' — follow up after it happens';
+  const hasBiz=!!p.Business;
+  switch(gsStageIdx(p)){
+    case 0:return hasBiz?'Offer the Series, and book a visibility checklist or consultation':'Offer the Series: help them turn the idea into a business';
+    case 1:return 'Follow up the offer and answer their questions'+(hasBiz?', or book a visibility checklist':'');
+    case 2:return 'Help them finish their profile';
+    case 3:return 'Start their education path';
+    case 4:return 'Check their progress; book a consultation when they are ready to build or grow';
+    default:return 'Business growing: ask what is working, book a consultation for the next level';
+  }
+}
+
+async function gsLoad(force){
+  if(gsState.loading)return;
+  if(!force&&gsState.loaded&&Date.now()-gsState.lastLoad<120000)return;
+  gsState.loading=true;
+  try{
+    const res=await fetch(API_URL+'?action=getGrowthSeries&t='+Date.now());
+    const data=await res.json();
+    if(data&&data.success){gsState.people=data.people||[];gsState.checkins=data.checkins||[];gsState.loaded=true;gsState.error='';gsState.lastLoad=Date.now();}
+    else{gsState.error=(data&&data.error)||'Could not load. Deploy backend v35.0 and try again.';}
+  }catch(err){gsState.error='Could not reach the backend: '+err.message;}
+  gsState.loading=false;gsState.lastLoad=Date.now();
+  try{if(document.getElementById('tab-growth').classList.contains('active'))renderGrowth();gsTodayStrip();}catch(e){}
+}
+
+function gsSetView(v){
+  gsState.view=v;
+  document.querySelectorAll('#gsView button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  renderGrowth();
+}
+function gsMatches(p){
+  const q=(gsState.search||'').trim().toLowerCase();
+  if(!q)return true;
+  return [p.Name,p.Business,p.Idea,p.Location,p.Niche,p.Number,p.Stage].join(' ').toLowerCase().indexOf(q)>-1;
+}
+
+function renderGrowth(){
+  if(!gsState.loaded&&!gsState.error){gsLoad(true);document.getElementById('gsMetrics').innerHTML='<div class="loading">Loading data</div>';return;}
+  document.getElementById('gsError').innerHTML=gsState.error?`<div style="background:#FBEAE8;border:1px solid var(--red);border-radius:6px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--red)">${escHtml(gsState.error)}</div>`:'';
+  const all=gsState.people;
+  const act=all.filter(gsActive);
+  const due=act.filter(p=>{const d=gsDaysUntil(p.Next);return d!==null&&d<=0;});
+  const overdue=act.filter(p=>{const d=gsDaysUntil(p.Next);return d!==null&&d<0;});
+  const now=new Date(),mk=String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+  const thisMonth=act.filter(p=>p.Last&&p.Last.substring(3)===mk);
+  const inSeries=act.filter(gsInSeries);
+  const offeredNotSigned=act.filter(p=>gsStageIdx(p)===1);
+  const profileOpen=act.filter(p=>gsStageIdx(p)===2);
+  const everOffered=act.filter(p=>gsStageIdx(p)>=1).length;
+  const rate=everOffered?Math.round(inSeries.length/everOffered*100):0;
+  document.getElementById('gsMetrics').innerHTML=`
+    <div class="metric-card gold"><div class="metric-label">PEOPLE TRACKED</div><div class="metric-value">${act.length}</div><div class="metric-sub">${all.length-act.length} paused / closed</div></div>
+    <div class="metric-card ${due.length?'orange':'green'} clickable" onclick="gsSetView('checkin')"><div class="metric-label">CHECK-INS DUE</div><div class="metric-value">${due.length}</div><div class="metric-sub">${overdue.length} overdue</div></div>
+    <div class="metric-card green"><div class="metric-label">CHECKED IN THIS MONTH</div><div class="metric-value">${thisMonth.length}</div><div class="metric-sub">of ${act.length} active</div></div>
+    <div class="metric-card teal clickable" onclick="gsPickStage('series')"><div class="metric-label">IN THE SERIES</div><div class="metric-value">${inSeries.length}</div><div class="metric-sub">signed up or further</div></div>
+    <div class="metric-card orange clickable" onclick="gsPickStage(1)"><div class="metric-label">OFFERED, NOT SIGNED UP</div><div class="metric-value">${offeredNotSigned.length}</div><div class="metric-sub">follow these up</div></div>
+    <div class="metric-card purple clickable" onclick="gsPickStage(2)"><div class="metric-label">PROFILE INCOMPLETE</div><div class="metric-value">${profileOpen.length}</div><div class="metric-sub">signed up, profile open</div></div>
+    <div class="metric-card blue"><div class="metric-label">SIGN-UP RATE</div><div class="metric-value" style="font-size:24px">${rate}%</div><div class="metric-sub">${inSeries.length} of ${everOffered} offered</div></div>`;
+  const cols=document.getElementById('gsCols');
+  const showL=gsState.view!=='series',showR=gsState.view!=='checkin';
+  cols.style.gridTemplateColumns=(showL&&showR)?'':'1fr';
+  document.getElementById('gsLeft').style.display=showL?'':'none';
+  document.getElementById('gsRight').style.display=showR?'':'none';
+  if(showL)renderGsCheckinSide(act);
+  if(showR)renderGsSeriesSide(act);
+}
+
+// ---------- LEFT: monthly check-ins ----------
+function gsCard(p,kind){
+  const du=gsDaysUntil(p.Next),da=gsDaysAgo(p.Last);
+  const cls=du===null?'':(du<0?'late':du===0?'today':du<=7?'soon':'');
+  let dueTxt='No date set';
+  if(du!==null)dueTxt=du<0?`${-du} day${du===-1?'':'s'} overdue`:du===0?'Due today':`Due in ${du} day${du===1?'':'s'}`;
+  const dueCls=du!==null&&du<0?'due':(du===0?'warn':'');
+  const what=p.Business?escHtml(p.Business):(p.Idea?'💡 '+escHtml(p.Idea):'<span style="color:var(--muted)">no business or idea noted</span>');
+  const meta=[p.Location,p.Niche,p.Type].filter(Boolean).map(escHtml).join(' · ');
+  const lastTxt=p.Last?`Last check-in ${escHtml(p.Last)}${da!==null?' ('+da+' day'+(da===1?'':'s')+' ago)':''}`:'No check-in yet';
+  const help=[p.Help?'<strong>Help:</strong> '+escHtml(p.Help):'',p.Improve?'<strong>Improve:</strong> '+escHtml(p.Improve):''].filter(Boolean).join('<br>');
+  const wa=gsWaLink(p,gsCheckinMsg(p));
+  const hist=gsState.checkins.filter(c=>c.ID===p.ID).slice(0,5);
+  const histHtml=gsState.openHist[p.ID]?`<div class="gs-hist">${hist.length?hist.map(c=>`<div><strong>${escHtml(c.Date)}</strong> · ${escHtml(c.Stage||'')} ${c.By?'· '+escHtml(c.By):''}<br>${c.Thoughts?escHtml(c.Thoughts):'<em>no notes</em>'}${c.Help?'<br>Help: '+escHtml(c.Help):''}</div>`).join('<hr style="border:0;border-top:1px solid var(--border);margin:5px 0">'):'No check-ins logged yet.'}</div>`:'';
+  return `<div class="gs-card ${cls}">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><div class="gs-name">${escHtml(p.Name)}</div><div class="gs-sub">${what}</div>${meta?`<div class="gs-sub">${meta}</div>`:''}</div>
+    <div style="text-align:right"><span class="gs-pill ${dueCls}">${dueTxt}</span><div class="gs-sub">${p.Next?'Next: '+escHtml(p.Next):''}</div></div></div>
+    <div class="gs-sub" style="margin-top:6px">${lastTxt} · ${p.Count} check-in${p.Count===1?'':'s'} · <span class="gs-pill ${gsInSeries(p)?'yes':''}">${GS_STAGE_ICON[gsStageIdx(p)]} ${escHtml(p.Stage)}</span></div>
+    ${help?`<div class="gs-help">${help}</div>`:''}
+    <div class="gs-next">➜ ${escHtml(gsSuggest(p))}</div>
+    <div class="gs-actions"><button class="gs-btn fill" onclick="gsOpenCheckin('${p.ID}')">✔ CHECK IN</button>${wa?`<a class="gs-btn green" href="${wa}" target="_blank" rel="noopener">💬 WHATSAPP</a>`:''}<button class="gs-btn" onclick="gsOpenEdit('${p.ID}')">✎ EDIT</button><button class="gs-btn" onclick="gsToggleHist('${p.ID}')">🕘 HISTORY (${gsState.checkins.filter(c=>c.ID===p.ID).length})</button></div>${histHtml}</div>`;
+}
+function renderGsCheckinSide(act){
+  const list=act.filter(gsMatches);
+  const bucket={late:[],today:[],week:[],later:[],none:[]};
+  list.forEach(p=>{const d=gsDaysUntil(p.Next);if(d===null)bucket.none.push(p);else if(d<0)bucket.late.push(p);else if(d===0)bucket.today.push(p);else if(d<=7)bucket.week.push(p);else bucket.later.push(p);});
+  const byNext=(a,b)=>(gsParse(a.Next)||0)-(gsParse(b.Next)||0);
+  Object.values(bucket).forEach(a=>a.sort(byNext));
+  const sec=(title,arr,cls)=>arr.length?`<div class="gs-group ${cls||''}">${title} (${arr.length})</div>${arr.map(p=>gsCard(p)).join('')}`:'';
+  let h=`<div class="gs-side-title">📞 CHECK-IN SIDE<small>every person, every month</small></div>`;
+  if(!list.length)h+=`<div class="card" style="text-align:center;color:var(--muted);font-size:12px;padding:28px">${act.length?'Nobody matches your search.':'No one yet. Press ADD PERSON / CHECK IN to add your first person.'}</div>`;
+  h+=sec('Overdue',bucket.late,'late')+sec('Due today',bucket.today)+sec('Next 7 days',bucket.week)+sec('No check-in date',bucket.none);
+  if(bucket.later.length){h+=`<div class="gs-group">Later (${bucket.later.length})</div>`+bucket.later.slice(0,gsState.laterAll?999:5).map(p=>gsCard(p)).join('');if(bucket.later.length>5&&!gsState.laterAll)h+=`<button class="gs-btn" onclick="gsState.laterAll=true;renderGrowth()">SHOW ALL ${bucket.later.length} LATER</button>`;}
+  document.getElementById('gsLeft').innerHTML=h;
+}
+
+// ---------- RIGHT: the series funnel ----------
+function gsPickStage(s){gsState.stage=s;if(gsState.view==='checkin')gsSetView('both');else renderGrowth();}
+function renderGsSeriesSide(act){
+  const counts=GS_STAGES.map((s,i)=>act.filter(p=>gsStageIdx(p)>=i).length);   // reached this step or further
+  const here=GS_STAGES.map((s,i)=>act.filter(p=>gsStageIdx(p)===i).length);    // currently at this step
+  const max=Math.max(1,act.length);
+  const sel=gsState.stage;
+  const rows=GS_STAGES.map((s,i)=>`<div class="gs-funnel-row ${sel===i?'sel':''}" onclick="gsPickStage(${i})"><div><div class="gs-funnel-name">${GS_STAGE_ICON[i]} ${s}</div><div class="gs-sub" style="font-size:10px">${GS_STAGE_HINT[i]}</div></div><div class="gs-funnel-track"><div class="gs-funnel-fill" style="width:${Math.round(here[i]/max*100)}%"></div></div><div class="gs-funnel-n">${here[i]}</div></div>`).join('');
+  const pct=(a,b)=>b?Math.round(a/b*100)+'%':'–';
+  const conv=`<div class="gs-conv">Offered: <strong>${counts[1]}</strong> of ${act.length} · Offer → signed up: <strong>${pct(counts[2],counts[1])}</strong> · Signed up → profile complete: <strong>${pct(counts[3],counts[2])}</strong> · Profile → business growing: <strong>${pct(counts[5],counts[3])}</strong></div>`;
+  const tabs=`<div class="filter-row" style="margin:10px 0">
+    <button class="filter-btn ${sel==='notin'?'active':''}" onclick="gsPickStage('notin')">GET THEM IN (${act.filter(p=>!gsInSeries(p)).length})</button>
+    <button class="filter-btn ${sel==='series'?'active':''}" onclick="gsPickStage('series')">IN THE SERIES (${act.filter(gsInSeries).length})</button>
+    <button class="filter-btn ${sel==='all'?'active':''}" onclick="gsPickStage('all')">ALL (${act.length})</button></div>`;
+  let list=act.filter(gsMatches);
+  if(sel==='notin')list=list.filter(p=>!gsInSeries(p));
+  else if(sel==='series')list=list.filter(gsInSeries);
+  else if(typeof sel==='number')list=list.filter(p=>gsStageIdx(p)===sel);
+  list.sort((a,b)=>gsStageIdx(b)-gsStageIdx(a)||(a.Name||'').localeCompare(b.Name||''));
+  const label=sel==='notin'?'Not in the series yet':sel==='series'?'In the series':sel==='all'?'Everyone':GS_STAGES[sel];
+  let h=`<div class="gs-side-title">📚 BUSINESS GROWTH SERIES SIDE<small>the path to a business</small></div><div class="card" style="padding:10px">${rows}${conv}</div>${tabs}<div class="gs-group">${escHtml(label)} (${list.length})</div>`;
+  h+=list.length?list.slice(0,60).map(gsSeriesItem).join(''):`<div class="card" style="text-align:center;color:var(--muted);font-size:12px;padding:22px">Nobody here.</div>`;
+  if(list.length>60)h+=`<div class="gs-sub" style="text-align:center">Showing 60 of ${list.length}. Use search to narrow.</div>`;
+  document.getElementById('gsRight').innerHTML=h;
+}
+function gsSeriesItem(p){
+  const i=gsStageIdx(p);
+  const what=p.Business?escHtml(p.Business):(p.Idea?'💡 '+escHtml(p.Idea):'');
+  const yn=(l,v)=>`<span class="gs-pill ${v==='Yes'?'yes':'no'}">${l}: ${v}</span>`;
+  const wa=gsWaLink(p,i<=1?gsOfferMsg(p):gsCheckinMsg(p));
+  let primary='';
+  if(i===0)primary=`<button class="gs-btn fill" onclick="gsQuick('${p.ID}',{offered:'Yes'})">📨 MARK OFFERED</button>`;
+  else if(i===1)primary=`<button class="gs-btn fill green" onclick="gsQuick('${p.ID}',{signed:'Yes'})">✍️ SIGNED UP</button>`;
+  else if(i===2)primary=`<button class="gs-btn fill green" onclick="gsQuick('${p.ID}',{profile:'Yes'})">🪪 PROFILE COMPLETE</button>`;
+  else if(i===3)primary=`<button class="gs-btn fill green" onclick="gsQuick('${p.ID}',{stage:'Learning'})">📚 START LEARNING</button>`;
+  else if(i===4)primary=`<button class="gs-btn fill green" onclick="gsQuick('${p.ID}',{stage:'Business growing'})">🚀 BUSINESS GROWING</button>`;
+  return `<div class="gs-card ${gsInSeries(p)?'soon':''}"><div style="display:flex;justify-content:space-between;gap:8px"><div><div class="gs-name">${escHtml(p.Name)}</div><div class="gs-sub">${what}${p.Location?' · '+escHtml(p.Location):''}</div></div><span class="gs-pill ${gsInSeries(p)?'yes':'warn'}">${GS_STAGE_ICON[i]} ${escHtml(p.Stage)}</span></div>
+    <div class="gs-sub" style="margin-top:6px">${yn('Offered',p.Offered)}${yn('Signed up',p.Signed)}${yn('Profile',p.Profile)}${p.NextStep?`<span class="gs-pill">${escHtml(p.NextStep)}</span>`:''}</div>
+    <div class="gs-next">➜ ${escHtml(gsSuggest(p))}</div>
+    <div class="gs-actions">${primary}${wa?`<a class="gs-btn green" href="${wa}" target="_blank" rel="noopener">💬 ${i<=1?'SEND OFFER':'MESSAGE'}</a>`:''}<button class="gs-btn" onclick="gsOpenEdit('${p.ID}')">✎ EDIT</button></div></div>`;
+}
+function gsToggleHist(id){gsState.openHist[id]=!gsState.openHist[id];renderGrowth();}
+
+// One-tap changes from the series side (only the field sent is changed on the server).
+async function gsQuick(id,fields){
+  const p=gsState.people.find(x=>x.ID===id);if(!p)return;
+  const qs=Object.keys(fields).map(k=>'&'+k+'='+encodeURIComponent(fields[k])).join('');
+  try{
+    const res=await fetch(API_URL+'?action=saveGrowthPerson&id='+encodeURIComponent(id)+qs+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){Object.assign(p,data.person);showToast(p.Name+' — '+p.Stage);renderGrowth();gsTodayStrip();}
+    else showToast(data.error||'Could not save');
+  }catch(err){showToast('Could not save: '+err.message);}
+}
+
+// ---------- add / edit / check-in form ----------
+function gsSetYN(k,v){
+  gsYNState[k]=v;
+  // one-way chain: profile complete needs signed up, signed up needs offered
+  if(k==='Profile'&&v==='Yes'){gsYNState.Signed='Yes';gsYNState.Offered='Yes';}
+  if(k==='Signed'&&v==='Yes')gsYNState.Offered='Yes';
+  if(k==='Signed'&&v==='No')gsYNState.Profile='No';
+  if(k==='Offered'&&v==='No'){gsYNState.Signed='No';gsYNState.Profile='No';}
+  gsPaintYN();
+}
+function gsPaintYN(){
+  ['Offered','Signed','Profile'].forEach(k=>{
+    const el=document.getElementById('gs'+k+'YN');if(!el)return;
+    el.querySelector('.yes').classList.toggle('on',gsYNState[k]==='Yes');
+    el.querySelector('.no').classList.toggle('on',gsYNState[k]!=='Yes');
+  });
+  document.getElementById('gsStageWrap').style.display=gsYNState.Profile==='Yes'?'':'none';
+}
+function gsAutoType(){
+  if(document.getElementById('gsId').value)return;
+  const biz=document.getElementById('gsBusiness').value.trim(),idea=document.getElementById('gsIdea').value.trim();
+  document.getElementById('gsType').value=biz?'Business owner':(idea?'Idea stage':document.getElementById('gsType').value);
+}
+function gsAutoNext(){
+  if(gsNextTouched)return;
+  const c=document.getElementById('gsCheckinDate').value;
+  if(c)document.getElementById('gsNextDate').value=gsPlusMonthIso(c);
+}
+function gsToggleCheckin(){document.getElementById('gsCheckinWrap').style.display=document.getElementById('gsIsCheckin').checked?'':'none';}
+function gsFill(p,mode){
+  const set=(id,v)=>document.getElementById(id).value=v==null?'':v;
+  set('gsId',p?p.ID:'');set('gsName',p?p.Name:'');set('gsNumber',p?p.Number:'');set('gsBusiness',p?p.Business:'');set('gsIdea',p?p.Idea:'');
+  set('gsLocation',p?p.Location:'');set('gsNiche',p?p.Niche:'');set('gsType',p?(p.Type||'Business owner'):'Entrepreneur');set('gsStatus',p?(p.Status||'Active'):'Active');
+  set('gsThoughts',p?p.Thoughts:'');set('gsHelp',p?p.Help:'');set('gsImprove',p?p.Improve:'');set('gsNextStep',p?p.NextStep:'');
+  gsYNState={Offered:p?p.Offered:'No',Signed:p?p.Signed:'No',Profile:p?p.Profile:'No'};
+  set('gsStage',p&&gsStageIdx(p)>=3?p.Stage:'Profile complete');
+  const today=gsIso(new Date());
+  set('gsCheckinDate',today);gsNextTouched=(mode==='edit');set('gsNextDate',mode==='edit'&&p&&p.Next?gsToIso(p.Next):gsPlusMonthIso(today));
+  document.getElementById('gsIsCheckin').checked=mode!=='edit';
+  gsToggleCheckin();gsPaintYN();
+  document.getElementById('gsSaveResult').innerHTML='';
+  const last=p&&p.Last?`Last check-in ${escHtml(p.Last)}.`:'';
+  const prev=p?gsState.checkins.find(c=>c.ID===p.ID):null;
+  document.getElementById('gsLastNote').innerHTML=p?`<strong>${escHtml(p.ID)}</strong> · ${last} ${p.Count} check-in${p.Count===1?'':'s'} so far. Stage: <strong>${escHtml(p.Stage)}</strong>.${prev&&prev.Thoughts?'<br>Last time: “'+escHtml(prev.Thoughts.substring(0,160))+'”':''}`:'New person. Only the name is required; fill in what you know now and update it at each check-in.';
+}
+function gsOpenNew(){gsFill(null,'new');document.getElementById('gsModalTitle').textContent='ADD PERSON';document.getElementById('gsSaveBtn').textContent='SAVE PERSON';gsShowModal();}
+function gsOpenCheckin(id){const p=gsState.people.find(x=>x.ID===id);if(!p)return;gsFill(p,'checkin');document.getElementById('gsModalTitle').textContent='CHECK IN — '+(p.Name||'').toUpperCase();document.getElementById('gsSaveBtn').textContent='SAVE CHECK-IN';gsShowModal();}
+function gsOpenEdit(id){const p=gsState.people.find(x=>x.ID===id);if(!p)return;gsFill(p,'edit');document.getElementById('gsModalTitle').textContent='EDIT — '+(p.Name||'').toUpperCase();document.getElementById('gsSaveBtn').textContent='SAVE CHANGES';gsShowModal();}
+function gsShowModal(){document.getElementById('gsModal').style.display='flex';document.getElementById('gsModal').scrollTop=0;}
+function gsCloseModal(){document.getElementById('gsModal').style.display='none';}
+
+async function gsSave(){
+  if(gsSaving)return;
+  const g=id=>document.getElementById(id).value.trim();
+  const out=document.getElementById('gsSaveResult');
+  if(!g('gsName')){out.innerHTML='<span style="color:var(--red)">Name is required.</span>';return;}
+  const num=normalizePhoneClient(g('gsNumber'));
+  if(num&&!/^0\d{9}$/.test(num)&&!confirm('The number "'+num+'" is not 10 digits starting with 0. Save it anyway?'))return;
+  const id=g('gsId'),isCheckin=document.getElementById('gsIsCheckin').checked;
+  const f={name:g('gsName'),number:num,business:g('gsBusiness'),idea:g('gsIdea'),location:g('gsLocation'),niche:g('gsNiche'),type:g('gsType'),status:g('gsStatus'),
+    thoughts:g('gsThoughts'),help:g('gsHelp'),improve:g('gsImprove'),nextStep:document.getElementById('gsNextStep').value,
+    offered:gsYNState.Offered,signed:gsYNState.Signed,profile:gsYNState.Profile};
+  if(gsYNState.Profile==='Yes')f.stage=g('gsStage');
+  if(isCheckin){f.checkin='1';f.checkinDate=g('gsCheckinDate');f.nextCheckin=g('gsNextDate');}
+  else if(g('gsNextDate')&&(id||gsNextTouched))f.nextCheckin=g('gsNextDate');
+  if(id)f.id=id;
+  gsSaving=true;out.innerHTML='<span style="color:var(--muted)">Saving...</span>';
+  try{
+    const qs=Object.keys(f).map(k=>k+'='+encodeURIComponent(f[k])).join('&');
+    const res=await fetch(API_URL+'?action=saveGrowthPerson&'+qs+'&t='+Date.now());
+    const data=await res.json();
+    if(data.success){
+      const i=gsState.people.findIndex(x=>x.ID===data.person.ID);
+      if(i>=0)gsState.people[i]=data.person;else gsState.people.push(data.person);
+      gsCloseModal();showToast((data.created?'Added ':'Saved ')+data.person.Name+(data.checkedIn?' — check-in logged':''));
+      renderGrowth();gsTodayStrip();gsLoad(true);
+    }else if(data.duplicate){
+      out.innerHTML=`<span style="color:var(--red)">${escHtml(data.error)}</span> <button class="gs-btn" onclick="gsOpenCheckin('${escHtml(data.duplicateId)}')">OPEN THEM</button>`;
+    }else out.innerHTML='<span style="color:var(--red)">'+escHtml(data.error||'Could not save.')+'</span>';
+  }catch(err){out.innerHTML='<span style="color:var(--red)">Could not save: '+escHtml(err.message)+'</span>';}
+  gsSaving=false;
+}
+
+function gsExport(){
+  const cols=['ID','Name','Business','Idea','Number','Location','Niche','Type','Thoughts','Help','Improve','Offered','Signed','Profile','Stage','NextStep','Last','Next','Count','Status','AddedBy'];
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const csv=[cols.join(',')].concat(gsState.people.map(p=>cols.map(c=>q(p[c])).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='business-growth-series-'+gsIso(new Date())+'.csv';a.click();
+}
+
+// Strip on the TODAY tab so due check-ins are never forgotten.
+function gsTodayStrip(){
+  const host=document.getElementById('gsTodayStrip');if(!host)return;
+  if(!gsState.loaded){host.innerHTML='';return;}
+  const act=gsState.people.filter(gsActive);
+  const due=act.filter(p=>{const d=gsDaysUntil(p.Next);return d!==null&&d<=0;});
+  const late=due.filter(p=>gsDaysUntil(p.Next)<0).length;
+  host.innerHTML=due.length?`<div class="gs-strip" onclick="activateTab('growth')"><div>📈 <strong>Business Growth Series:</strong> ${due.length} check-in${due.length===1?'':'s'} due${late?' ('+late+' overdue)':''}</div><span class="gs-btn fill">OPEN</span></div>`:'';
+}
+(function(){
+  const _rt=renderToday;
+  renderToday=function(){
+    _rt.apply(this,arguments);
+    try{
+      if(!gsState.autoTried||Date.now()-gsState.lastLoad>300000){gsState.autoTried=true;gsLoad(true);}
+      gsTodayStrip();
+    }catch(e){console.log('gs strip',e.message);}
   };
 })();
 
