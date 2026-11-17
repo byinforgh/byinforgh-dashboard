@@ -319,7 +319,7 @@ html,body{max-width:100%;overflow-x:clip;}
 </div>
 <div id="masterBanner">MASTER VIEW &mdash; signed in as <span id="masterBannerName"></span><button onclick="masterLogout()">SIGN OUT</button></div>
 <div class="header">
-  <div class="logo">BYINFORGH <span>COMMAND CENTRE v35.0</span></div>
+  <div class="logo">BYINFORGH <span>COMMAND CENTRE v35.1</span></div>
 <div class="header-right"><div class="live-dot"></div><span class="last-refresh" id="lastRefresh">Loading...</span><button class="refresh-btn" onclick="openAccountModal()">&#9881; ACCOUNT</button><button class="refresh-btn" onclick="loadData()">&#8635; REFRESH</button></div></div>
 <div class="shabbat-banner" id="shabbatBanner">
   <div style="font-size:24px">&#128335;</div>
@@ -3421,6 +3421,7 @@ function renderSME(){
 }
 async function updateSMEField(business,field,value,el){
   const orig=el?el.dataset.orig:'';
+  if(field==='Renewal'&&!confirm('This only changes the NEXT DUE date. It does NOT record a payment and will not count as income.\n\nTo record a payment, cancel and press RENEW instead.\n\nChange the date anyway?')){if(el)el.value=orig||el.value;return;}
   if(el){el.disabled=true;el.style.opacity='0.6';}
   try{
     const res=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field='+encodeURIComponent(field)+'&value='+encodeURIComponent(value)+'&sheetSource='+encodeURIComponent('SME Systems Members')+'&t='+Date.now());
@@ -3721,6 +3722,7 @@ const CLIENT_STATUS_OPTIONS=['Active','Pending','Paused','Churned'];
 const CLIENT_FIELD_TO_STATE_KEY={OneTime:'OneTimeAmount'};
 async function updateClientField(business,field,value,el){
   const orig=el?el.dataset.orig:'';
+  if(field==='Renewal'&&!confirm('This only changes the NEXT DUE date. It does NOT record a payment and will not count as income.\n\nTo record a payment, cancel and press RENEW instead.\n\nChange the date anyway?')){if(el)el.value=orig||el.value;return;}
   if(el){el.disabled=true;el.style.opacity='0.6';}
   try{
     const res=await fetch(API_URL+'?action=updateContactField&business='+encodeURIComponent(business)+'&field='+encodeURIComponent(field)+'&value='+encodeURIComponent(value)+'&sheetSource=Clients&t='+Date.now());
@@ -5663,13 +5665,13 @@ function getAllRevenueEvents(){
   (state.smeMembers||[]).forEach(m=>{if(m.Business&&parseAnyDate(m.Joined))withStart.add(m.Business.toLowerCase());});
 
   // A) confirmed payments = rows in the Conversions log
-  const firstLogged={};
+  const firstLogged={};const autoKeys=new Set();
   (trackerData.conversions||[]).forEach(c=>{
     const d=parseAnyDate(c.date||c.timestamp);
     if(!d)return;
     const key=(c.business||'').toLowerCase();
     const notes=c.notes||'';
-    if(/auto-logged/i.test(notes)&&withStart.has(key))return;   // rebuilt from the client's own start date below
+    if(/auto-logged/i.test(notes)&&withStart.has(key)){autoKeys.add(key);return;}   // rebuilt from the client's own start date below (it IS a logged payment)
     const amt=parseFloat(c.amount)||0;
     const isRen=/renewal/i.test(notes),isOne=/^\s*one[\s-]?off/i.test(notes);
     events.push({date:fmtDMY(d),business:c.business||'',amount:amt,renewal:isRen,kind:isRen?'renewal':(isOne?'oneoff':'new'),sub:isOne?0:amt,oneoff:isOne?amt:0,source:'logged',confirmed:true,notes});
@@ -5687,8 +5689,10 @@ function getAllRevenueEvents(){
     if(!start)return;
     start.setHours(0,0,0,0);
     const stop=firstLogged[key];
-    if(start<=todayEnd&&(!stop||start<stop))events.push({date:fmtDMY(start),business:name,amount:first,renewal:false,kind:'new',sub:monthly||0,oneoff:oneTime||0,source,confirmed:false});
-    if(monthly>0&&due&&allowRecurring){
+    // v35.1: ACTUAL ONLY. The first payment counts only if it was logged when the client was added
+    // as Active. Renewals are NEVER inferred from a date: they count only when CONFIRM RENEWAL logged a payment.
+    if(autoKeys.has(key)&&start<=todayEnd&&(!stop||start<stop))events.push({date:fmtDMY(start),business:name,amount:first,renewal:false,kind:'new',sub:monthly||0,oneoff:oneTime||0,source,confirmed:true});
+    if(false&&monthly>0&&due&&allowRecurring){
       const lastPaid=addMonthsDate(due,-1);
       for(let k=1;k<=120;k++){
         const d=addMonthsDate(start,k);
